@@ -43,6 +43,10 @@ logs/
 server.log
 server.err
 
+# Supabase local
+supabase/.temp/
+supabase/.branches/
+
 # OS
 .DS_Store
 Thumbs.db

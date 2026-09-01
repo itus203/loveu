@@ -89,12 +89,13 @@ exports.createGroup = async (req,res)=>{
     if(creator?.role==='Faculty' || creator?.role==='Teacher') is_verified=1;
     // Auto-generate invite link
     const invite_link=crypto.randomBytes(8).toString('hex');
+    const getUrl = f => f.path || f.secure_url || f.url || `/uploads/${f.filename}`;
     let cover_image=null, avatar_image=null;
     if(req.files){
-      if(req.files['cover_image']) cover_image=`/uploads/${req.files['cover_image'][0].filename}`;
-      if(req.files['avatar_image']) avatar_image=`/uploads/${req.files['avatar_image'][0].filename}`;
+      if(req.files['cover_image']) cover_image=getUrl(req.files['cover_image'][0]);
+      if(req.files['avatar_image']) avatar_image=getUrl(req.files['avatar_image'][0]);
     } else if(req.file){
-      cover_image=`/uploads/${req.file.filename}`;
+      cover_image=getUrl(req.file);
     }
     const result=await global.db.run(`
       INSERT INTO groups_table (name, description, cover_image, avatar_image, creator_id, category, group_type, department, batch, course_code, faculty, rules, privacy, approval_required, invite_link, allow_anonymous, is_verified, is_official)
@@ -119,12 +120,13 @@ exports.updateGroup = async (req,res)=>{
     const groupId=req.params.id;
     if(req.user.role !== 'Admin' && !await canManageGroup(groupId, req.user.id)) return res.status(403).json({message:'Admin only'});
     const { name, description, category, group_type, department, batch, course_code, faculty, rules, privacy, approval_required, allow_anonymous } = req.body;
+    const getUrl2 = f => f.path || f.secure_url || f.url || `/uploads/${f.filename}`;
     let cover_image, avatar_image;
     if(req.files){
-      if(req.files['cover_image']) cover_image=`/uploads/${req.files['cover_image'][0].filename}`;
-      if(req.files['avatar_image']) avatar_image=`/uploads/${req.files['avatar_image'][0].filename}`;
+      if(req.files['cover_image']) cover_image=getUrl2(req.files['cover_image'][0]);
+      if(req.files['avatar_image']) avatar_image=getUrl2(req.files['avatar_image'][0]);
     } else if(req.file){
-      cover_image=`/uploads/${req.file.filename}`;
+      cover_image=getUrl2(req.file);
     }
     const updates=[], params=[];
     if(name!==undefined){ updates.push('name=?'); params.push(name); }

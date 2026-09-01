@@ -2,7 +2,9 @@ exports.uploadFile = async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ message: 'File is required' });
         
-        const file_url = `/uploads/${req.file.filename}`;
+        // Cloudinary gives secure_url/path, local gives filename
+        const file_url = req.file.path || req.file.secure_url || req.file.url || (req.file.filename ? `/uploads/${req.file.filename}` : null);
+        if (!file_url) return res.status(500).json({ message: 'Upload failed - no file URL' });
         const file_name = req.file.originalname;
         const file_size = (req.file.size / 1024).toFixed(2) + ' KB';
         const file_type = req.file.mimetype;
