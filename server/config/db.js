@@ -40,7 +40,11 @@ async function initDatabase() {
                 connectionString: pgUrl,
                 ssl: process.env.NODE_ENV === 'production' || pgUrl.includes('supabase') || pgUrl.includes('neon.tech')
                     ? { rejectUnauthorized: false }
-                    : false
+                    : false,
+                connectionTimeoutMillis: 15000,
+                idleTimeoutMillis: 30000,
+                max: 1,
+                keepAlive: true
             });
 
             const pgAdapter = {
