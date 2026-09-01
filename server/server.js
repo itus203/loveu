@@ -12,6 +12,7 @@ const { Server } = require('socket.io');
 const { rateLimiter, authLimiter, uploadLimiter, sanitizeInput, requestLogger } = require('./middleware/securityMiddleware');
 
 const app = express();
+app.set('trust proxy', 1); // Vercel: fix express-rate-limit ValidationError: The 'Forwarded' header
 const server = http.createServer(app);
 
 const io = new Server(server, {
