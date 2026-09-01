@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Food Portal | DIU Nexus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/home.css">
+    <style>
+        body { padding-top: 64px; background: var(--bg); }
+        .food-wrap { max-width: 1000px; margin: 0 auto; padding: 24px 16px 80px; }
+        .page-hero { background: linear-gradient(135deg, #f97316, #ea580c); border-radius: 16px; padding: 32px; color: white; margin-bottom: 24px; display: flex; align-items: center; gap: 20px; }
+        .page-hero i { font-size: 3rem; }
+        .page-hero h1 { font-size: 1.6rem; font-weight: 800; margin: 0; }
+        .page-hero p { opacity: 0.88; margin: 4px 0 0; }
+
+        .food-layout { display: grid; grid-template-columns: 300px 1fr; gap: 20px; }
+        @media(max-width:700px) { .food-layout { grid-template-columns: 1fr; } }
+
+        .form-card { background: var(--surface); border-radius: 14px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.07); position: sticky; top: 80px; }
+        .form-card h3 { font-weight: 800; color: #f97316; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .form-group { margin-bottom: 12px; }
+        .form-label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; text-transform: uppercase; }
+        .form-input { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 0.88rem; background: var(--surface); color: var(--text); outline: none; }
+        .form-input:focus { border-color: #f97316; }
+        .star-row { display: flex; gap: 6px; margin-top: 4px; }
+        .star-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; transition: transform 0.1s; }
+        .star-btn:hover { transform: scale(1.2); }
+        .btn-submit { width: 100%; padding: 12px; background: #f97316; color: white; border: none; border-radius: 10px; font-family: inherit; font-size: 0.92rem; font-weight: 700; cursor: pointer; margin-top: 6px; }
+
+        .rest-card { background: var(--surface); border-radius: 14px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 16px; transition: transform 0.15s; }
+        .rest-card:hover { transform: translateY(-2px); }
+        .rest-cover { width: 100%; height: 180px; object-fit: cover; background: linear-gradient(135deg,#fed7aa,#f97316); display: flex; align-items: center; justify-content: center; font-size: 4rem; }
+        .rest-body { padding: 16px; }
+        .rest-name { font-size: 1.05rem; font-weight: 800; margin-bottom: 4px; }
+        .rest-meta { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 8px; }
+        .star-display { color: #f59e0b; font-size: 0.9rem; }
+        .rest-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+        .rest-tag { padding: 3px 10px; border-radius: 20px; background: #fff7ed; color: #f97316; font-size: 0.72rem; font-weight: 700; }
+        .review-list { border-top: 1px solid var(--border); margin-top: 12px; padding-top: 12px; }
+        .review-item { display: flex; gap: 10px; margin-bottom: 12px; }
+        .review-av { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg,#f97316,#ea580c); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; }
+        .review-bubble { background: var(--bg); border-radius: 12px; padding: 10px 14px; flex: 1; }
+        .review-name { font-weight: 700; font-size: 0.8rem; }
+        .review-stars { color: #f59e0b; font-size: 0.75rem; }
+        .review-text { font-size: 0.85rem; margin-top: 2px; }
+        .review-img { width: 100%; max-height: 120px; object-fit: cover; border-radius: 8px; margin-top: 6px; }
+        .search-bar { display: flex; gap: 8px; margin-bottom: 16px; }
+        .search-bar input { flex: 1; padding: 10px 16px; border: 1.5px solid var(--border); border-radius: 10px; font-family: inherit; font-size: 0.88rem; background: var(--surface); color: var(--text); outline: none; }
+        .search-bar input:focus { border-color: #f97316; }
+        .filter-tabs { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+        .filter-tab { padding: 6px 14px; border-radius: 20px; border: 1.5px solid var(--border); background: var(--surface); font-family: inherit; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+        .filter-tab.active { background: #f97316; color: white; border-color: #f97316; }
+        .expand-btn { background: none; border: none; color: #0866ff; font-family: inherit; font-size: 0.82rem; font-weight: 700; cursor: pointer; padding: 4px 0; }
+        .review-form { border-top: 1px solid var(--border); margin-top: 12px; padding-top: 12px; }
+        .review-form textarea { width: 100%; padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 0.85rem; background: var(--bg); color: var(--text); outline: none; resize: vertical; }
+        .review-form button { margin-top: 8px; padding: 8px 16px; background: #f97316; color: white; border: none; border-radius: 8px; font-family: inherit; font-size: 0.82rem; font-weight: 700; cursor: pointer; }
+    
+        /* Fix: Pill till missing + button blocked — ensure pills and following buttons are clickable */
+        .filter-bar, .category-tabs, .cats, .filter-tabs, .cat-tabs, .filter-pill, .cat-tab, .cat, .blood-type-grid, .search-bar {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 1;
+        }
+        .filter-chip, .cat-tab, .cat, .blood-btn, .btn-join, .btn-view, .btn-post, .btn-submit, .btn-sell, .contact-btn, .post-action, .member-row button, .file-row a {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 2;
+        }
+        /* Ensure no sticky pill blocks content */
+        .category-tabs, .filter-bar, .cats {
+            overflow-x: auto;
+            overflow-y: visible;
+            max-height: none;
+        }
+
+    </style>
+</head>
+<body>
+<script src="../js/config.js"></script>
+<script src="../js/shared.js"></script>
+<div class="food-wrap">
+    <div class="page-hero">
+        <i class="fas fa-utensils"></i>
+        <div>
+            <h1>DIU Food Portal</h1>
+            <p>Discover campus dining — Find canteens, food spots, and honest reviews from fellow students.</p>
+        </div>
+    </div>
+
+    <div class="food-layout">
+        <!-- Review Form -->
+        <div class="form-card">
+            <h3><i class="fas fa-star"></i> Add Review</h3>
+            <p style="font-size:0.8rem;color:var(--text-secondary);margin-bottom:12px;">Select a vendor from the list, then add your review.</p>
+            <div class="form-group">
+                <label class="form-label">Rating *</label>
+                <div class="star-row" id="starRow">
+                    <button class="star-btn" onclick="setRating(1)">⭐</button>
+                    <button class="star-btn" onclick="setRating(2)">⭐</button>
+                    <button class="star-btn" onclick="setRating(3)">⭐</button>
+                    <button class="star-btn" onclick="setRating(4)">⭐</button>
+                    <button class="star-btn" onclick="setRating(5)">⭐</button>
+                </div>
+                <input type="hidden" id="rating" value="0">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Your Review</label>
+                <textarea class="form-input" id="reviewText" rows="3" placeholder="Share your experience — taste, service, cleanliness..."></textarea>
+            </div>
+            <button class="btn-submit" onclick="postReview()"><i class="fas fa-paper-plane"></i> Post Review</button>
+        </div>
+
+        <!-- Restaurant List -->
+        <div>
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;">
+                <button onclick="openAddVendor()" style="background:#f97316;color:white;border:none;padding:10px 16px;border-radius:10px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;flex-shrink:0;"><i class="fas fa-plus"></i> Add New Vendor</button>
+                <span style="font-size:0.75rem;color:var(--text-secondary);">icca moto vendor create koro — same name hole Already Exists</span>
+            </div>
+            <div class="search-bar">
+                <input id="searchInput" placeholder="🔍 Search restaurants or food items..." oninput="filterRests(this.value)">
+            </div>
+            <div class="filter-tabs">
+                <button class="filter-tab active" onclick="filterCat('all',this)">All</button>
+                <button class="filter-tab" onclick="filterCat('Bengali',this)">Bengali</button>
+                <button class="filter-tab" onclick="filterCat('Fast Food',this)">Fast Food</button>
+                <button class="filter-tab" onclick="filterCat('Cafe',this)">Cafe</button>
+                <button class="filter-tab" onclick="filterCat('Cafeteria',this)">Cafeteria</button>
+            </div>
+            <div id="restList"><div style="text-align:center;padding:60px;color:var(--text-secondary);"><i class="fas fa-utensils" style="font-size:3rem;opacity:0.2;display:block;margin-bottom:12px;"></i>Loading vendors...</div></div>
+        </div>
+    </div>
+</div>
+<!-- Add Vendor Modal — icca moto -->
+<div id="addVendorModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;align-items:center;justify-content:center;padding:16px;">
+    <div style="background:var(--surface);border-radius:16px;padding:20px;width:100%;max-width:460px;max-height:90vh;overflow-y:auto;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <h3 style="font-weight:800;color:#f97316;"><i class="fas fa-store"></i> <span id="vendorModalTitle">Add New Vendor</span></h3>
+            <button onclick="closeAddVendor()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:#65676b;"><i class="fas fa-times"></i></button>
+        </div>
+        <input type="hidden" id="editVendorId" value="">
+        <div class="form-group"><label class="form-label">Vendor Name *</label><input class="form-input" id="vName" placeholder="e.g., DIU Canteen, Khagan Boti"></div>
+        <div class="form-group"><label class="form-label">Location</label><input class="form-input" id="vLocation" placeholder="e.g., DSC, Khagan"></div>
+        <div class="form-group"><label class="form-label">Category</label><select class="form-input" id="vCategory"><option value="">Select</option><option>Bengali</option><option>Fast Food</option><option>Cafe</option><option>Cafeteria</option><option>Other</option></select></div>
+        <div class="form-group"><label class="form-label">Description</label><textarea class="form-input" id="vDesc" rows="2" placeholder="Short description..."></textarea></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div class="form-group"><label class="form-label">Opening Time</label><input class="form-input" id="vOpen" placeholder="e.g., 8:00 AM"></div>
+            <div class="form-group"><label class="form-label">Closing Time</label><input class="form-input" id="vClose" placeholder="e.g., 9:00 PM"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Photo (direct upload)</label>
+            <div id="vDropZone" onclick="document.getElementById('vImageFile').click()" style="border:2px dashed #e4e6eb;border-radius:10px;padding:16px;text-align:center;cursor:pointer;background:#f9fafb;transition:all 0.2s;">
+                <i class="fas fa-camera" style="font-size:1.4rem;color:#65676b;display:block;margin-bottom:6px;"></i>
+                <span style="font-size:0.82rem;color:#65676b;">Click to upload photo</span>
+                <input type="file" id="vImageFile" accept="image/*" style="display:none;" onchange="previewVendorImage(this)">
+            </div>
+            <div id="vPreview" style="display:none;margin-top:10px;position:relative;border-radius:10px;overflow:hidden;border:1.5px solid var(--border);">
+                <img id="vPreviewImg" style="width:100%;max-height:180px;object-fit:cover;display:block;">
+                <button type="button" onclick="clearVendorImage()" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.6);color:white;border:none;border-radius:50%;width:26px;height:26px;cursor:pointer;"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+        <button class="btn-submit" onclick="submitVendor()" id="vendorSubmitBtn">Add Vendor</button>
+    </div>
+</div>
+<div id="toast-container" style="position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column-reverse;gap:8px;"></div>
+
+<script>
+const API = (typeof window.API !== 'undefined' ? window.API : (function(){ var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000/api'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin+'/api'; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin+'/api':'http://localhost:5000/api'; return 'http://localhost:5000/api'; } return window.location.origin+'/api'; })());
+const myUser = JSON.parse(localStorage.getItem('user') || 'null');
+const token = localStorage.getItem('token');
+if (!token) window.location.href = '../index.html';
+if (localStorage.getItem('darkMode') === '1') document.body.setAttribute('data-theme','dark');
+
+let allVendors = [];
+let selectedVendorId = null;
+let selectedRating = 0;
+let currentCat = 'all';
+
+function setRating(r) {
+    selectedRating = r;
+    document.getElementById('rating').value = r;
+    const stars = document.querySelectorAll('#starRow .star-btn');
+    stars.forEach((s,i) => s.textContent = i < r ? '⭐' : '☆');
+}
+
+async function loadVendors() {
+    try {
+        const res = await fetch(`${API}/food/vendors`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!res.ok) throw new Error('Failed to load vendors');
+        allVendors = await res.json();
+        renderRests();
+    } catch (e) {
+        showToast('Error loading vendors: ' + e.message);
+    }
+}
+
+async function postReview() {
+    if (!selectedVendorId) {
+        showToast('Please select a vendor first');
+        return;
+    }
+    if (!selectedRating) {
+        showToast('Please provide a rating');
+        return;
+    }
+    const reviewText = document.getElementById('reviewText').value.trim();
+    try {
+        const res = await fetch(`${API}/food/vendors/${selectedVendorId}/review`, {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                rating: selectedRating,
+                review_text: reviewText || null
+            })
+        });
+        if (!res.ok) {
+            const data = await res.json();
+            throw new Error(data.message || 'Failed to post review');
+        }
+        showToast('✅ Review posted!');
+        document.getElementById('reviewText').value = '';
+        setRating(0);
+        await loadVendors();
+    } catch (e) {
+        showToast('Error posting review: ' + e.message);
+    }
+}
+
+function selectVendor(id) {
+    selectedVendorId = id;
+    document.querySelectorAll('.rest-card').forEach(c => c.style.outline = c.dataset.vendorId == id ? '2px solid #f97316' : 'none');
+}
+
+function renderRests() {
+    let vendors = allVendors;
+    if (currentCat !== 'all') vendors = vendors.filter(v => v.category === currentCat);
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    if (q) vendors = vendors.filter(v => (v.name || '').toLowerCase().includes(q) || (v.location || '').toLowerCase().includes(q) || (v.items||[]).some(it=> (it.name||'').toLowerCase().includes(q)));
+    const el = document.getElementById('restList');
+    if (!vendors.length) { el.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-secondary);">No vendors found — be first to add!</div>'; return; }
+    const isAdmin = myUser && myUser.role==='Admin';
+    el.innerHTML = vendors.map(v => {
+        const isOwner = String(v.user_id||v.created_by||'')===String(myUser?._id||myUser?.id||'');
+        const canEditVendor = isOwner || isAdmin;
+        const avg = v.rating || '0.0';
+        const stars = '⭐'.repeat(Math.round(avg)) + '☆'.repeat(5-Math.round(avg));
+        const showId = `reviews-${v.id}`;
+        const menuId = `menu-${v.id}`;
+        const itemsHtml = (v.items||[]).map(it=>`
+            <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg);border-radius:8px;border:1px solid var(--border);">
+                ${it.image_url ? `<img src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${it.image_url}" style="width:52px;height:52px;border-radius:8px;object-fit:cover;flex-shrink:0;" onerror="this.style.display='none'">` : `<div style="width:52px;height:52px;border-radius:8px;background:linear-gradient(135deg,#fed7aa,#f97316);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;">🍽️</div>`}
+                <div style="flex:1;min-width:0;">
+                    <div style="font-weight:700;font-size:0.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(it.name)} <span style="font-size:0.75rem;color:#059669;font-weight:700;">· BDT ${it.price}</span></div>
+                    <div style="font-size:0.78rem;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(it.description||'')} ${it.category? '· '+esc(it.category):''}</div>
+                </div>
+                ${isAdmin?`<div style="display:flex;gap:6px;flex-shrink:0;"><button onclick="event.stopPropagation();editFoodItem(${it.id},'${esc(it.name)}',${it.price},'${esc(it.category||'')}','${esc(it.description||'').replace(/'/g,"\\'")}')" style="background:#e7f0ff;color:#2563eb;border:none;padding:6px 10px;border-radius:6px;font-size:0.75rem;font-weight:700;cursor:pointer;"><i class="fas fa-pen"></i></button><button onclick="event.stopPropagation();deleteFoodItem(${it.id})" style="background:#fee2e2;color:#dc2626;border:none;padding:6px 10px;border-radius:6px;font-size:0.75rem;font-weight:700;cursor:pointer;"><i class="fas fa-trash"></i></button></div>`:''}
+                ${!isAdmin?`<button onclick="event.stopPropagation();reportContent('food_item', ${it.id})" style="background:#fff7ed;color:#ea580c;border:1px solid #fed7aa;padding:6px 8px;border-radius:6px;font-size:0.7rem;cursor:pointer;flex-shrink:0;"><i class="fas fa-flag"></i></button>`:''}
+            </div>
+        `).join('') || '<div style="font-size:0.82rem;color:var(--text-secondary);padding:8px;text-align:center;">No menu items yet — Admin can add from dashboard.</div>';
+        return `<div class="rest-card" data-vendor-id="${v.id}" onclick="selectVendor('${v.id}')">
+            <div class="rest-cover" style="position:relative; overflow:hidden;">${v.image_url ? `<img src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${v.image_url}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div style="display:none; width:100%;height:100%;background:linear-gradient(135deg,#fed7aa,#f97316);align-items:center;justify-content:center;font-size:3rem;">🍽️</div>` : `🍽️`}</div>
+            <div class="rest-body">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                    <div class="rest-name" style="cursor:pointer;" onclick="event.stopPropagation(); window.location.href='profile.html?id=${v.id}'">${esc(v.name)}</div>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <div style="font-size:1.1rem;font-weight:800;color:#f97316;">${avg} <span style="font-size:0.8rem;color:#f59e0b;">${stars}</span></div>
+                        ${canEditVendor?`<button onclick="event.stopPropagation();editVendor(${v.id},'${esc(v.name).replace(/'/g,"\\'")}','${esc(v.location||'').replace(/'/g,"\\'")}','${esc(v.category||'').replace(/'/g,"\\'")}')" style="background:#e7f0ff;color:#2563eb;border:none;padding:6px 10px;border-radius:8px;font-size:0.75rem;font-weight:700;cursor:pointer;"><i class="fas fa-pen"></i> Edit</button><button onclick="event.stopPropagation();deleteVendor(${v.id})" style="background:#fee2e2;color:#dc2626;border:none;padding:6px 10px;border-radius:8px;font-size:0.75rem;font-weight:700;cursor:pointer;"><i class="fas fa-trash"></i> ${isAdmin&&!isOwner?'Admin Delete':'Delete'}</button>`: `<button onclick="event.stopPropagation();reportContent('food_vendor', ${v.id})" style="background:#fff7ed;color:#ea580c;border:1px solid #fed7aa;padding:6px 10px;border-radius:8px;font-size:0.75rem;font-weight:700;cursor:pointer;"><i class="fas fa-flag"></i> Report</button>`}
+                    </div>
+                </div>
+                <div class="rest-meta">${v.location ? '📍 '+esc(v.location)+' · ' : ''}${v.category || 'Other'} ${v.opening_time? '· 🕐 '+esc(v.opening_time)+' - '+esc(v.closing_time||''):''}</div>
+                <div class="rest-tags"><span class="rest-tag">${esc(v.category||'Other')}</span> ${v.opening_time? `<span class="rest-tag" style="background:#d1fae5;color:#065f46;">${esc(v.opening_time)} - ${esc(v.closing_time||'')}</span>` : ''}</div>
+                <div style="margin-top:10px;">
+                    <div style="font-size:0.82rem;font-weight:700;color:var(--text);margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;"><span><i class="fas fa-utensils" style="color:#f97316;"></i> Menu Items</span><button onclick="event.stopPropagation();toggleMenu('${menuId}',this)" style="background:none;border:none;color:#f97316;font-size:0.75rem;font-weight:700;cursor:pointer;">Show ▼</button></div>
+                    <div id="${menuId}" style="display:none; flex-direction:column; gap:6px;">${itemsHtml}</div>
+                </div>
+                <div class="review-list" id="${showId}" style="display:none;">
+                    ${(v.reviews || []).map(r => {
+                        const isOwner = myUser && String(r.user_id)===String(myUser._id||myUser.id);
+                        const up = r.upvotes||0, down=r.downvotes||0;
+                        return `<div class="review-item">
+                        <div class="review-av" style="cursor:pointer;" onclick="window.location.href='profile.html?id=${r.user_id}'">${(r.fullName||'?')[0].toUpperCase()}</div>
+                        <div class="review-bubble" style="flex:1;">
+                            <div class="review-name" style="cursor:pointer;" onclick="window.location.href='profile.html?id=${r.user_id}'">${esc(r.fullName || 'User')} <span class="review-stars">${'⭐'.repeat(r.rating || 0)}</span></div>
+                            ${r.review_text ? `<div class="review-text">${esc(r.review_text)}</div>` : ''}
+                            <div style="display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap;">
+                                <button onclick="event.stopPropagation();voteFoodReview(${v.id},${r.user_id},'up',this)" style="background:${r.myVote==='up'?'#d1fae5':'var(--bg)'};color:#059669;border:1px solid ${r.myVote==='up'?'#6ee7b7':'var(--border)'};padding:4px 8px;border-radius:20px;font-size:0.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:4px;"><i class="fas fa-arrow-up"></i> ${up}</button>
+                                <button onclick="event.stopPropagation();voteFoodReview(${v.id},${r.user_id},'down',this)" style="background:${r.myVote==='down'?'#fee2e2':'var(--bg)'};color:#dc2626;border:1px solid ${r.myVote==='down'?'#fca5a5':'var(--border)'};padding:4px 8px;border-radius:20px;font-size:0.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:4px;"><i class="fas fa-arrow-down"></i> ${down}</button>
+                                <button onclick="event.stopPropagation();document.getElementById('reviewText').value='@'+'${esc(r.fullName).replace(/'/g,"\\'")}' + ' ';document.getElementById('reviewText').focus();selectVendor('${v.id}')" style="background:var(--bg);border:1px solid var(--border);padding:4px 8px;border-radius:20px;font-size:0.7rem;cursor:pointer;color:#0866ff;"><i class="fas fa-reply"></i> Reply</button>
+                                ${isOwner||isAdmin?`<button onclick="event.stopPropagation();deleteFoodReview(${v.id},${r.user_id})" style="background:#fee2e2;color:#dc2626;border:none;padding:4px 8px;border-radius:6px;font-size:0.7rem;font-weight:700;cursor:pointer;"><i class="fas fa-trash"></i> ${isAdmin&&!isOwner?'Admin Delete':'Delete'}</button>`:''}
+                                ${!isOwner&&!isAdmin?`<button onclick="event.stopPropagation();reportContent('food_review', ${r.vendor_id})" style="background:#fff7ed;color:#ea580c;border:1px solid #fed7aa;padding:4px 8px;border-radius:6px;font-size:0.7rem;cursor:pointer;"><i class="fas fa-flag"></i> Report</button>`:''}
+                            </div>
+                        </div>
+                    </div>`}).join('')}
+                </div>
+                <button class="expand-btn" onclick="event.stopPropagation();toggleReviews('${showId}',this)">💬 See ${(v.reviews || []).length} review${(v.reviews || []).length!==1?'s':''}</button>
+            </div>
+        </div>`;
+    }).join('');
+}
+function toggleMenu(id, btn){
+    const el=document.getElementById(id);
+    const show=el.style.display==='none' || !el.style.display || el.style.display==='';
+    el.style.display= show ? 'flex' : 'none';
+    if(btn) btn.textContent = show ? 'Hide ▲' : 'Show ▼';
+}
+async function deleteVendor(id){
+    const v=allVendors.find(x=>String(x.id)===String(id));
+    const isOwner = v && String(v.user_id||v.created_by||'')===String(myUser?._id||myUser?.id||'');
+    const isAdmin = myUser && myUser.role==='Admin';
+    if(!confirm(isAdmin && !isOwner ? 'Admin delete this vendor? This will notify the owner.' : 'Delete this vendor?')) return;
+    try{
+        const res=await fetch(`${API}/food/vendors/${id}`, {method:'DELETE', headers:{'Authorization':'Bearer '+token}});
+        const data=await res.json().catch(()=>({}));
+        if(!res.ok) throw new Error(data.message||'Failed');
+        showToast(isAdmin && !isOwner ? '🗑️ Vendor deleted by Admin' : '🗑️ Vendor deleted');
+        await loadVendors();
+    }catch(e){ showToast(e.message,'error'); }
+}
+function previewVendorImage(input){
+    const file=input.files[0]; if(!file) return;
+    if(!file.type.startsWith('image/')){ showToast('Only images allowed','error'); input.value=''; return; }
+    const reader=new FileReader();
+    reader.onload=e=>{
+        document.getElementById('vPreviewImg').src=e.target.result;
+        document.getElementById('vPreview').style.display='block';
+        document.getElementById('vDropZone').style.borderColor='#f97316';
+    };
+    reader.readAsDataURL(file);
+}
+function clearVendorImage(){
+    document.getElementById('vImageFile').value='';
+    document.getElementById('vPreview').style.display='none';
+    document.getElementById('vPreviewImg').src='';
+    document.getElementById('vDropZone').style.borderColor='#e4e6eb';
+}
+function openAddVendor(){
+    document.getElementById('editVendorId').value='';
+    document.getElementById('vendorModalTitle').textContent='Add New Vendor';
+    document.getElementById('vendorSubmitBtn').textContent='Add Vendor';
+    ['vName','vLocation','vCategory','vDesc','vOpen','vClose'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('vCategory').value='';
+    clearVendorImage();
+    document.getElementById('addVendorModal').style.display='flex';
+}
+function closeAddVendor(){ document.getElementById('addVendorModal').style.display='none'; }
+document.getElementById('addVendorModal').addEventListener('click', e=>{ if(e.target===document.getElementById('addVendorModal')) closeAddVendor(); });
+async function submitVendor(){
+    const id=document.getElementById('editVendorId').value;
+    const name=document.getElementById('vName').value.trim();
+    if(!name){ showToast('Vendor name required','error'); return; }
+    const btn=document.getElementById('vendorSubmitBtn'); btn.textContent='Saving...'; btn.disabled=true;
+    const formData=new FormData();
+    formData.append('name', name);
+    formData.append('location', document.getElementById('vLocation').value.trim());
+    formData.append('category', document.getElementById('vCategory').value);
+    formData.append('description', document.getElementById('vDesc').value.trim());
+    formData.append('opening_time', document.getElementById('vOpen').value.trim());
+    formData.append('closing_time', document.getElementById('vClose').value.trim());
+    const file=document.getElementById('vImageFile').files[0];
+    if(file) formData.append('image', file);
+    try{
+        const url=id ? `${API}/food/vendors/${id}` : `${API}/food/vendors`;
+        const method=id ? 'PUT' : 'POST';
+        const res=await fetch(url, {method, headers:{'Authorization':'Bearer '+token}, body: formData});
+        const data=await res.json().catch(()=>({}));
+        if(!res.ok) throw new Error(data.message||'Failed');
+        showToast(id ? '✅ Vendor updated' : '✅ Vendor added');
+        closeAddVendor();
+        await loadVendors();
+    }catch(e){ showToast(e.message,'error'); }
+    finally{ btn.textContent=id?'Update Vendor':'Add Vendor'; btn.disabled=false; }
+}
+async function editVendor(id, oldName, oldLoc, oldCat){
+    // Open modal with existing data — user icca moto edit, admin any
+    document.getElementById('editVendorId').value=id;
+    document.getElementById('vendorModalTitle').textContent='Edit Vendor';
+    document.getElementById('vendorSubmitBtn').textContent='Update Vendor';
+    document.getElementById('vName').value=oldName;
+    document.getElementById('vLocation').value=oldLoc||'';
+    document.getElementById('vCategory').value=oldCat||'';
+    // Fetch full vendor to fill desc/time/image
+    try{
+        const v=allVendors.find(x=>String(x.id)===String(id));
+        if(v){
+            document.getElementById('vDesc').value=v.description||'';
+            document.getElementById('vOpen').value=v.opening_time||'';
+            document.getElementById('vClose').value=v.closing_time||'';
+            if(v.image_url){
+                document.getElementById('vPreviewImg').src=(window.API_BASE||window.location.origin)+v.image_url;
+                document.getElementById('vPreview').style.display='block';
+            } else clearVendorImage();
+        }
+    }catch{}
+    document.getElementById('addVendorModal').style.display='flex';
+}
+async function deleteFoodItem(id){
+    if(!confirm('Delete this food item?')) return;
+    try{
+        const res=await fetch(`${API}/food/items/${id}`, {method:'DELETE', headers:{'Authorization':'Bearer '+token}});
+        const data=await res.json().catch(()=>({}));
+        if(!res.ok) throw new Error(data.message||'Failed');
+        showToast('🗑️ Food item deleted');
+        await loadVendors();
+    }catch(e){ showToast(e.message,'error'); }
+}
+async function editFoodItem(id, oldName, oldPrice, oldCat, oldDesc){
+    const name=prompt('Edit food name:', oldName);
+    if(name===null) return;
+    const priceStr=prompt('Edit price (BDT):', oldPrice);
+    if(priceStr===null) return;
+    const price=parseFloat(priceStr);
+    if(isNaN(price)){ showToast('Invalid price','error'); return; }
+    try{
+        const res=await fetch(`${API}/food/items/${id}`, {method:'PUT', headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'}, body:JSON.stringify({name: name.trim(), price, category: oldCat, description: oldDesc})});
+        const data=await res.json().catch(()=>({}));
+        if(!res.ok) throw new Error(data.message||'Failed');
+        showToast('✅ Food item updated');
+        await loadVendors();
+    }catch(e){ showToast(e.message,'error'); }
+}
+async function deleteFoodReview(vendorId, userId){
+    if(!confirm('Delete this review?')) return;
+    try{
+        const url = myUser && myUser.role==='Admin' && String(userId)!==String(myUser._id||myUser.id) ? `${API}/food/vendors/${vendorId}/review/${userId}` : `${API}/food/vendors/${vendorId}/review`;
+        const res=await fetch(url, {method:'DELETE', headers:{'Authorization':'Bearer '+token}});
+        const data=await res.json().catch(()=>({}));
+        if(!res.ok) throw new Error(data.message||'Failed');
+        showToast(myUser.role==='Admin' && String(userId)!==String(myUser._id||myUser.id) ? '🗑️ Review deleted by Admin' : '🗑️ Review deleted');
+        await loadVendors();
+    }catch(e){ showToast(e.message,'error'); }
+}
+async function voteFoodReview(vendorId, userId, vote, btn){
+    const token=localStorage.getItem('token');
+    try{
+        const res=await fetch(`${API}/food/vendors/${vendorId}/vote`, {method:'POST', headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'}, body:JSON.stringify({vote, reviewUserId: userId})});
+        const data=await res.json().catch(()=>({}));
+        if(!res.ok) throw new Error(data.message||'Failed');
+        // Update UI counts
+        const upBtn=btn.parentElement.querySelector('button:nth-child(1)');
+        const downBtn=btn.parentElement.querySelector('button:nth-child(2)');
+        if(data.upvotes!==undefined && upBtn) upBtn.innerHTML=`<i class="fas fa-arrow-up"></i> ${data.upvotes}`;
+        if(data.downvotes!==undefined && downBtn) downBtn.innerHTML=`<i class="fas fa-arrow-down"></i> ${data.downvotes}`;
+        // Toggle active state
+        if(vote==='up'){
+            btn.style.background='#d1fae5'; btn.style.borderColor='#6ee7b7';
+            if(downBtn){ downBtn.style.background='var(--bg)'; downBtn.style.borderColor='var(--border)'; }
+        } else {
+            btn.style.background='#fee2e2'; btn.style.borderColor='#fca5a5';
+            if(upBtn){ upBtn.style.background='var(--bg)'; upBtn.style.borderColor='var(--border)'; }
+        }
+    }catch(e){ showToast(e.message||'Vote failed','error'); }
+}
+async function reportContent(type, id){
+    const reason=prompt('Why are you reporting this? (e.g., Spam, Inappropriate, Wrong info)');
+    if(!reason) return;
+    try{
+        const res=await fetch(`${API}/reports`, {method:'POST', headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'}, body:JSON.stringify({target_type: type, target_id: id, reason})});
+        const data=await res.json().catch(()=>({}));
+        if(!res.ok) throw new Error(data.message||'Failed');
+        showToast('✅ Reported to Admin — thank you!');
+    }catch(e){
+        // Fallback to old food report if generic fails
+        try{
+            const r2=await fetch(`${API}/food/vendors/${id}/review`, {method:'POST', headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'}, body:JSON.stringify({rating:1, review_text:`REPORT: ${reason}`})});
+            if(r2.ok) showToast('✅ Reported');
+            else throw new Error();
+        }catch{ showToast(e.message||'Failed to report','error'); }
+    }
+}
+function toggleReviews(id, btn) {
+    const el = document.getElementById(id);
+    const show = el.style.display === 'none';
+    el.style.display = show ? 'block' : 'none';
+    btn.textContent = show ? '▴ Hide reviews' : `💬 See reviews`;
+}
+function filterCat(cat, btn) {
+    currentCat = cat;
+    document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderRests();
+}
+function filterRests(q) { renderRests(); }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function showToast(msg) { const t=document.createElement('div'); t.style.cssText='background:#1c1e21;color:white;padding:12px 18px;border-radius:10px;font-family:Inter,sans-serif;font-size:0.88rem;'; t.textContent=msg; document.getElementById('toast-container').appendChild(t); setTimeout(()=>t.remove(),2800); }
+
+loadVendors();
+</script>
+</body>
+</html>

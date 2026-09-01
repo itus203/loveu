@@ -1,0 +1,11 @@
+const router = require('express').Router();
+const auth = require('../middleware/authMiddleware');
+const { getClubs, getClub, joinClub, leaveClub, createClub, updateClub, deleteClub } = require('../controllers/clubController');
+router.get('/', auth, getClubs);
+router.post('/', auth, createClub);
+router.get('/:id', auth, getClub);
+router.put('/:id', auth, updateClub);
+router.delete('/:id', auth, deleteClub);
+router.post('/:id/join', auth, joinClub);
+router.delete('/:id/leave', auth, leaveClub);
+module.exports = router;

@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#070D1E">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="icon" type="image/svg+xml" href="assets/icon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+    <link rel="apple-touch-icon" href="assets/icon-512.png">
+    <link rel="manifest" href="manifest.json">
+    <title>Home | DIU Nexus</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="css/home.css">
+    <style>
+        /* ── Modern FB Story Tray ── */
+        .stories-container {
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            gap: 12px !important;
+            padding: 12px 4px !important;
+            margin-bottom: 14px !important;
+        }
+        .stories-container::-webkit-scrollbar { display: none; }
+        .story-ring-card {
+            scroll-snap-align: start;
+            transition: transform 0.18s cubic-bezier(0.16,1,0.3,1), box-shadow 0.18s;
+        }
+        .story-ring-card:hover { transform: translateY(-2px); }
+        .story-ring-card:active { transform: scale(0.96); }
+        /* Create Story circle fix */
+        #storiesContainer > div:first-child {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 6px;
+            border: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+        #myStoryAv {
+            background: linear-gradient(135deg, #ff512f, #dd2476) !important;
+        }
+        #myStoryAv[src=""] { opacity: 0; }
+        /* ── Story Explore Modern FB ── */
+        #storyExploreBar {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.04);
+            padding: 14px !important;
+        }
+        #storyExploreBar > div:first-child {
+            margin-bottom: 12px !important;
+            padding-bottom: 4px;
+            border-bottom: 1px solid var(--border);
+        }
+        #storyExploreBar .explore-pill {
+            transition: all 0.2s cubic-bezier(0.16,1,0.3,1);
+            font-weight: 700;
+            letter-spacing: -0.1px;
+            box-shadow: none !important;
+        }
+        #storyExploreBar .explore-pill:hover {
+            transform: translateY(-1px);
+            border-color: var(--blue) !important;
+            color: var(--blue) !important;
+            background: var(--blue-light) !important;
+        }
+        #storyExploreBar .explore-pill.active {
+            background: #0866ff !important;
+            color: white !important;
+            border-color: #0866ff !important;
+            box-shadow: 0 4px 12px rgba(8,102,255,0.3) !important;
+            transform: translateY(-1px);
+        }
+        #exploreGrid {
+            scrollbar-width: none;
+            display: flex !important;
+            gap: 12px !important;
+            margin-top: 12px !important;
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+            padding-bottom: 8px !important;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            flex-wrap: nowrap !important;
+            max-height: none !important;
+        }
+        #exploreGrid::-webkit-scrollbar { display: none; }
+        #exploreGrid .explore-card {
+            flex: 0 0 132px !important;
+            width: 132px !important;
+            scroll-snap-align: start;
+        }
+        @media (max-width: 640px) {
+            #exploreGrid .explore-card { flex: 0 0 124px !important; width: 124px !important; }
+        }
+        #exploreGrid::-webkit-scrollbar { height: 4px; width: 4px; }
+        #exploreGrid::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        .explore-card {
+            position: relative;
+            height: 188px;
+            border-radius: 16px;
+            overflow: hidden;
+            cursor: pointer;
+            background: var(--surface);
+            border: 1px solid rgba(0,0,0,0.06);
+            transition: transform 0.2s cubic-bezier(0.16,1,0.3,1), box-shadow 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .explore-card:hover { transform: translateY(-4px) scale(1.01); box-shadow: 0 8px 24px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06) !important; }
+        .explore-card:active { transform: translateY(-1px) scale(0.99); }
+        .explore-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .explore-card .explore-gradient {
+            position: absolute; inset: 0;
+            background: linear-gradient(180deg, rgba(0,0,0,0) 30%, rgba(0,0,0,0.1) 55%, rgba(0,0,0,0.82) 100%);
+        }
+        .explore-card .explore-avatar {
+            position: absolute; top: 10px; left: 10px;
+            width: 38px; height: 38px; border-radius: 50%;
+            border: 2.5px solid white;
+            overflow: hidden; background: var(--surface);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.22), 0 0 0 2px #0866ff;
+        }
+        .explore-card .explore-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .explore-card .explore-info {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            padding: 32px 10px 10px; color: white;
+        }
+        .explore-card .explore-name { font-weight: 800; font-size: 0.84rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 4px rgba(0,0,0,0.85); letter-spacing: -0.15px; }
+        .explore-card .explore-meta { font-size: 0.70rem; opacity: 0.92; display: flex; gap: 5px; align-items: center; text-shadow: 0 1px 3px rgba(0,0,0,0.9); font-weight: 500; margin-top: 2px; }
+        .explore-card.text-card {
+            display: flex; align-items: center; justify-content: center;
+            padding: 16px; text-align: center; color: white; font-weight: 800; font-size: 0.96rem; line-height: 1.4;
+            background: linear-gradient(135deg, #ff512f, #dd2476) !important;
+        }
+        /* Fix Create Story top card & Poll card */
+        #friendsStoriesList .story-ring-card, .stories-container .story-ring-card {
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 4px 12px rgba(0,0,0,0.04) !important;
+            border: 1px solid rgba(0,0,0,0.06) !important;
+        }
+        /* Composer polish */
+        .create-post {
+            border-radius: 16px !important;
+            border: 1px solid rgba(0,0,0,0.06) !important;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04) !important;
+            padding: 14px 16px !important;
+        }
+        .create-post-input {
+            background: var(--bg) !important;
+            font-weight: 500 !important;
+            transition: all 0.2s !important;
+        }
+        .create-post-input:hover { background: var(--surface-alt) !important; border-color: var(--border) !important; }
+        /* ── Instagram-like Story Viewer ── */
+        #storyViewerModal {
+            background: rgba(0,0,0,0.94) !important;
+            backdrop-filter: blur(12px);
+            display:none; align-items:center; justify-content:center; padding:16px;
+        }
+        #storyViewerModal #svStage {
+            background: #000 !important;
+            max-width: 380px; width: calc(100% - 32px); height: 78vh; max-height: 680px;
+            border-radius: 18px; overflow:hidden; box-shadow: 0 16px 48px rgba(0,0,0,0.55), 0 2px 12px rgba(0,0,0,0.35);
+            position: relative; margin: auto; border: 1px solid rgba(255,255,255,0.08);
+        }
+        #storyViewerModal #svMedia, #storyViewerModal #svVideo {
+            width:100%; height:100%; object-fit:cover; object-position:center;
+        }
+        #svText {
+            background: transparent !important;
+            text-shadow: 0 2px 12px rgba(0,0,0,0.8);
+            max-height: 60vh; overflow-y: auto;
+            display:flex; align-items:center; justify-content:center; text-align:center; padding:24px;
+        }
+        #storyViewer { display:none !important; }
+        .stories-container { scrollbar-width: none; }
+        .stories-container::-webkit-scrollbar { display:none; }
+        #svCaption {
+            backdrop-filter: blur(8px);
+        }
+        /* ── Music Player in Viewer ── */
+        .story-music-pill {
+            position: absolute; top: 70px; left: 12px; right: 12px;
+            background: rgba(0,0,0,0.55); backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.2); border-radius: 10px;
+            padding: 8px 10px; display: flex; align-items: center; gap: 10px;
+            z-index: 6; color: white;
+        }
+        .story-music-pill audio { flex: 1; height: 32px; }
+        /* ── Nexus Now Fix ── */
+        #nexusNowBar {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%) !important;
+            border: 1px solid rgba(255,255,255,0.08) !important;
+        }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+    </style>
+</head>
+<body>
+
+<!-- NAVBAR — Modern Pill + Always Back Arrow -->
+<nav class="navbar">
+    <div class="navbar-left">
+        <button class="back-btn" id="navBackBtn" onclick="handleBack()" title="Back" style="display:flex;"><i class="fas fa-arrow-left"></i></button>
+        <a href="home.html" class="nav-logo" style="display:flex;align-items:center;gap:8px;">
+            <img src="assets/icon.svg" alt="NEXUS" style="width:32px;height:32px;filter:drop-shadow(0 2px 6px rgba(10,108,255,0.4));" onerror="this.src='assets/icon.png'">
+            <span style="font-weight:800;letter-spacing:1px;background:linear-gradient(90deg,#22D3FF,#0A6CFF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">NEXUS</span>
+        </a>
+        <div class="nav-search" style="position:relative;">
+            <i class="fas fa-search"></i>
+            <input type="text" id="navSearch" placeholder="Search DIU Nexus" oninput="debounceSearch(this.value)" onfocus="showSearchDrop()" onblur="setTimeout(hideSearchDrop, 300)">
+            <div class="search-dropdown" id="searchDropdown" onmousedown="event.preventDefault()"></div>
+        </div>
+    </div>
+    <div class="navbar-center" id="mainNavCenter">
+        <a href="home.html" class="nav-icon-btn active" data-tab="home" title="Home"><i class="fas fa-home"></i></a>
+        <a href="views/groups.html" class="nav-icon-btn" data-tab="groups" title="Groups"><i class="fas fa-users"></i></a>
+        <a href="views/reels.html" class="nav-icon-btn" data-tab="reels" title="Reels"><i class="fas fa-film"></i></a>
+        <a href="views/departments.html" class="nav-icon-btn" data-tab="departments" title="Departments"><i class="fas fa-building"></i></a>
+        <a href="views/events.html" class="nav-icon-btn" data-tab="events" title="Events"><i class="fas fa-calendar-alt"></i></a>
+    </div>
+    <div class="navbar-right">
+        <button class="navbar-action-btn" id="messengerBtn" onclick="window.location.href='views/messenger.html'" title="Messenger">
+            <i class="fab fa-facebook-messenger"></i>
+            <span class="nav-badge hidden" id="msgBadge">0</span>
+        </button>
+        <button class="navbar-action-btn" id="notifBtn" onclick="toggleNotifPanel(event)" ondblclick="window.location.href='views/notifications.html'" title="Notifications — Click to open, double-click for full page" style="position:relative;z-index:5001;pointer-events:auto;">
+            <i class="fas fa-bell" style="pointer-events:none;"></i>
+            <span class="nav-badge hidden" id="notifBadge" style="pointer-events:none;">0</span>
+        </button>
+        <button class="navbar-action-btn" id="profileMenuBtn" onclick="toggleProfileMenu()" title="Account">
+            <div id="navAvatar" class="avatar-placeholder" style="width:32px;height:32px;font-size:0.85rem;border-radius:50%;">?</div>
+        </button>
+    </div>
+</nav>
+
+<!-- NOTIFICATION PANEL -->
+<div class="dropdown-menu notif-panel" id="notifPanel">
+    <div class="notif-header">
+        <h3>Notifications</h3>
+        <button class="mark-all-read" onclick="markAllNotificationsRead()">Mark all as read</button>
+    </div>
+    <div id="notifList"></div>
+</div>
+
+<!-- PROFILE MENU -->
+<div class="dropdown-menu profile-menu" id="profileMenu">
+    <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);">
+        <div id="profileMenuAvatar" class="avatar-placeholder" style="width:44px;height:44px;font-size:1.1rem;">?</div>
+        <div>
+            <div id="profileMenuName" style="font-weight:700;font-size:0.95rem;">Loading...</div>
+            <div id="profileMenuDept" style="font-size:0.78rem;color:var(--text-secondary);"></div>
+        </div>
+    </div>
+    <a href="views/profile.html" class="dropdown-item"><i class="fas fa-user-circle"></i> My Profile</a>
+    <a href="views/settings.html" class="dropdown-item"><i class="fas fa-cog"></i> Settings</a>
+    <a href="views/cgpa.html" class="dropdown-item"><i class="fas fa-calculator"></i> GPA Calculator</a>
+    <hr class="dropdown-divider">
+    <button class="dropdown-item danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Log Out</button>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+    <!-- LEFT SIDEBAR -->
+    <aside class="sidebar" id="leftSidebar">
+        <div class="sidebar-profile" onclick="window.location.href='views/profile.html'" style="cursor:pointer;">
+            <div class="sidebar-cover" id="sidebarCover"></div>
+            <div class="sidebar-avatar-wrap">
+                <div id="sidebarAvatar" class="avatar-placeholder sidebar-avatar-pic" style="width:68px;height:68px;font-size:1.35rem;">?</div>
+                <div class="sidebar-user-name" id="sidebarName">Loading...</div>
+                <div class="sidebar-user-meta" id="sidebarDept"></div>
+            </div>
+            <div class="sidebar-stats">
+                <div class="sidebar-stat">
+                    <div class="sidebar-stat-num" id="statPosts">0</div>
+                    <div class="sidebar-stat-label">Posts</div>
+                </div>
+                <div class="sidebar-stat">
+                    <div class="sidebar-stat-num" id="statFriends">0</div>
+                    <div class="sidebar-stat-label">Friends</div>
+                </div>
+                <div class="sidebar-stat">
+                    <div class="sidebar-stat-num" id="statShared">0</div>
+                    <div class="sidebar-stat-label">Shared</div>
+                </div>
+            </div>
+        </div>
+        <div class="sidebar-menu">
+            <div class="sidebar-menu-title">MENU</div>
+            <a href="views/profile.html" class="sidebar-link"><span class="link-icon"><i class="fas fa-user"></i></span> My Profile</a>
+            <a href="views/saved.html" class="sidebar-link"><span class="link-icon"><i class="fas fa-bookmark"></i></span> Saved</a>
+            <a href="views/groups.html" class="sidebar-link"><span class="link-icon"><i class="fas fa-users"></i></span> Groups</a>
+            <a href="views/reels.html" class="sidebar-link"><span class="link-icon"><i class="fas fa-film"></i></span> Reels</a>
+            <a href="views/resources.html" class="sidebar-link"><span class="link-icon"><i class="fas fa-book"></i></span> Resources</a>
+            <a href="views/departments.html" class="sidebar-link"><span class="link-icon"><i class="fas fa-building"></i></span> Departments</a>
+            <a href="views/events.html" class="sidebar-link"><span class="link-icon"><i class="fas fa-calendar"></i></span> Events</a>
+            <a href="views/cgpa.html" class="sidebar-link"><span class="link-icon"><i class="fas fa-calculator"></i></span> GPA Calc</a>
+            <a href="views/messenger.html" class="sidebar-link"><span class="link-icon"><i class="fab fa-facebook-messenger"></i></span> Messenger</a>
+
+            <div class="sidebar-menu-title" style="margin-top:12px;">DIU SERVICES</div>
+            <a href="views/diu-portal.html" class="sidebar-link" style="color:#0866ff;font-weight:700;"><span class="link-icon" style="background:#e7f0ff;"><i class="fas fa-graduation-cap"></i></span> Academic Portal</a>
+            <a href="views/internships.html" class="sidebar-link"><span class="link-icon" style="background:#dbeafe;"><i class="fas fa-briefcase" style="color:#2563eb;"></i></span> Internships &amp; Jobs</a>
+            <a href="views/campus-map.html" class="sidebar-link"><span class="link-icon" style="background:#e0f2fe;"><i class="fas fa-map-marked-alt" style="color:#0284c7;"></i></span> Campus Map &amp; Rooms</a>
+            <a href="views/pages.html" class="sidebar-link"><span class="link-icon" style="background:#e7f0ff;"><i class="fas fa-flag" style="color:#0866ff;"></i></span> Official Pages</a>
+            <a href="views/alumni.html" class="sidebar-link"><span class="link-icon" style="background:#f3e8ff;"><i class="fas fa-user-graduate" style="color:#7c3aed;"></i></span> Alumni Network</a>
+            <a href="views/busschedule.html" class="sidebar-link"><span class="link-icon" style="background:#d1fae5;"><i class="fas fa-bus" style="color:#059669;"></i></span> Bus Schedule</a>
+            <a href="views/class-routine.html" class="sidebar-link"><span class="link-icon" style="background:#f0f9ff;"><i class="fas fa-calendar-week" style="color:#0891b2;"></i></span> Class Routine</a>
+
+            <div class="sidebar-menu-title" style="margin-top:12px;">STUDENT CORNER</div>
+            <a href="views/tuition-calc.html" class="sidebar-link"><span class="link-icon" style="background:#ccfbf1;"><i class="fas fa-calculator" style="color:#0d9488;"></i></span> Tuition &amp; Waiver Calculator</a>
+            <a href="views/tutoring.html" class="sidebar-link"><span class="link-icon" style="background:#fef3c7;"><i class="fas fa-chalkboard-teacher" style="color:#d97706;"></i></span> Peer Tutoring</a>
+            <a href="views/rideshare.html" class="sidebar-link"><span class="link-icon" style="background:#d1fae5;"><i class="fas fa-car-side" style="color:#059669;"></i></span> RideShare &amp; Carpool</a>
+            <a href="views/question-bank.html" class="sidebar-link"><span class="link-icon" style="background:#dbeafe;"><i class="fas fa-file-invoice" style="color:#3b82f6;"></i></span> Question Bank</a>
+            <a href="views/clubs.html" class="sidebar-link"><span class="link-icon" style="background:#fdf2f8;"><i class="fas fa-users-cog" style="color:#ec4899;"></i></span> Clubs &amp; Hackathons</a>
+            <a href="views/polls.html" class="sidebar-link"><span class="link-icon" style="background:#eef2ff;"><i class="fas fa-poll-h" style="color:#6366f1;"></i></span> Campus Polls</a>
+            <a href="views/study-room.html" class="sidebar-link"><span class="link-icon" style="background:#f5f3ff;"><i class="fas fa-brain" style="color:#8b5cf6;"></i></span> Focus Study Room</a>
+            <a href="views/showcase.html" class="sidebar-link"><span class="link-icon" style="background:#e0f2fe;"><i class="fas fa-rocket" style="color:#0ea5e9;"></i></span> Project Showcase</a>
+            <a href="views/blood-donation.html" class="sidebar-link"><span class="link-icon" style="background:#fee2e2;"><i class="fas fa-heartbeat" style="color:#e41e3f;"></i></span> Blood Donation</a>
+            <a href="views/home-portal.html" class="sidebar-link"><span class="link-icon" style="background:#ecfdf5;"><i class="fas fa-home" style="color:#10b981;"></i></span> Housing &amp; Accommodation</a>
+            <a href="views/food-portal.html" class="sidebar-link"><span class="link-icon" style="background:#fff7ed;"><i class="fas fa-utensils" style="color:#f97316;"></i></span> Campus Dining</a>
+            <a href="views/lostfound.html" class="sidebar-link"><span class="link-icon" style="background:#fff7ed;"><i class="fas fa-search-location" style="color:#f97316;"></i></span> Lost &amp; Found</a>
+            <a href="views/marketplace.html" class="sidebar-link"><span class="link-icon" style="background:#fdf4ff;"><i class="fas fa-store" style="color:#7c3aed;"></i></span> Student Marketplace</a>
+            <a href="views/confession.html" class="sidebar-link"><span class="link-icon" style="background:#f1f5f9;"><i class="fas fa-mask" style="color:#475569;"></i></span> Campus Confessions</a>
+
+            <div style="margin-top:16px;padding:0 4px;">
+                <button onclick="logout()" style="width:100%;display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fee2e2;border:none;border-radius:10px;color:#e41e3f;font-family:inherit;font-size:0.88rem;font-weight:700;cursor:pointer;transition:background 0.15s;">
+                    <i class="fas fa-sign-out-alt"></i> Log Out
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- CENTER FEED -->
+    <main class="center-feed">
+        
+
+        <!-- Create Post -->
+        
+<!-- Top Story Filters — 1 line e eksathe (upore) -->
+<div id="topStoryFilters" style="display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; padding:6px 2px 10px; margin-bottom:10px; align-items:center; -webkit-overflow-scrolling:touch; scroll-snap-type:x mandatory;">
+    <button class="explore-pill active" data-filter="trending" onclick="loadExplore('trending',this)" style="padding:7px 14px;border-radius:20px;border:1.5px solid #0866ff;background:#0866ff;color:white;font-size:0.78rem;font-weight:700;white-space:nowrap;cursor:pointer; flex-shrink:0; scroll-snap-align:start;">🔥 Trending</button>
+    <button class="explore-pill" data-filter="campus" onclick="loadExplore('campus',this)" style="padding:7px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-size:0.78rem;font-weight:600;white-space:nowrap;cursor:pointer; flex-shrink:0; scroll-snap-align:start;">🎓 Campus</button>
+    <button class="explore-pill" data-filter="events" onclick="loadExplore('events',this)" style="padding:7px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-size:0.78rem;font-weight:600;white-space:nowrap;cursor:pointer; flex-shrink:0; scroll-snap-align:start;">🎉 Events</button>
+    <button class="explore-pill" data-filter="course" onclick="loadExplore('education',this)" style="padding:7px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-size:0.78rem;font-weight:600;white-space:nowrap;cursor:pointer; flex-shrink:0; scroll-snap-align:start;">📚 Education</button>
+    <button class="explore-pill" data-filter="featured" onclick="loadFeaturedStories()" style="padding:7px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-size:0.78rem;font-weight:600;white-space:nowrap;cursor:pointer; flex-shrink:0; scroll-snap-align:start;">⭐ Featured</button>
+    <button onclick="openStoryMap()" style="margin-left:auto; background:var(--surface);border:1px solid var(--border);padding:7px 12px;border-radius:20px;font-size:0.75rem;font-weight:600;cursor:pointer; white-space:nowrap; flex-shrink:0; display:flex; align-items:center; gap:5px;"><i class="fas fa-map"></i> Map</button>
+</div>
+
+<!-- Unified Stories — 1 line e eksathe (FB er moto) — Create + Trending eksathe -->
+<div class="stories-unified-wrapper" style="background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:12px; margin-bottom:14px; box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+<div class="stories-container" id="storiesContainer" style="display:flex; gap:10px; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; scroll-snap-type:x mandatory; padding:4px 2px; align-items:flex-start;">
+    <!-- Create Story — Same size as others (132x188) -->
+    <div onclick="openStoryCreator()" style="flex:0 0 132px; width:132px; height:188px; border-radius:16px; overflow:hidden; position:relative; cursor:pointer; flex-shrink:0; background:var(--surface); border:1px solid var(--border); box-shadow:0 1px 3px rgba(0,0,0,0.06); display:flex; flex-direction:column;">
+        <div style="flex:1; position:relative; overflow:hidden; background:var(--bg); display:flex; align-items:center; justify-content:center;">
+            <img id="myStoryAvCard" src="" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" style="width:100%;height:100%;object-fit:cover; display:block;">
+            <div style="display:none; width:100%;height:100%;background:linear-gradient(135deg, #667eea 0%, #764ba2 100%); align-items:center;justify-content:center;color:white;font-size:1.8rem;"><i class="fas fa-user"></i></div>
+            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:36px; height:36px; background:#0095f6; border:3px solid white; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; box-shadow:0 2px 8px rgba(0,0,0,0.25);"><i class="fas fa-plus" style="font-size:0.9rem;"></i></div>
+        </div>
+        <div style="padding:8px; background:var(--surface); text-align:center; border-top:1px solid var(--border);"><div style="font-size:0.82rem; font-weight:700; color:var(--text);">Create story</div></div>
+    </div>
+    <!-- Hidden old circle for JS compat -->
+    <div style="display:none;">
+        <img id="myStoryAv" src="" onerror="this.onerror=null; this.src='https://via.placeholder.com/60'" style="width:60px;height:60px;">
+    </div>
+    <div id="friendsStoriesList" style="display:flex; gap:10px; flex-shrink:0;"></div>
+    <div id="exploreGrid" style="display:flex; gap:10px; flex-shrink:0;"></div>
+</div>
+</div>
+
+<!-- Highlights Row -->
+<div id="highlightsRow" style="display:none; gap:12px; overflow-x:auto; padding:0 0 12px; margin-bottom:10px; scrollbar-width:none;"></div>
+
+<!-- Memories Banner -->
+<div id="memoriesBanner" style="display:none; background:linear-gradient(135deg,#fef3c7,#fde68a); border:1px solid #fcd34d; border-radius:12px; padding:12px; margin-bottom:12px;">
+    <div style="display:flex; align-items:center; gap:10px;">
+        <span style="font-size:1.5rem;">🕰️</span>
+        <div style="flex:1;">
+            <div style="font-weight:800; font-size:0.85rem; color:#92400e;">Memories — 1 year ago today</div>
+            <div id="memoriesText" style="font-size:0.78rem; color:#78350f;">You have memories to revisit</div>
+        </div>
+        <button onclick="openMemories()" style="background:#92400e;color:white;border:none;padding:6px 12px;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.78rem;">View</button>
+        <button onclick="document.getElementById('memoriesBanner').style.display='none'" style="background:none;border:none;opacity:0.6;cursor:pointer;"><i class="fas fa-times"></i></button>
+    </div>
+</div>
+
+<!-- Hidden compat — exploreCount kept visible in unified header -->
+<div id="storyExploreBar" style="display:none;">
+    <span id="exploreCount" style="display:none;">0 stories</span>
+</div>
+
+<!-- STORY CREATION MODAL — A-to-Z Nexus Studio -->
+<div id="storyCreatorModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:99999; flex-direction:column; align-items:center; justify-content:center; overflow-y:auto; padding:20px;">
+    <div style="position:absolute; top:16px; right:16px; color:white; font-size:1.8rem; cursor:pointer; z-index:10;" onclick="closeStoryCreator()"><i class="fas fa-times"></i></div>
+    <div style="background:var(--surface); border-radius:16px; width:95%; max-width:520px; max-height:90vh; overflow-y:auto; display:flex; flex-direction:column; gap:12px; padding:16px; text-align:left;">
+        <h3 style="margin:0; color:var(--text); text-align:center; font-size:1.1rem;">✨ Create Nexus Story — Studio</h3>
+        
+        <!-- Type Tabs -->
+        <div style="display:flex; gap:6px; justify-content:center; flex-wrap:wrap;">
+            <button class="story-type-tab active" data-type="image" onclick="setStoryType('image',this)" style="padding:6px 12px;border-radius:18px;border:1px solid var(--blue);background:var(--blue);color:white;font-size:0.78rem;font-weight:700;cursor:pointer;"><i class="fas fa-image"></i> Photo</button>
+            <button class="story-type-tab" data-type="video" onclick="setStoryType('video',this)" style="padding:6px 12px;border-radius:18px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.78rem;font-weight:600;cursor:pointer;"><i class="fas fa-video"></i> Video</button>
+            <button class="story-type-tab" data-type="text" onclick="setStoryType('text',this)" style="padding:6px 12px;border-radius:18px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.78rem;font-weight:600;cursor:pointer;"><i class="fas fa-font"></i> Text</button>
+            <button class="story-type-tab" data-type="voice" onclick="setStoryType('voice',this)" style="padding:6px 12px;border-radius:18px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.78rem;font-weight:600;cursor:pointer;"><i class="fas fa-microphone"></i> Voice</button>
+        </div>
+
+        <!-- Privacy + Filter -->
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <select id="storyPrivacy" style="flex:1;padding:7px;border-radius:8px;background:var(--bg);color:var(--text);border:1px solid var(--border);font-size:0.82rem;">
+                <option value="public">🌍 Public</option>
+                <option value="friends">👥 Friends</option>
+                <option value="close_friends">⭐ Close Friends</option>
+                <option value="private">🔒 Only Me</option>
+            </select>
+            <select id="storyFilter" onchange="applyStoryFilter(this.value)" style="padding:7px;border-radius:8px;background:var(--bg);color:var(--text);border:1px solid var(--border);font-size:0.78rem;">
+                <option value="">No Filter</option>
+                <option value="grayscale(1)">Grayscale</option>
+                <option value="sepia(0.8)">Sepia</option>
+                <option value="contrast(1.4)">Contrast</option>
+                <option value="saturate(1.8)">Vibrant</option>
+                <option value="blur(1px)">Blur</option>
+            </select>
+            <div id="storyColorPicker" style="display:none; gap:5px; align-items:center;">
+                <span style="font-size:0.7rem;opacity:0.7;">BG:</span>
+                <div onclick="setStoryBg('#ff512f')" style="width:22px;height:22px;border-radius:50%;background:#ff512f;cursor:pointer;border:2px solid var(--border);"></div>
+                <div onclick="setStoryBg('#1fa2ff')" style="width:22px;height:22px;border-radius:50%;background:#1fa2ff;cursor:pointer;border:2px solid var(--border);"></div>
+                <div onclick="setStoryBg('#00b09b')" style="width:22px;height:22px;border-radius:50%;background:#00b09b;cursor:pointer;border:2px solid var(--border);"></div>
+                <div onclick="setStoryBg('#8e2de2')" style="width:22px;height:22px;border-radius:50%;background:#8e2de2;cursor:pointer;border:2px solid var(--border);"></div>
+                <div onclick="setStoryBg('#232526')" style="width:22px;height:22px;border-radius:50%;background:#232526;cursor:pointer;border:2px solid var(--border);"></div>
+            </div>
+        </div>
+
+        <!-- Media Preview -->
+        <input type="file" id="storyMediaInput" accept="image/*,video/*" style="display:none;" onchange="previewStoryMedia(this)">
+        <input type="file" id="storyVoiceInput" accept="audio/*" style="display:none;" onchange="previewStoryVoice(this)">
+        <div id="storyPreviewBox" style="width:100%; height:320px; background:var(--bg); border-radius:12px; display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative; transition:background 0.3s; border:1px solid var(--border);">
+            <div id="storyBtnGroup" style="display:flex; gap:8px; z-index:2; flex-wrap:wrap; justify-content:center;">
+                <button onclick="document.getElementById('storyMediaInput').click()" style="padding:8px 14px;background:var(--blue);color:white;border:none;border-radius:18px;cursor:pointer;font-size:0.78rem;"><i class="fas fa-image"></i> Photo/Video</button>
+                <button onclick="enableTextStory()" style="padding:8px 14px;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:18px;cursor:pointer;font-size:0.78rem;"><i class="fas fa-font"></i> Text</button>
+                <button onclick="document.getElementById('storyVoiceInput').click()" style="padding:8px 14px;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:18px;cursor:pointer;font-size:0.78rem;"><i class="fas fa-microphone"></i> Voice</button>
+            </div>
+            <img id="storyImgPreview" style="display:none; width:100%; height:100%; object-fit:contain; position:absolute; inset:0;">
+            <video id="storyVideoPreview" style="display:none; width:100%; height:100%; object-fit:contain; position:absolute; inset:0;" controls></video>
+            <div id="storyVoicePreview" style="display:none; position:absolute; inset:0; display:none; flex-direction:column; align-items:center; justify-content:center; gap:10px; background:linear-gradient(135deg,#1e293b,#0f172a); color:white; padding:20px; text-align:center;">
+                <i class="fas fa-microphone" style="font-size:2.5rem; color:var(--blue);"></i>
+                <div id="voiceFileName" style="font-size:0.82rem;opacity:0.9;"></div>
+                <audio id="storyVoiceAudio" controls style="width:100%;"></audio>
+            </div>
+            <textarea id="storyTextOnlyInput" placeholder="Type something..." style="display:none; position:absolute; inset:0; width:100%; height:100%; background:transparent; color:white; font-size:1.5rem; text-align:center; border:none; outline:none; padding:20px; z-index:1; resize:none; font-weight:bold;"></textarea>
+            <!-- Stickers overlay preview -->
+            <div id="stickerOverlay" style="position:absolute; inset:0; pointer-events:none; z-index:3;"></div>
+        </div>
+        
+        <input type="text" id="storyTextInput" placeholder="Add a caption (optional)..." style="padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text); font-size:0.85rem;">
+
+        <!-- AI Studio -->
+        <div style="background:linear-gradient(135deg,#f0f9ff,#e0f2fe); border:1px solid #bae6fd; border-radius:10px; padding:10px;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                <span style="font-weight:800; font-size:0.82rem; color:#0369a1;"><i class="fas fa-sparkles"></i> AI Story Studio</span>
+                <select id="aiStyleSelect" style="margin-left:auto;padding:4px 8px;border-radius:8px;border:1px solid #bae6fd;background:white;font-size:0.75rem;">
+                    <option value="">Default</option>
+                    <option value="professional">Professional</option>
+                    <option value="funny">Funny 😂</option>
+                    <option value="academic">Academic 📚</option>
+                    <option value="aesthetic">Aesthetic ✨</option>
+                    <option value="campus">Campus 🔥</option>
+                </select>
+                <button onclick="aiSuggestStory()" style="background:#0369a1;color:white;border:none;padding:5px 10px;border-radius:8px;font-size:0.72rem;font-weight:700;cursor:pointer;">Suggest</button>
+            </div>
+            <div id="aiSuggestBox" style="display:none; background:white; border-radius:8px; padding:8px; font-size:0.78rem; border:1px dashed #7dd3fc;"></div>
+        </div>
+
+        <!-- Campus / Course / Batch -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <select id="storyCampusTag" style="padding:7px;border-radius:8px;background:var(--bg);color:var(--text);border:1px solid var(--border);font-size:0.78rem;">
+                <option value="">📍 Campus Location (optional)</option>
+                <option value="Library">📚 Library</option>
+                <option value="Auditorium">🎤 Auditorium</option>
+                <option value="Canteen">🍽️ Canteen</option>
+                <option value="Sports Ground">⚽ Sports Ground</option>
+                <option value="Lab">💻 Lab</option>
+                <option value="Cultural Club">🎭 Cultural Club</option>
+                <option value="Admin Building">🏫 Admin</option>
+            </select>
+            <input type="text" id="storyCourseCode" placeholder="📚 Course (e.g. SE233)" style="padding:7px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.78rem;">
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <input type="text" id="storyChallengeTag" placeholder="🔥 Challenge #tag (e.g. #NexusCampus)" style="padding:7px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.78rem;">
+            <input type="text" id="storyLocation" placeholder="📍 Location tag" style="padding:7px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.78rem;">
+        </div>
+
+        <!-- Event / Group / Channel / Collaborative — User Editable (choice fix) -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div style="position:relative;">
+                <input type="text" id="storyEventSelect" list="eventDatalist" placeholder="🎉 Event" title="Event — type custom or pick from list" style="width:100%;padding:8px 28px 8px 10px;border-radius:8px;background:var(--surface);color:var(--text);border:1px solid var(--border);font-size:0.78rem; box-shadow:0 1px 2px rgba(0,0,0,0.03);">
+                <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:0.75rem;opacity:0.45;pointer-events:none;">✎</span>
+                <datalist id="eventDatalist"></datalist>
+            </div>
+            <div style="position:relative;">
+                <input type="text" id="storyCollabSelect" list="collabDatalist" placeholder="👥 Collab" title="Collaborative — editable" style="width:100%;padding:8px 28px 8px 10px;border-radius:8px;background:var(--surface);color:var(--text);border:1px solid var(--border);font-size:0.78rem; box-shadow:0 1px 2px rgba(0,0,0,0.03);">
+                <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:0.75rem;opacity:0.45;pointer-events:none;">✎</span>
+                <datalist id="collabDatalist"></datalist>
+            </div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div style="position:relative;">
+                <input type="text" id="storyGroupSelect" list="groupDatalist" placeholder="📢 Group" title="Group — editable" style="width:100%;padding:8px 28px 8px 10px;border-radius:8px;background:var(--surface);color:var(--text);border:1px solid var(--border);font-size:0.78rem; box-shadow:0 1px 2px rgba(0,0,0,0.03);">
+                <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:0.75rem;opacity:0.45;pointer-events:none;">✎</span>
+                <datalist id="groupDatalist"></datalist>
+            </div>
+            <div style="position:relative;">
+                <input type="text" id="storyChannelSelect" list="channelDatalist" placeholder="📣 Channel" title="Channel — editable" style="width:100%;padding:8px 28px 8px 10px;border-radius:8px;background:var(--surface);color:var(--text);border:1px solid var(--border);font-size:0.78rem; box-shadow:0 1px 2px rgba(0,0,0,0.03);">
+                <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:0.75rem;opacity:0.45;pointer-events:none;">✎</span>
+                <datalist id="channelDatalist"></datalist>
+            </div>
+        </div>
+        <div style="font-size:0.68rem; opacity:0.65; padding:4px 6px; background:var(--bg); border:1px dashed var(--border); border-radius:8px; margin-top:2px;">💡 <b>User editable:</b> Nije type korun — suggestion theke pick o korte parben, khali rakhle skip hobe.</div>
+
+        <!-- Stickers -->
+        <div style="background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:10px;">
+            <div style="font-weight:700; font-size:0.78rem; margin-bottom:6px;">🏷️ Stickers</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+                <input type="text" id="stickerMention" placeholder="@Mention user" style="padding:6px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:0.75rem;">
+                <input type="text" id="stickerHashtag" placeholder="#Hashtag" style="padding:6px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:0.75rem;">
+                <input type="text" id="stickerMusic" placeholder="🎵 Music title" style="padding:6px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:0.75rem;">
+                <input type="text" id="stickerLink" placeholder="🔗 Link" style="padding:6px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:0.75rem;">
+            </div>
+        </div>
+
+        <!-- Quiz / Poll -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <button onclick="toggleQuizBuilder()" style="padding:7px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.75rem;font-weight:600;cursor:pointer;"><i class="fas fa-brain"></i> Add Quiz</button>
+            <button onclick="togglePollBuilder()" style="padding:7px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.75rem;font-weight:600;cursor:pointer;"><i class="fas fa-poll"></i> Add Poll</button>
+        </div>
+        <div id="quizBuilder" style="display:none; background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:10px; gap:6px; flex-direction:column;">
+            <input type="text" id="quizQuestion" placeholder="Quiz question (e.g. Time complexity?)" style="padding:6px;border-radius:8px;border:1px solid var(--border);font-size:0.78rem;">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+                <input type="text" id="quizOpt0" placeholder="A. O(n)" style="padding:6px;border-radius:8px;border:1px solid var(--border);font-size:0.75rem;">
+                <input type="text" id="quizOpt1" placeholder="B. O(log n)" style="padding:6px;border-radius:8px;border:1px solid var(--border);font-size:0.75rem;">
+                <input type="text" id="quizOpt2" placeholder="C. O(n²)" style="padding:6px;border-radius:8px;border:1px solid var(--border);font-size:0.75rem;">
+                <input type="text" id="quizOpt3" placeholder="D. O(1)" style="padding:6px;border-radius:8px;border:1px solid var(--border);font-size:0.75rem;">
+            </div>
+            <select id="quizCorrect" style="padding:6px;border-radius:8px;border:1px solid var(--border);font-size:0.75rem;"><option value="1">Correct: B</option><option value="0">Correct: A</option><option value="2">Correct: C</option><option value="3">Correct: D</option></select>
+        </div>
+        <div id="pollBuilder" style="display:none; background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:10px; gap:6px; flex-direction:column;">
+            <input type="text" id="pollQuestion" placeholder="Poll: Which language do you prefer?" style="padding:6px;border-radius:8px;border:1px solid var(--border);font-size:0.78rem;">
+            <input type="text" id="pollOpt0" placeholder="Python" style="padding:6px;border-radius:8px;border:1px solid var(--border);font-size:0.75rem;">
+            <input type="text" id="pollOpt1" placeholder="Java" style="padding:6px;border-radius:8px;border:1px solid var(--border);font-size:0.75rem;">
+            <input type="text" id="pollOpt2" placeholder="C++" style="padding:6px;border-radius:8px;border:1px solid var(--border);font-size:0.75rem;">
+        </div>
+
+        <!-- Privacy toggles -->
+        <div style="display:flex; gap:10px; flex-wrap:wrap; font-size:0.75rem;">
+            <label style="display:flex;align-items:center;gap:4px;"><input type="checkbox" id="allowReplies" checked> Replies</label>
+            <label style="display:flex;align-items:center;gap:4px;"><input type="checkbox" id="allowReactions" checked> Reactions</label>
+            <label style="display:flex;align-items:center;gap:4px;"><input type="checkbox" id="allowSharing" checked> Sharing</label>
+            <label style="display:flex;align-items:center;gap:4px;"><input type="checkbox" id="isExclusive"> 🔒 Exclusive</label>
+        </div>
+        
+        <button id="uploadStoryBtn" onclick="submitStory()" style="padding:11px; background:linear-gradient(45deg, #FF007A, #7A00FF); color:white; border:none; border-radius:10px; font-weight:800; cursor:pointer; display:none;">🚀 Share to Story</button>
+        <div style="font-size:0.65rem; opacity:0.6; text-align:center;">24h expiry • Campus stories discoverable via Explore • Use AI for captions</div>
+    </div>
+</div>
+
+<!-- FULLSCREEN STORY VIEWER — A-to-Z -->
+<div id="storyViewerModal" style="display:none; position:fixed; inset:0; background:black; z-index:100000; flex-direction:column;">
+    <div id="storyProgressBars" style="display:flex; gap:5px; padding:10px; position:absolute; top:0; left:0; right:0; z-index:2;"></div>
+    
+    <div style="position:absolute; top:28px; left:12px; display:flex; align-items:center; gap:10px; z-index:30; color:white; right:90px; pointer-events:auto;">
+        <img id="svAvatar" style="width:38px; height:38px; border-radius:50%; border:2px solid white; flex-shrink:0;">
+        <div style="min-width:0; flex:1;">
+            <div id="svName" style="font-weight:800; font-size:0.92rem; text-shadow:1px 1px 3px rgba(0,0,0,0.8); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></div>
+            <div id="svTime" style="font-size:0.7rem; opacity:0.85; text-shadow:1px 1px 3px rgba(0,0,0,0.8); display:flex; gap:6px; align-items:center;">
+                <span id="svTimeText"></span>
+                <span id="svCampusTag" style="background:rgba(255,255,255,0.2); padding:1px 6px; border-radius:10px; font-size:0.65rem; display:none;"></span>
+                <span id="svCourseTag" style="background:rgba(8,102,255,0.8); padding:1px 6px; border-radius:10px; font-size:0.65rem; display:none;"></span>
+            </div>
+        </div>
+    </div>
+    
+    <div style="position:absolute; top:28px; right:12px; display:flex; gap:8px; z-index:30; align-items:center; pointer-events:auto;">
+        <button onclick="toggleStoryViewers(); event.stopPropagation();" id="viewersBtn" title="Viewers" style="background:rgba(255,255,255,0.15); border:none; color:white; width:32px;height:32px;border-radius:50%;cursor:pointer; backdrop-filter:blur(4px); pointer-events:auto;"><i class="fas fa-eye"></i></button>
+        <button onclick="toggleStoryMenu(); event.stopPropagation();" style="background:rgba(255,255,255,0.15); border:none; color:white; width:32px;height:32px;border-radius:50%;cursor:pointer; backdrop-filter:blur(4px); pointer-events:auto;"><i class="fas fa-ellipsis-h"></i></button>
+        <button onclick="closeStoryViewer(); event.stopPropagation();" style="background:rgba(255,255,255,0.15); border:none; color:white; width:32px;height:32px;border-radius:50%;cursor:pointer; backdrop-filter:blur(4px); pointer-events:auto;"><i class="fas fa-times"></i></button>
+    </div>
+
+    <!-- Story menu dropdown -->
+    <div id="storyMenu" style="display:none; position:absolute; top:68px; right:12px; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:6px 0; z-index:35; min-width:180px; box-shadow:0 8px 24px rgba(0,0,0,0.3);">
+        <div onclick="translateCurrentStory()" style="padding:10px 14px; cursor:pointer; font-size:0.85rem; display:flex; gap:8px; align-items:center;"><i class="fas fa-language" style="color:var(--blue);"></i> Translate</div>
+        <div onclick="shareCurrentStory()" style="padding:10px 14px; cursor:pointer; font-size:0.85rem; display:flex; gap:8px; align-items:center;"><i class="fas fa-share" style="color:var(--blue);"></i> Share to chat</div>
+        <div onclick="showStoryAnalytics()" style="padding:10px 14px; cursor:pointer; font-size:0.85rem; display:flex; gap:8px; align-items:center;"><i class="fas fa-chart-bar" style="color:var(--green);"></i> Analytics</div>
+        <div onclick="archiveCurrentStory()" style="padding:10px 14px; cursor:pointer; font-size:0.85rem; display:flex; gap:8px; align-items:center;"><i class="fas fa-archive"></i> Archive</div>
+        <div onclick="deleteCurrentStory()" style="padding:10px 14px; cursor:pointer; font-size:0.85rem; display:flex; gap:8px; align-items:center; color:#e41e3f;"><i class="fas fa-trash"></i> Delete</div>
+    </div>
+    
+    <div style="flex:1; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; flex-direction:column;" id="svStage">
+        <img id="svMedia" style="max-width:100%; max-height:70vh; object-fit:contain; display:none; filter:none;">
+        <video id="svVideo" style="max-width:100%; max-height:70vh; object-fit:contain; display:none;" controls autoplay muted></video>
+        <div id="svText" style="display:none; color:white; font-size:1.9rem; font-weight:bold; text-align:center; padding:20px; max-width:90%; word-break:break-word;"></div>
+        <div id="svVoiceBox" style="display:none; flex-direction:column; align-items:center; gap:12px; color:white; padding:20px;">
+            <i class="fas fa-microphone" style="font-size:3rem; color:var(--blue);"></i>
+            <audio id="svVoiceAudio" controls style="width:260px;"></audio>
+            <div id="svVoiceCaption" style="font-size:0.9rem; opacity:0.9; text-align:center;"></div>
+        </div>
+        <!-- Stickers overlay -->
+        <div id="svStickers" style="position:absolute; inset:0; pointer-events:none; z-index:3; padding:20px; display:flex; flex-direction:column; gap:8px; justify-content:flex-start; align-items:flex-start;"></div>
+        <!-- Quiz / Poll overlay -->
+        <div id="svQuizBox" style="display:none; background:rgba(255,255,255,0.95); border-radius:12px; padding:14px; width:90%; max-width:320px; margin-top:12px; z-index:4; color:#1c1e21;">
+            <div id="svQuizQuestion" style="font-weight:800; font-size:0.9rem; margin-bottom:8px;"></div>
+            <div id="svQuizOptions" style="display:flex; flex-direction:column; gap:6px;"></div>
+            <div id="svQuizResult" style="margin-top:8px; font-size:0.78rem; font-weight:700; display:none;"></div>
+        </div>
+        <div id="svPollBox" style="display:none; background:rgba(255,255,255,0.95); border-radius:12px; padding:14px; width:90%; max-width:320px; margin-top:12px; z-index:4; color:#1c1e21;">
+            <div id="svPollQuestion" style="font-weight:800; font-size:0.9rem; margin-bottom:8px;"></div>
+            <div id="svPollOptions" style="display:flex; flex-direction:column; gap:6px;"></div>
+        </div>
+        <!-- Caption -->
+        <div id="svCaption" style="display:none; color:white; font-size:0.85rem; background:rgba(0,0,0,0.45); padding:6px 10px; border-radius:8px; margin-top:10px; max-width:90%; text-align:center; backdrop-filter:blur(4px);"></div>
+        
+        <!-- Tap areas - fixed to not block header/footer -->
+        <div style="position:absolute; left:0; top:70px; bottom:130px; width:28%; z-index:5; cursor:pointer;" onclick="prevStory()" onmouseenter="pauseStory()" onmouseleave="resumeStory()"></div>
+        <div style="position:absolute; right:0; top:70px; bottom:130px; width:28%; z-index:5; cursor:pointer;" onclick="nextStory()" onmouseenter="pauseStory()" onmouseleave="resumeStory()"></div>
+        <div style="position:absolute; left:28%; right:28%; top:70px; bottom:130px; z-index:4;" onmousedown="pauseStory()" onmouseup="resumeStory()" ontouchstart="pauseStory()" ontouchend="resumeStory()"></div>
+        
+        <!-- Bottom bar: reactions + reply — FB-like -->
+        <div style="position:absolute; bottom:14px; left:12px; right:12px; display:flex; flex-direction:column; gap:8px; z-index:25; pointer-events:auto;">
+            <!-- FB-like Reaction Picker — stays open on hover, tap to toggle -->
+            <div style="display:flex; justify-content:center; position:relative;" onmouseenter="showStoryReactionPicker()" onmouseleave="scheduleHideStoryPicker()">
+                <button id="storyLikeMainBtn" onclick="reactCurrentStory('👍')" onmouseenter="showStoryReactionPicker()" style="background:rgba(0,0,0,0.55); border:1px solid rgba(255,255,255,0.25); color:white; padding:8px 18px; border-radius:20px; cursor:pointer; backdrop-filter:blur(6px); font-size:0.85rem; font-weight:700; display:flex; align-items:center; gap:6px; pointer-events:auto;"><span>👍</span> Like</button>
+                <div id="storyReactionPicker" onmouseenter="showStoryReactionPicker()" onmouseleave="scheduleHideStoryPicker()" style="display:none; position:absolute; bottom:48px; left:50%; transform:translateX(-50%); background:white; border-radius:30px; padding:8px 14px; box-shadow:0 8px 24px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.2); gap:8px; align-items:center; z-index:30; border:1px solid #e4e6eb;">
+                    <span onclick="event.stopPropagation(); reactCurrentStory('👍')" style="font-size:1.7rem; cursor:pointer; transition:transform 0.12s; display:inline-block; padding:2px;" onmouseover="this.style.transform='scale(1.35)'" onmouseout="this.style.transform='scale(1)'" title="Like">👍</span>
+                    <span onclick="event.stopPropagation(); reactCurrentStory('❤️')" style="font-size:1.7rem; cursor:pointer; transition:transform 0.12s; display:inline-block; padding:2px;" onmouseover="this.style.transform='scale(1.35)'" onmouseout="this.style.transform='scale(1)'" title="Love">❤️</span>
+                    <span onclick="event.stopPropagation(); reactCurrentStory('😂')" style="font-size:1.7rem; cursor:pointer; transition:transform 0.12s; display:inline-block; padding:2px;" onmouseover="this.style.transform='scale(1.35)'" onmouseout="this.style.transform='scale(1)'" title="Haha">😂</span>
+                    <span onclick="event.stopPropagation(); reactCurrentStory('😮')" style="font-size:1.7rem; cursor:pointer; transition:transform 0.12s; display:inline-block; padding:2px;" onmouseover="this.style.transform='scale(1.35)'" onmouseout="this.style.transform='scale(1)'" title="Wow">😮</span>
+                    <span onclick="event.stopPropagation(); reactCurrentStory('😢')" style="font-size:1.7rem; cursor:pointer; transition:transform 0.12s; display:inline-block; padding:2px;" onmouseover="this.style.transform='scale(1.35)'" onmouseout="this.style.transform='scale(1)'" title="Sad">😢</span>
+                    <span onclick="event.stopPropagation(); reactCurrentStory('😡')" style="font-size:1.7rem; cursor:pointer; transition:transform 0.12s; display:inline-block; padding:2px;" onmouseover="this.style.transform='scale(1.35)'" onmouseout="this.style.transform='scale(1)'" title="Angry">😡</span>
+                </div>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center; pointer-events:auto;">
+                <input type="text" id="storyReplyInput" placeholder="Reply to story..." style="flex:1; padding:10px 16px; border-radius:22px; border:1px solid rgba(255,255,255,0.3); background:rgba(0,0,0,0.4); color:white; outline:none; font-size:0.85rem; backdrop-filter:blur(4px);" onfocus="pauseStory()" onblur="resumeStory()" onkeydown="if(event.key==='Enter') sendStoryReply()">
+                <button onclick="event.stopPropagation(); sendStoryReply()" style="background:var(--blue); border:none; color:white; width:40px; height:40px; border-radius:50%; cursor:pointer; flex-shrink:0; pointer-events:auto;"><i class="fas fa-paper-plane"></i></button>
+                <button onclick="event.stopPropagation(); shareCurrentStory()" style="background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.2); color:white; width:40px; height:40px; border-radius:50%; cursor:pointer; backdrop-filter:blur(4px); pointer-events:auto;"><i class="fas fa-share"></i></button>
+            </div>
+            <div style="display:flex; justify-content:center; gap:6px; font-size:0.65rem; color:rgba(255,255,255,0.7);">
+                <span id="svViewsCount" style="cursor:pointer;" onclick="toggleStoryViewers()"><i class="fas fa-eye"></i> <span id="svViewsNum">0</span> views</span>
+                <span>•</span>
+                <span id="svReplyInfo"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Viewers sheet -->
+    <div id="storyViewersSheet" style="display:none; position:absolute; bottom:0; left:0; right:0; background:var(--surface); border-top-left-radius:16px; border-top-right-radius:16px; max-height:50vh; z-index:30; flex-direction:column; box-shadow:0 -8px 24px rgba(0,0,0,0.3);">
+        <div style="padding:10px; display:flex; justify-content:center;"><div style="width:40px;height:4px;background:var(--border);border-radius:4px;"></div></div>
+        <div style="padding:0 16px 8px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border);">
+            <span style="font-weight:800; font-size:0.9rem;">Viewers</span>
+            <button onclick="toggleStoryViewers()" style="background:none;border:none;font-size:1.1rem;cursor:pointer;opacity:0.6;"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="storyViewersList" style="overflow-y:auto; padding:8px 0; flex:1;"></div>
+    </div>
+</div>
+
+          <div class="create-post">
+            <div class="create-post-top">
+                <div id="createPostAvatar" class="avatar-placeholder" style="width:40px;height:40px;font-size:1rem;cursor:pointer;" onclick="window.location.href='views/profile.html'">?</div>
+                <button class="create-post-input" onclick="openPostModal()">What's on your mind?</button>
+            </div>
+            <hr class="create-post-divider">
+            <div class="create-post-actions">
+                <button class="post-action-btn video" onclick="window.location.href='views/live.html'"><i class="fas fa-video icon" style="color:#e41e3f;"></i><span>Go Live</span></button>
+                <button class="post-action-btn photo" onclick="openPostModal('photo')"><i class="fas fa-image icon"></i><span>Photo/video</span></button>
+                <button class="post-action-btn feeling" onclick="openPostModal()"><i class="fas fa-smile icon"></i><span>Feeling</span></button>
+            </div>
+        </div>
+
+        <!-- Modern Feed Filter Tabs -->
+        <div class="feed-filter-bar" id="feedFilterBar">
+            <button class="feed-filter-pill active" onclick="filterFeedMode('all', this)"><i class="fas fa-stream"></i> All Posts</button>
+            <button class="feed-filter-pill" onclick="filterFeedMode('trending', this)"><i class="fas fa-fire" style="color:#f97316;"></i> Trending</button>
+            <button class="feed-filter-pill" onclick="filterFeedMode('friends', this)"><i class="fas fa-user-friends" style="color:#0866ff;"></i> Friends</button>
+            <button class="feed-filter-pill" onclick="filterFeedMode('photos', this)"><i class="fas fa-image" style="color:#10b981;"></i> Photos</button>
+        </div>
+
+        <!-- Feed -->
+        <div id="feedContainer">
+            <!-- Skeleton loaders -->
+            <div class="feed-loader" id="feedLoader">
+                <div class="skeleton-card"><div class="skeleton-row"><div class="skeleton skeleton-circle"></div><div class="skeleton-lines"><div class="skeleton skeleton-line" style="width:60%"></div><div class="skeleton skeleton-line" style="width:40%"></div></div></div><div class="skeleton skeleton-block"></div></div>
+                <div class="skeleton-card"><div class="skeleton-row"><div class="skeleton skeleton-circle"></div><div class="skeleton-lines"><div class="skeleton skeleton-line" style="width:50%"></div><div class="skeleton skeleton-line" style="width:30%"></div></div></div><div class="skeleton skeleton-block" style="height:120px"></div></div>
+            </div>
+        </div>
+        <button class="load-more-btn hidden" id="loadMoreBtn" onclick="loadFeed(true)"><i class="fas fa-sync-alt"></i> Load more posts</button>
+    </main>
+
+    <!-- RIGHT SIDEBAR -->
+    <aside class="right-sidebar">
+        <div class="right-widget" id="friendRequestsWidget" style="display:none">
+            <div class="widget-title">FRIEND REQUESTS</div>
+            <div id="friendRequestsList"></div>
+        </div>
+        <div class="right-widget">
+            <div class="widget-title">PEOPLE YOU MAY KNOW</div>
+            <div id="suggestionsList"></div>
+        </div>
+        <div class="right-widget">
+            <div class="widget-title">ONLINE FRIENDS</div>
+            <div id="onlineFriendsList"><div style="padding:10px 16px;font-size:0.82rem;color:var(--text-secondary)">No friends online</div></div>
+        </div>
+    </aside>
+</div>
+
+<!-- POST MODAL -->
+<div class="modal-overlay" id="postModal">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-title">Create Post</span>
+            <button class="modal-close" onclick="closePostModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-poster">
+                <div id="modalAvatar" class="avatar-placeholder" style="width:40px;height:40px;font-size:1rem;">?</div>
+                <div>
+                    <div id="modalPosterName" style="font-weight:700;font-size:0.9rem;">You</div>
+                    <select class="visibility-select" id="postVisibility">
+                        <option value="Public">🌍 Public</option>
+                        <option value="Friends">👥 Friends</option>
+                        <option value="Only Me">🔒 Only Me</option>
+                    </select>
+                </div>
+            </div>
+            <textarea class="post-textarea" id="postContent" placeholder="What's on your mind? Tag friends with @ or use Tag button" rows="4" oninput="autoResizeTextarea(this); handlePostMentionInput(this)"></textarea>
+            <div id="taggedFriendsDisplay" style="display:none; flex-wrap:wrap; gap:6px; margin:8px 0; padding:8px; background:var(--bg); border-radius:10px; border:1px solid var(--border);"></div>
+            <div id="postMentionSuggestions" style="display:none; background:var(--surface); border:1px solid var(--border); border-radius:10px; max-height:160px; overflow-y:auto; box-shadow:0 4px 12px rgba(0,0,0,0.12); margin-bottom:8px;"></div>
+            <div class="post-media-preview hidden" id="postMediaPreview">
+                <button class="remove-media" onclick="removePostMedia()"><i class="fas fa-times"></i></button>
+                <img id="postImagePreview" src="" style="display:none">
+                <video id="postVideoPreview" controls style="display:none"></video>
+            </div>
+            <button type="button" onclick="toggleTagSelector()" style="background:var(--bg); border:1.5px solid var(--border); padding:7px 14px; border-radius:20px; font-size:0.82rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px; margin-bottom:10px; color:var(--text);">
+                <i class="fas fa-user-tag" style="color:#0866ff;"></i> Tag friends <span id="tagCount" style="background:#0866ff;color:white;padding:1px 6px;border-radius:10px;font-size:0.7rem;display:none;">0</span>
+            </button>
+            <div id="tagSelector" style="display:none; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:10px; margin-bottom:10px; box-shadow:0 4px 12px rgba(0,0,0,0.08);">
+                <input id="tagSearchInput" placeholder="Search friends to tag..." style="width:100%; padding:9px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:0.85rem; background:var(--bg); color:var(--text); outline:none; margin-bottom:8px;" oninput="filterTagFriends(this.value)">
+                <div id="tagFriendsList" style="display:flex; flex-direction:column; gap:4px; max-height:180px; overflow-y:auto;"></div>
+            </div>
+            <label class="post-add-media">
+                <span><i class="fas fa-images" style="color:var(--green);margin-right:6px"></i> Add Photo/Video</span>
+                <div class="post-add-media-icons">
+                    <i class="fas fa-image" style="color:var(--green)"></i>
+                    <i class="fas fa-video" style="color:var(--red)"></i>
+                </div>
+                <input type="file" id="postMediaInput" accept="image/*,video/*" style="display:none" onchange="previewMedia(this)">
+            </label>
+            <button class="btn-post" id="submitPostBtn" onclick="submitPost()">Post</button>
+        </div>
+    </div>
+</div>
+
+<!-- WHO REACTED MODAL (Facebook-Style) -->
+<div class="modal-overlay" id="reactionsModal" onclick="if(event.target===this)closeReactionsModal()">
+    <div class="reactions-modal-box">
+        <div class="reactions-modal-header">
+            <div class="reactions-tabs" id="reactionsTabs">
+                <button class="rtab-btn active" id="rtab-btn-all" onclick="filterReactionsTab('all', this)">All <span id="rtab-count-all">0</span></button>
+                <button class="rtab-btn" id="rtab-btn-like" onclick="filterReactionsTab('like', this)">👍 <span id="rtab-count-like">0</span></button>
+                <button class="rtab-btn" id="rtab-btn-love" onclick="filterReactionsTab('love', this)">❤️ <span id="rtab-count-love">0</span></button>
+                <button class="rtab-btn" id="rtab-btn-haha" onclick="filterReactionsTab('haha', this)">😂 <span id="rtab-count-haha">0</span></button>
+                <button class="rtab-btn" id="rtab-btn-wow" onclick="filterReactionsTab('wow', this)">😮 <span id="rtab-count-wow">0</span></button>
+                <button class="rtab-btn" id="rtab-btn-sad" onclick="filterReactionsTab('sad', this)">😢 <span id="rtab-count-sad">0</span></button>
+                <button class="rtab-btn" id="rtab-btn-angry" onclick="filterReactionsTab('angry', this)">😡 <span id="rtab-count-angry">0</span></button>
+            </div>
+            <button class="reactions-close-btn" onclick="closeReactionsModal()">&times;</button>
+        </div>
+        <div class="reactions-list-body" id="reactionsList">
+            <div style="text-align:center;padding:30px;color:var(--text-secondary);"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
+        </div>
+    </div>
+</div>
+
+<!-- STORY VIEWER -->
+<div class="modal-overlay" id="storyViewer">
+    <div style="position:relative;max-width:400px;width:100%;">
+        <button onclick="closeStoryViewer()" style="position:absolute;top:-40px;right:0;background:rgba(255,255,255,0.2);border:none;color:white;width:36px;height:36px;border-radius:50%;font-size:1rem;cursor:pointer;"><i class="fas fa-times"></i></button>
+        <img id="storyViewerImg" src="" style="width:100%;border-radius:12px;display:none;max-height:80vh;object-fit:contain;">
+        <video id="storyViewerVideo" controls style="width:100%;border-radius:12px;display:none;"></video>
+        <div style="position:absolute;bottom:16px;left:16px;color:white;text-shadow:0 1px 4px rgba(0,0,0,0.8);">
+            <div id="storyViewerName" style="font-weight:700;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- IMAGE LIGHTBOX -->
+<div class="modal-overlay" id="lightbox" onclick="closeLightbox()">
+    <img id="lightboxImg" src="" style="max-width:90vw;max-height:90vh;border-radius:8px;object-fit:contain;" onclick="event.stopPropagation()">
+</div>
+
+<!-- TOAST CONTAINER -->
+<div id="toast-container"></div>
+
+<!-- DARK MODE TOGGLE -->
+<button id="darkModeToggle" onclick="toggleDarkMode()" style="position:fixed;bottom:24px;left:24px;width:44px;height:44px;border-radius:50%;background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow);font-size:1.1rem;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:999;color:var(--text);transition:background 0.2s;">
+    <i class="fas fa-moon" id="darkModeIcon"></i>
+</button>
+
+<!-- Mobile Bottom Navigation -->
+<nav class="mobile-bottom-nav" id="mobileBottomNav">
+    <a href="../home.html" class="mobile-nav-btn active">
+        <i class="fas fa-home"></i><span>Home</span>
+    </a>
+    <a href="messenger.html" class="mobile-nav-btn">
+        <i class="fas fa-comment"></i><span>Chat</span>
+    </a>
+    <a href="notifications.html" class="mobile-nav-btn">
+        <i class="fas fa-bell"></i><span>Alerts</span>
+    </a>
+    <a href="profile.html" class="mobile-nav-btn">
+        <i class="fas fa-user"></i><span>Profile</span>
+    </a>
+</nav>
+<script>
+// ── Modern Navbar: Always Back Arrow + Active Tab Highlight ──
+function handleBack(){
+  try{
+    if(history.length>1 && document.referrer) history.back();
+    else window.location.href='home.html';
+  }catch{ window.location.href='home.html'; }
+}
+(function(){
+  const path=window.location.pathname.toLowerCase();
+  const tabs=document.querySelectorAll('.nav-icon-btn');
+  let hasActive=false;
+  tabs.forEach(btn=>{
+    const href=(btn.getAttribute('href')||'').toLowerCase();
+    const target=href.split('/').pop().split('?')[0].split('#')[0];
+    const current=path.split('/').pop().split('?')[0] || 'home.html';
+    const isActive = target && current===target;
+    btn.classList.toggle('active', isActive);
+    if(isActive) hasActive=true;
+    // Also handle data-tab
+    if(!isActive && btn.dataset.tab){
+      if((path.endsWith('home.html')|| path.endsWith('/') ) && btn.dataset.tab==='home') { btn.classList.add('active'); hasActive=true; }
+    }
+  });
+  if(!hasActive){
+    const homeBtn=document.querySelector('[data-tab="home"]');
+    if(homeBtn) homeBtn.classList.add('active');
+  }
+  const backBtn=document.getElementById('navBackBtn');
+  if(backBtn){
+    backBtn.style.display='flex';
+    if(path.endsWith('home.html') || path.endsWith('/') || path.endsWith('client/')){
+      backBtn.onclick=()=> window.scrollTo({top:0, behavior:'smooth'});
+      backBtn.title='Scroll to top';
+      backBtn.innerHTML='<i class="fas fa-arrow-up"></i>';
+      // Still show arrow, but as scroll to top on home
+    }
+  }
+})();
+</script>
+<script src="js/config.js"></script>
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script src="js/home.js"></script>
+</body>
+</html>

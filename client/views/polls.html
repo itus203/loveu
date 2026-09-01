@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Live Campus Polls | DIU Nexus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/home.css">
+    <style>
+        body { padding-top: 64px; background: var(--bg); font-family: 'Inter', sans-serif; }
+        .polls-wrap { max-width: 900px; margin: 0 auto; padding: 24px 16px 80px; }
+        
+        .page-hero {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            border-radius: 16px;
+            padding: 32px 24px;
+            color: white;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.25);
+        }
+        .page-hero i { font-size: 3rem; opacity: 0.95; }
+        .page-hero h1 { font-size: 1.6rem; font-weight: 800; margin: 0; }
+        .page-hero p { opacity: 0.9; margin: 6px 0 0; font-size: 0.92rem; }
+
+        .polls-layout { display: grid; grid-template-columns: 320px 1fr; gap: 20px; align-items: start; }
+        @media(max-width:768px) { .polls-layout { grid-template-columns: 1fr; } }
+
+        .form-card {
+            background: var(--surface);
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+            position: sticky;
+            top: 76px;
+            border: 1px solid var(--border);
+        }
+        .form-card h3 { font-weight: 800; color: #6366f1; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; font-size: 1.05rem; }
+        .form-group { margin-bottom: 12px; }
+        .form-label { display: block; font-size: 0.76rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; text-transform: uppercase; }
+        .form-input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.88rem;
+            background: var(--surface);
+            color: var(--text);
+            outline: none;
+        }
+        .form-input:focus { border-color: #6366f1; }
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            background: #6366f1;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.92rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: opacity 0.15s;
+        }
+        .btn-submit:hover { opacity: 0.9; }
+
+        /* Poll Card */
+        .poll-card {
+            background: var(--surface);
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+            transition: transform 0.15s;
+        }
+        .poll-card:hover { transform: translateY(-2px); }
+        .poll-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+        .poll-title { font-size: 1.1rem; font-weight: 800; color: var(--text); line-height: 1.4; }
+        .poll-meta { font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 14px; }
+        
+        .poll-option-box {
+            position: relative;
+            background: var(--bg);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: border-color 0.15s, transform 0.1s;
+        }
+        .poll-option-box:hover { border-color: #6366f1; }
+        .poll-bar-fill {
+            position: absolute;
+            top: 0; left: 0; bottom: 0;
+            background: rgba(99, 102, 241, 0.18);
+            transition: width 0.4s ease;
+            z-index: 1;
+        }
+        .poll-option-content {
+            position: relative;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.88rem;
+            font-weight: 600;
+            z-index: 2;
+        }
+        .poll-pct { font-weight: 800; color: #6366f1; font-size: 0.85rem; }
+        .voted-badge {
+            display: inline-block;
+            background: #dcfce7;
+            color: #15803d;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            margin-left: 6px;
+        }
+    
+        /* Fix: Pill till missing + button blocked — ensure pills and following buttons are clickable */
+        .filter-bar, .category-tabs, .cats, .filter-tabs, .cat-tabs, .filter-pill, .cat-tab, .cat, .blood-type-grid, .search-bar {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 1;
+        }
+        .filter-chip, .cat-tab, .cat, .blood-btn, .btn-join, .btn-view, .btn-post, .btn-submit, .btn-sell, .contact-btn, .post-action, .member-row button, .file-row a {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 2;
+        }
+        /* Ensure no sticky pill blocks content */
+        .category-tabs, .filter-bar, .cats {
+            overflow-x: auto;
+            overflow-y: visible;
+            max-height: none;
+        }
+
+    </style>
+</head>
+<body>
+<script src="../js/config.js"></script>
+<script src="../js/shared.js"></script>
+<div class="polls-wrap">
+    <div class="page-hero">
+        <i class="fas fa-poll-h"></i>
+        <div>
+            <h1>📊 DIU Live Campus Polls</h1>
+            <p>Voice your opinion — Create polls, vote, and see what the DIU community thinks.</p>
+        </div>
+    </div>
+
+    <div class="polls-layout">
+        <!-- Create Poll Form -->
+        <div class="form-card">
+            <h3><i class="fas fa-plus-circle"></i> Create New Poll</h3>
+            <div class="form-group">
+                <label class="form-label">Poll Question *</label>
+                <input class="form-input" id="pollQuestion" placeholder="e.g., Which cafeteria food is the best?">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Option 1 *</label>
+                <input class="form-input" id="opt1" placeholder="e.g., Main Cafeteria">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Option 2 *</label>
+                <input class="form-input" id="opt2" placeholder="e.g., Block D Canteen">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Option 3 (optional)</label>
+                <input class="form-input" id="opt3" placeholder="e.g., Green Garden Food Court">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Option 4 (optional)</label>
+                <input class="form-input" id="opt4" placeholder="e.g., External Restaurant">
+            </div>
+            <button class="btn-submit" onclick="createPoll()"><i class="fas fa-paper-plane"></i> Launch Poll</button>
+        </div>
+
+        <!-- Polls List -->
+        <div id="pollsList"></div>
+    </div>
+</div>
+
+<div id="toast-container" style="position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column-reverse;gap:8px;"></div>
+
+<script>
+const API = (typeof window.API !== 'undefined' ? window.API : (function(){ var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000/api'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin+'/api'; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin+'/api':'http://localhost:5000/api'; return 'http://localhost:5000/api'; } return window.location.origin+'/api'; })());
+const myUser = JSON.parse(localStorage.getItem('user') || 'null');
+const token = localStorage.getItem('token');
+if (!token) window.location.href = '../index.html';
+if (localStorage.getItem('darkMode') === '1') document.body.setAttribute('data-theme','dark');
+
+let allPolls = [];
+const myId = String(myUser?._id || myUser?.id || 'guest');
+
+async function loadPolls() {
+    try {
+        const res = await fetch(`${API}/polls`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!res.ok) throw new Error('Failed to load polls');
+        allPolls = await res.json();
+        renderPolls();
+    } catch (e) {
+        showToast('Error loading polls: ' + e.message);
+    }
+}
+
+async function createPoll() {
+    const question = document.getElementById('pollQuestion').value.trim();
+    const o1 = document.getElementById('opt1').value.trim();
+    const o2 = document.getElementById('opt2').value.trim();
+    const o3 = document.getElementById('opt3').value.trim();
+    const o4 = document.getElementById('opt4').value.trim();
+
+    if (!question || !o1 || !o2) {
+        showToast('Please enter a question and at least 2 options');
+        return;
+    }
+
+    const options = [o1, o2];
+    if (o3) options.push(o3);
+    if (o4) options.push(o4);
+
+    try {
+        const res = await fetch(`${API}/polls`, {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                question: question,
+                options: options,
+                allow_multiple: false,
+                is_anonymous: false,
+                expires_in_hours: null
+            })
+        });
+        if (!res.ok) {
+            const data = await res.json();
+            throw new Error(data.message || 'Failed to create poll');
+        }
+        showToast('✅ Poll Launched Successfully!');
+        ['pollQuestion','opt1','opt2','opt3','opt4'].forEach(id => document.getElementById(id).value = '');
+        await loadPolls();
+    } catch (e) {
+        showToast('Error creating poll: ' + e.message);
+    }
+}
+
+async function votePoll(pollId, optionId) {
+    try {
+        const res = await fetch(`${API}/polls/${pollId}/vote`, {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ option_id: optionId })
+        });
+        if (!res.ok) {
+            const data = await res.json();
+            throw new Error(data.message || 'Failed to vote');
+        }
+        showToast('🗳️ Vote Recorded!');
+        await loadPolls();
+    } catch (e) {
+        showToast('Error voting: ' + e.message);
+    }
+}
+
+function renderPolls() {
+    const el = document.getElementById('pollsList');
+    if (!allPolls.length) {
+        el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-secondary);">No polls yet. Be the first to start one!</div>';
+        return;
+    }
+
+    el.innerHTML = allPolls.map(p => {
+        const totalVotes = p.total_votes || 0;
+        return `
+        <div class="poll-card">
+            <div class="poll-header">
+                <div class="poll-title">${esc(p.question)}</div>
+            </div>
+            <div class="poll-meta"><i class="fas fa-user-circle"></i> Posted by ${esc(p.fullName || p.author || 'User')} · ${totalVotes} total votes</div>
+            <div class="poll-options">
+                ${(p.options || []).map((opt) => {
+                    const count = opt.vote_count || 0;
+                    const pct = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
+                    const hasVoted = p.my_vote === opt.id;
+                    return `
+                    <div class="poll-option-box" onclick="votePoll(${p.id}, ${opt.id})">
+                        <div class="poll-bar-fill" style="width:${pct}%;"></div>
+                        <div class="poll-option-content">
+                            <span>${esc(opt.option_text)} ${hasVoted ? '<span class="voted-badge">✓ Your Vote</span>' : ''}</span>
+                            <span class="poll-pct">${pct}% (${count})</span>
+                        </div>
+                    </div>`;
+                }).join('')}
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function showToast(msg) { const t=document.createElement('div'); t.style.cssText='background:#1c1e21;color:white;padding:12px 18px;border-radius:10px;font-family:Inter,sans-serif;font-size:0.88rem;'; t.textContent=msg; document.getElementById('toast-container').appendChild(t); setTimeout(()=>t.remove(),2800); }
+
+loadPolls();
+</script>
+</body>
+</html>

@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Home & Housing Portal | DIU Nexus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/home.css">
+    <style>
+        body { padding-top: 64px; background: var(--bg); font-family: 'Inter', sans-serif; }
+        .house-wrap { max-width: 1060px; margin: 0 auto; padding: 24px 16px 80px; }
+        
+        .page-hero { 
+            background: linear-gradient(135deg, #10b981, #059669); 
+            border-radius: 16px; 
+            padding: 32px 24px; 
+            color: white; 
+            margin-bottom: 24px; 
+            display: flex; 
+            align-items: center; 
+            gap: 20px; 
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.25);
+        }
+        .page-hero i { font-size: 3.2rem; opacity: 0.95; }
+        .page-hero h1 { font-size: 1.65rem; font-weight: 800; margin: 0; }
+        .page-hero p { opacity: 0.9; margin: 6px 0 0; font-size: 0.92rem; line-height: 1.4; }
+
+        .house-layout { display: grid; grid-template-columns: 320px 1fr; gap: 20px; align-items: start; }
+        @media(max-width:768px) { .house-layout { grid-template-columns: 1fr; } }
+
+        .form-card { 
+            background: var(--surface); 
+            border-radius: 14px; 
+            padding: 20px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.07); 
+            position: sticky; 
+            top: 76px; 
+        }
+        .form-card h3 { font-weight: 800; color: #10b981; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; font-size: 1.05rem; }
+        .form-group { margin-bottom: 12px; }
+        .form-label { display: block; font-size: 0.76rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.3px; }
+        .form-input { 
+            width: 100%; 
+            padding: 10px 14px; 
+            border: 1.5px solid var(--border); 
+            border-radius: 8px; 
+            font-family: inherit; 
+            font-size: 0.88rem; 
+            background: var(--surface); 
+            color: var(--text); 
+            outline: none; 
+            transition: border-color 0.15s;
+        }
+        .form-input:focus { border-color: #10b981; }
+        
+        .img-upload-zone { 
+            border: 2px dashed var(--border); 
+            border-radius: 10px; 
+            padding: 16px; 
+            text-align: center; 
+            cursor: pointer; 
+            transition: all 0.2s; 
+            background: var(--bg);
+        }
+        .img-upload-zone:hover { border-color: #10b981; background: #ecfdf5; }
+        
+        .btn-submit { 
+            width: 100%; 
+            padding: 12px; 
+            background: #10b981; 
+            color: white; 
+            border: none; 
+            border-radius: 10px; 
+            font-family: inherit; 
+            font-size: 0.92rem; 
+            font-weight: 700; 
+            cursor: pointer; 
+            margin-top: 8px; 
+            transition: opacity 0.15s;
+        }
+        .btn-submit:hover { opacity: 0.92; }
+
+        /* Listing Cards */
+        .house-card { 
+            background: var(--surface); 
+            border-radius: 14px; 
+            overflow: hidden; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06); 
+            margin-bottom: 16px; 
+            border: 1px solid var(--border);
+            transition: transform 0.15s, box-shadow 0.15s; 
+        }
+        .house-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.09); }
+        .house-cover { 
+            width: 100%; 
+            height: 200px; 
+            object-fit: cover; 
+            background: linear-gradient(135deg,#a7f3d0,#10b981); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 4rem; 
+        }
+        .house-body { padding: 18px; }
+        .house-title { font-size: 1.15rem; font-weight: 800; color: var(--text); }
+        .house-price { font-size: 1.15rem; font-weight: 800; color: #10b981; }
+        .house-meta { font-size: 0.82rem; color: var(--text-secondary); margin: 6px 0 10px; display: flex; flex-wrap: wrap; gap: 12px; }
+        .house-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+        .house-tag { padding: 4px 10px; border-radius: 20px; background: #ecfdf5; color: #059669; font-size: 0.75rem; font-weight: 700; }
+        
+        .house-desc { font-size: 0.88rem; line-height: 1.5; color: var(--text); margin-bottom: 14px; }
+        .house-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; border-top: 1px solid var(--border); padding-top: 12px; margin-top: 12px; }
+        .contact-btn { 
+            padding: 8px 16px; 
+            border-radius: 8px; 
+            border: none; 
+            font-family: inherit; 
+            font-size: 0.84rem; 
+            font-weight: 700; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            gap: 6px; 
+            text-decoration: none;
+        }
+        .btn-call { background: #d1fae5; color: #059669; }
+        .btn-msg { background: #e7f0ff; color: #0866ff; }
+        
+        /* Review section */
+        .review-box { 
+            background: var(--bg); 
+            border-radius: 12px; 
+            padding: 14px; 
+            margin-top: 12px; 
+        }
+        .review-item { display: flex; gap: 10px; margin-bottom: 10px; }
+        .review-avatar { 
+            width: 32px; 
+            height: 32px; 
+            border-radius: 50%; 
+            background: linear-gradient(135deg,#10b981,#059669); 
+            color: white; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-weight: 700; 
+            font-size: 0.8rem; 
+            flex-shrink: 0; 
+        }
+        .review-bubble { background: var(--surface); border-radius: 10px; padding: 8px 12px; flex: 1; border: 1px solid var(--border); }
+        .review-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; }
+        .review-name { font-weight: 700; font-size: 0.82rem; }
+        .review-stars { color: #f59e0b; font-size: 0.78rem; }
+        .review-text { font-size: 0.85rem; line-height: 1.4; color: var(--text); }
+        .review-img { width: 100%; max-height: 140px; object-fit: cover; border-radius: 6px; margin-top: 6px; }
+
+        .search-bar { display: flex; gap: 8px; margin-bottom: 16px; }
+        .search-bar input { 
+            flex: 1; 
+            padding: 10px 16px; 
+            border: 1.5px solid var(--border); 
+            border-radius: 10px; 
+            font-family: inherit; 
+            font-size: 0.88rem; 
+            background: var(--surface); 
+            color: var(--text); 
+            outline: none; 
+        }
+        .search-bar input:focus { border-color: #10b981; }
+        
+        .filter-tabs { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+        .filter-tab { 
+            padding: 6px 14px; 
+            border-radius: 20px; 
+            border: 1.5px solid var(--border); 
+            background: var(--surface); 
+            font-family: inherit; 
+            font-size: 0.8rem; 
+            font-weight: 600; 
+            cursor: pointer; 
+            transition: all 0.15s;
+        }
+        .filter-tab.active { background: #10b981; color: white; border-color: #10b981; }
+
+        .star-row { display: flex; gap: 4px; margin-top: 4px; }
+        .star-btn { background: none; border: none; font-size: 1.4rem; cursor: pointer; transition: transform 0.1s; }
+        .star-btn:hover { transform: scale(1.2); }
+        .toggle-btn { background: none; border: none; color: #0866ff; font-family: inherit; font-size: 0.82rem; font-weight: 700; cursor: pointer; padding: 4px 0; }
+    
+        /* Fix: Pill till missing + button blocked — ensure pills and following buttons are clickable */
+        .filter-bar, .category-tabs, .cats, .filter-tabs, .cat-tabs, .filter-pill, .cat-tab, .cat, .blood-type-grid, .search-bar {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 1;
+        }
+        .filter-chip, .cat-tab, .cat, .blood-btn, .btn-join, .btn-view, .btn-post, .btn-submit, .btn-sell, .contact-btn, .post-action, .member-row button, .file-row a {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 2;
+        }
+        /* Ensure no sticky pill blocks content */
+        .category-tabs, .filter-bar, .cats {
+            overflow-x: auto;
+            overflow-y: visible;
+            max-height: none;
+        }
+
+    </style>
+</head>
+<body>
+<script src="../js/config.js"></script>
+<script src="../js/shared.js"></script>
+<div class="house-wrap">
+    <div class="page-hero">
+        <i class="fas fa-home"></i>
+        <div>
+            <h1>🏠 DIU Student Housing & To-Let Portal</h1>
+            <p>Find your perfect stay near Daffodil Smart City — Mess, Hostel, Sublet & Family flats. Search by location and budget.</p>
+        </div>
+    </div>
+
+    <div class="house-layout">
+        <!-- Add Housing Post Form -->
+        <div class="form-card">
+            <h3><i class="fas fa-plus-circle"></i> Post To-Let / Housing</h3>
+            <div class="form-group">
+                <label class="form-label">Title *</label>
+                <input class="form-input" id="houseTitle" placeholder="e.g., 2 Seat Available in 3-Bed Flat">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Category *</label>
+                <select class="form-input" id="houseCategory">
+                    <option value="Mess Seat">Mess Seat</option>
+                    <option value="Hostel">Hostel</option>
+                    <option value="Single Room">Single Room</option>
+                    <option value="Sublet">Sublet</option>
+                    <option value="Family Flat">Family Flat</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Rent / Seat Price (BDT ) *</label>
+                <input class="form-input" id="housePrice" placeholder="e.g., 2500 / month" type="text">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Location / Area *</label>
+                <input class="form-input" id="houseLocation" placeholder="e.g., Dattapara, Birulia Road, Khagan">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Contact Number *</label>
+                <input class="form-input" id="houseContact" placeholder="01XXXXXXXXX" type="tel">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Amenities / Facilities</label>
+                <input class="form-input" id="houseFacilities" placeholder="e.g., WiFi, Attached Bath, Generator, Meal">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Details / Description</label>
+                <textarea class="form-input" id="houseDesc" rows="3" placeholder="e.g., 2-room flat near DSC, 5 min from campus, rent 8000 BDT, contact 01XXXXXXXXX..."></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Photo (optional)</label>
+                <div class="img-upload-zone" onclick="document.getElementById('houseImg').click()">
+                    <i class="fas fa-camera" style="color:#10b981; font-size:1.4rem;"></i><br>
+                    <span style="font-size:0.8rem;color:var(--text-secondary);">Click to upload room/flat photo</span>
+                    <input type="file" id="houseImg" accept="image/*" style="display:none" onchange="previewHouseImg(this)">
+                </div>
+                <img id="houseImgPreview" style="display:none;width:100%;max-height:130px;object-fit:cover;border-radius:8px;margin-top:6px;">
+            </div>
+            <button class="btn-submit" onclick="postHouse()"><i class="fas fa-paper-plane"></i> Post Housing</button>
+        </div>
+
+        <!-- Housing List -->
+        <div>
+            <div class="search-bar">
+                <input id="searchInput" placeholder="Enter your text..." oninput="filterHouses()">
+            </div>
+            <div class="filter-tabs">
+                <button class="filter-tab active" onclick="filterCat('all',this)">All</button>
+                <button class="filter-tab" onclick="filterCat('Mess Seat',this)">Mess Seat</button>
+                <button class="filter-tab" onclick="filterCat('Hostel',this)">Hostel</button>
+                <button class="filter-tab" onclick="filterCat('Single Room',this)">Single Room</button>
+                <button class="filter-tab" onclick="filterCat('Sublet',this)">Sublet</button>
+                <button class="filter-tab" onclick="filterCat('Family Flat',this)">Flat</button>
+            </div>
+            <div id="houseList">
+                <div style="text-align:center;padding:60px;color:var(--text-secondary);"><i class="fas fa-spinner fa-spin fa-2x"></i></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="toast-container" style="position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column-reverse;gap:8px;"></div>
+
+<script>
+const myUser = JSON.parse(localStorage.getItem('user') || 'null');
+const token = localStorage.getItem('token');
+const API = (typeof window.API !== 'undefined' ? window.API : (function(){ var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000/api'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin+'/api'; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin+'/api':'http://localhost:5000/api'; return 'http://localhost:5000/api'; } return window.location.origin+'/api'; })());
+if (!token) window.location.href = '../index.html';
+if (localStorage.getItem('darkMode') === '1') document.body.setAttribute('data-theme','dark');
+
+let allHouses = [];
+let currentCat = 'all';
+let houseImgData = null;
+let houseImgFile = null;
+
+async function apiFetch(p,o={}){
+    const h={...(o.headers||{})};
+    if(!(o.body instanceof FormData)) h['Content-Type']='application/json';
+    h['Authorization']='Bearer '+token;
+    const r=await fetch(API+p,{...o,headers:h});
+    if(!r.ok){ let m=''; try{m=(await r.json()).message}catch{} throw new Error(m||'Failed'); }
+    return r;
+}
+async function loadHouses(){
+    try{
+        const res=await apiFetch('/housing');
+        allHouses=await res.json();
+        // Fallback demo if empty (first time)
+        if(!allHouses.length){
+            // Keep local demo for first view but not saved to server
+            allHouses=[
+                {id:101,title:"Executive Boys Mess - 2 Seats Available",category:"Mess Seat",price:"2800 BDT / month",location:"Dattapara (5 min walk from DIU Gate)",contact:"01711000000",facilities:"High-speed WiFi, 24/7 Water, Generator, Maid & Meal",desc:"Spacious 2BHK near Daffodil Smart City, 5 min walking to campus.",image:"https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=600&auto=format&fit=crop&q=60",postedBy:"Sabbir Ahmed",postedById:"user_demo",created_at:new Date(Date.now()-3600000*24).toISOString(),reviews:[]},
+                {id:102,title:"Green View Girls Hostel",category:"Hostel",price:"4500 BDT / seat",location:"Khagan Bazar, DSC Road",contact:"01822000000",facilities:"Full Security, CCTV, Attached Bath, Dining Included, WiFi",desc:"Safe & secure for DIU sisters.",image:"https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=600&auto=format&fit=crop&q=60",postedBy:"Sumaiya Khan",postedById:"user_demo_2",created_at:new Date(Date.now()-3600000*48).toISOString(),reviews:[]}
+            ];
+        }
+    }catch(e){
+        console.error('loadHouses server failed, fallback local',e);
+        try{ allHouses=JSON.parse(localStorage.getItem('diu_houses')||'[]'); }catch{ allHouses=[]; }
+        if(!allHouses.length){
+            allHouses=[
+                {id:101,title:"Executive Boys Mess - 2 Seats Available",category:"Mess Seat",price:"2800 BDT / month",location:"Dattapara (5 min walk from DIU Gate)",contact:"01711000000",facilities:"High-speed WiFi, 24/7 Water, Generator, Maid & Meal",desc:"Spacious 2BHK near DSC.",image:"https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=600&auto=format&fit=crop&q=60",postedBy:"Sabbir Ahmed",postedById:"user_demo",created_at:new Date(Date.now()-3600000*24).toISOString(),reviews:[]}
+            ];
+        }
+    }
+    renderHouses();
+}
+function saveHouses(){ try{ localStorage.setItem('diu_houses', JSON.stringify(allHouses)); }catch{} }
+
+function previewHouseImg(input) {
+    const file = input.files[0];
+    if (!file) return;
+    houseImgFile=file;
+    const reader = new FileReader();
+    reader.onload = e => {
+        houseImgData = e.target.result;
+        const prev = document.getElementById('houseImgPreview');
+        prev.src = e.target.result;
+        prev.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+}
+
+async function postHouse() {
+    const title = document.getElementById('houseTitle').value.trim();
+    const price = document.getElementById('housePrice').value.trim();
+    const location = document.getElementById('houseLocation').value.trim();
+    const contact = document.getElementById('houseContact').value.trim();
+    const category = document.getElementById('houseCategory').value;
+    const facilities = document.getElementById('houseFacilities').value.trim();
+    const desc = document.getElementById('houseDesc').value.trim();
+
+    if (!title || !price || !location || !contact) {
+        showToast('Please fill in all required fields — Title, Price, Location, Contact');
+        return;
+    }
+    // Try server first — globally visible to all DIU students
+    try{
+        const fd=new FormData();
+        fd.append('title',title); fd.append('category',category); fd.append('price',price);
+        fd.append('location',location); fd.append('contact',contact);
+        fd.append('facilities',facilities); fd.append('description',desc);
+        if(houseImgFile) fd.append('image', houseImgFile);
+        const res=await fetch(API+'/housing',{method:'POST', headers:{'Authorization':'Bearer '+token}, body:fd});
+        const data=await res.json().catch(()=>({}));
+        if(!res.ok) throw new Error(data.message||'Failed');
+        showToast('✅ Housing posted — globally visible to all DIU students!');
+        // Clear and reload from server
+        ['houseTitle','housePrice','houseLocation','houseContact','houseFacilities','houseDesc'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('houseImgPreview').style.display = 'none';
+        document.getElementById('houseImg').value=''; houseImgData=null; houseImgFile=null;
+        await loadHouses();
+        return;
+    }catch(e){
+        console.error('postHouse server failed',e);
+        showToast(e.message||'Server failed — saved locally (only you see)', 'error');
+    }
+    // Fallback local (if server down)
+    const newHouse = {
+        id: Date.now(),
+        title, category, price, location, contact, facilities, desc,
+        image: houseImgData || null,
+        postedBy: myUser?.fullName || 'Anonymous',
+        postedById: myUser?._id || myUser?.id,
+        created_at: new Date().toISOString(),
+        reviews: []
+    };
+    allHouses.unshift(newHouse);
+    saveHouses();
+    renderHouses();
+    showToast('✅ Housing listing posted! (local)');
+    ['houseTitle','housePrice','houseLocation','houseContact','houseFacilities','houseDesc'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('houseImgPreview').style.display = 'none';
+    houseImgData = null; houseImgFile=null;
+}
+
+function avgRating(reviews) {
+    if (!reviews || !reviews.length) return 0;
+    return (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1);
+}
+
+function renderHouses() {
+    let list = allHouses;
+    if (currentCat !== 'all') {
+        list = list.filter(h => h.category === currentCat);
+    }
+    const q = document.getElementById('searchInput').value.toLowerCase().trim();
+    if (q) {
+        list = list.filter(h => 
+            h.title.toLowerCase().includes(q) || 
+            h.location.toLowerCase().includes(q) || 
+            h.category.toLowerCase().includes(q) ||
+            (h.facilities && h.facilities.toLowerCase().includes(q))
+        );
+    }
+
+    const el = document.getElementById('houseList');
+    if (!list.length) {
+        el.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-secondary);"><i class="fas fa-home" style="font-size:3rem;opacity:0.2;display:block;margin-bottom:12px;"></i>DIU Nexus</div>';
+        return;
+    }
+
+    el.innerHTML = list.map(h => {
+        const rating = avgRating(h.reviews);
+        const stars = '⭐'.repeat(Math.round(rating)) + '☆'.repeat(5 - Math.round(rating));
+        const showId = `rev-${h.id}`;
+        const isOwner = (myUser?._id || myUser?.id) == h.postedById;
+
+        return `
+        <div class="house-card">
+            ${h.image ? `<img src="${h.image}" class="house-cover">` : `<div class="house-cover">🏠</div>`}
+            <div class="house-body">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                    <div class="house-title">${esc(h.title)}</div>
+                    <div class="house-price">${esc(h.price)}</div>
+                </div>
+                <div class="house-meta">
+                    <span><i class="fas fa-map-marker-alt" style="color:#10b981;"></i> ${esc(h.location)}</span>
+                    <span><i class="fas fa-user" style="color:#65676b;"></i> ${esc(h.postedBy)}</span>
+                    ${rating > 0 ? `<span>⭐ <strong>${rating}</strong> (${h.reviews.length})</span>` : ''}
+                </div>
+                <div class="house-tags">
+                    <span class="house-tag">${esc(h.category)}</span>
+                    ${h.facilities ? h.facilities.split(',').map(f => `<span class="house-tag" style="background:var(--bg);color:var(--text);">${esc(f.trim())}</span>`).join('') : ''}
+                </div>
+                ${h.desc ? `<div class="house-desc">${esc(h.desc)}</div>` : ''}
+                
+                <div class="house-actions">
+                    <a href="tel:${esc(h.contact)}" class="contact-btn btn-call"><i class="fas fa-phone-alt"></i> Call ${esc(h.contact)}</a>
+                    <a href="messenger.html?userId=${h.postedById || ''}" class="contact-btn btn-msg"><i class="fas fa-comment"></i> Messenger</a>
+                    ${isOwner ? `<button onclick="deleteHouse(${h.id})" class="contact-btn" style="background:#fee2e2;color:#e41e3f;margin-left:auto;"><i class="fas fa-trash"></i> Delete</button>` : `<button onclick="reportContent('housing', ${h.id})" class="contact-btn" style="background:#fff7ed;color:#e41e3f;margin-left:auto;border:1px solid #fed7aa;"><i class="fas fa-flag"></i> Report</button>`}
+                </div>
+
+                <!-- Review & Rating Section -->
+                <div class="review-box" id="${showId}" style="display:none;">
+                    <h4 style="font-size:0.9rem;font-weight:700;margin-bottom:10px;color:var(--text);">
+                        💬 Reviews & Comments (${h.reviews ? h.reviews.length : 0})
+                    </h4>
+                    <div id="revList-${h.id}">
+                        ${h.reviews && h.reviews.length ? h.reviews.map(r => `
+                            <div class="review-item">
+                                <div class="review-avatar">${(r.author || '?')[0].toUpperCase()}</div>
+                                <div class="review-bubble">
+                                    <div class="review-header">
+                                        <span class="review-name">${esc(r.author)}</span>
+                                        <span class="review-stars">${'⭐'.repeat(r.rating || 5)}</span>
+                                    </div>
+                                    <div class="review-text">${esc(r.text)}</div>
+                                </div>
+                            </div>
+                        `).join('') : '<p style="font-size:0.8rem;color:var(--text-secondary);margin-bottom:8px;">Find your next home near DSC — Verified listings from DIU students.</p>'}
+                    </div>
+
+                    <!-- Add Review Input -->
+                    <div style="display:flex;flex-direction:column;gap:6px;margin-top:10px;border-top:1px solid var(--border);padding-top:10px;">
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <span style="font-size:0.8rem;font-weight:700;">Rating:</span>
+                            <select id="rateSelect-${h.id}" style="padding:4px 8px;border-radius:6px;border:1px solid var(--border);font-family:inherit;font-size:0.8rem;">
+                                <option value="5">⭐⭐⭐⭐⭐ (5/5)</option>
+                                <option value="4">⭐⭐⭐⭐ (4/5)</option>
+                                <option value="3">⭐⭐⭐ (3/5)</option>
+                                <option value="2">⭐⭐ (2/5)</option>
+                                <option value="1">⭐ (1/5)</option>
+                            </select>
+                        </div>
+                        <div style="display:flex;gap:6px;">
+                            <input id="revInput-${h.id}" class="form-input" placeholder="Write a review — e.g., Great place, clean, helpful owner..." style="padding:8px 12px;font-size:0.85rem;" onkeydown="if(event.key==='Enter')addReview(${h.id})">
+                            <button onclick="addReview(${h.id})" style="background:#10b981;color:white;border:none;border-radius:8px;padding:8px 16px;font-weight:700;cursor:pointer;">Send</button>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="toggle-btn" onclick="toggleReviews('${showId}', this)">
+                    💬 Reviews & Rating (${h.reviews ? h.reviews.length : 0})
+                </button>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function toggleReviews(id, btn) {
+    const el = document.getElementById(id);
+    const isHidden = el.style.display === 'none';
+    el.style.display = isHidden ? 'block' : 'none';
+    btn.textContent = isHidden ? '▴ Hide Reviews' : `💬 Reviews & Rating`;
+}
+
+async function addReview(houseId) {
+    const text = document.getElementById(`revInput-${houseId}`).value.trim();
+    const rating = parseInt(document.getElementById(`rateSelect-${houseId}`).value) || 5;
+    if (!text) { showToast('Please write a review first'); return; }
+    try{
+        const res=await fetch(API+'/housing/'+houseId+'/reviews',{method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+token}, body:JSON.stringify({rating, text})});
+        if(!res.ok) throw new Error('Server failed');
+        showToast('✅ Review added — globally visible!');
+        document.getElementById(`revInput-${houseId}`).value='';
+        // Reload to show globally
+        await loadHouses();
+        document.getElementById(`rev-${houseId}`).style.display = 'block';
+        return;
+    }catch(e){
+        console.warn('addReview server failed, fallback local',e);
+    }
+    const house = allHouses.find(h => h.id === houseId);
+    if (!house) return;
+    if (!house.reviews) house.reviews = [];
+    house.reviews.push({ id: Date.now(), author: myUser?.fullName || 'Student', rating, text, createdAt: new Date().toISOString() });
+    saveHouses();
+    renderHouses();
+    showToast('✅ Review added! (local)');
+    document.getElementById(`rev-${houseId}`).style.display = 'block';
+}
+
+async function deleteHouse(id) {
+    if (!confirm('Delete this housing post?')) return;
+    try{
+        const res=await fetch(API+'/housing/'+id,{method:'DELETE', headers:{'Authorization':'Bearer '+token}});
+        if(!res.ok) throw new Error('Server delete failed');
+        showToast('Deleted — removed globally');
+    }catch(e){
+        // Fallback local
+        allHouses = allHouses.filter(h => h.id !== id);
+        saveHouses();
+        showToast('Deleted locally');
+    }
+    await loadHouses();
+}
+
+function filterCat(cat, btn) {
+    currentCat = cat;
+    document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderHouses();
+}
+
+function filterHouses() { renderHouses(); }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function showToast(msg) { const t=document.createElement('div'); t.style.cssText='background:#1c1e21;color:white;padding:12px 18px;border-radius:10px;font-family:Inter,sans-serif;font-size:0.88rem;'; t.textContent=msg; document.getElementById('toast-container').appendChild(t); setTimeout(()=>t.remove(),2800); }
+
+loadHouses();
+</script>
+</body>
+</html>

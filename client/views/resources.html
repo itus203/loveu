@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Academic Resources | DIU Nexus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/home.css">
+    <style>
+        .resources-hero { background:linear-gradient(135deg,#0866ff,#0550c1); padding:48px 24px; text-align:center; color:white; }
+        .resources-container { max-width:900px; margin:0 auto; padding:24px 16px; }
+        .filters { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px; }
+        .filter-select { padding:8px 14px; border:1.5px solid var(--border,#e4e6eb); border-radius:20px; font-family:inherit; font-size:0.85rem; background:var(--surface,#fff); color:var(--text,#1c1e21); cursor:pointer; }
+        .resources-list { display:flex; flex-direction:column; gap:12px; }
+        .resource-card { background:var(--surface,#fff); border-radius:12px; padding:16px; box-shadow:0 2px 8px rgba(0,0,0,0.06); display:flex; align-items:center; gap:14px; }
+        .resource-icon { width:52px; height:52px; border-radius:10px; background:var(--blue-light,#e7f0ff); color:var(--blue,#0866ff); display:flex; align-items:center; justify-content:center; font-size:1.4rem; flex-shrink:0; }
+        .resource-info { flex:1; min-width:0; }
+        .resource-title { font-weight:700; font-size:0.95rem; margin-bottom:4px; }
+        .resource-meta { font-size:0.78rem; color:#65676b; }
+        .btn-download { background:var(--blue,#0866ff); color:white; border:none; border-radius:8px; padding:8px 16px; font-family:inherit; font-size:0.82rem; font-weight:700; cursor:pointer; white-space:nowrap; }
+    
+        /* Fix: Pill till missing + button blocked — ensure pills and following buttons are clickable */
+        .filter-bar, .category-tabs, .cats, .filter-tabs, .cat-tabs, .filter-pill, .cat-tab, .cat, .blood-type-grid, .search-bar {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 1;
+        }
+        .filter-chip, .cat-tab, .cat, .blood-btn, .btn-join, .btn-view, .btn-post, .btn-submit, .btn-sell, .contact-btn, .post-action, .member-row button, .file-row a {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 2;
+        }
+        /* Ensure no sticky pill blocks content */
+        .category-tabs, .filter-bar, .cats {
+            overflow-x: auto;
+            overflow-y: visible;
+            max-height: none;
+        }
+
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <div class="navbar-left">
+        <button class="back-btn" onclick="handleBack()" title="Back" style="display:flex;"><i class="fas fa-arrow-left"></i></button>
+        <a href="../home.html" class="nav-logo" style="display:flex;align-items:center;gap:6px;"><img src="../assets/icon.svg" alt="NEXUS" style="width:26px;height:26px;flex-shrink:0;filter:drop-shadow(0 2px 4px rgba(10,108,255,0.3));" onerror="this.style.display='none'"><span style="font-weight:800;color:#0A6CFF;margin-left:6px;letter-spacing:0.5px;font-size:1.1rem;">NEXUS</span></a>
+        <div class="nav-search" style="position:relative;">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search DIU Nexus" oninput="if(this.value.length>2) window.location.href='../home.html?q='+encodeURIComponent(this.value)">
+            <div class="search-dropdown" id="searchDropdown"></div>
+        </div>
+    </div>
+    <div class="navbar-center" id="mainNavCenter">
+        <a href="../home.html" class="nav-icon-btn" data-tab="home" title="Home"><i class="fas fa-home"></i></a>
+        <a href="groups.html" class="nav-icon-btn" data-tab="groups" title="Groups"><i class="fas fa-users"></i></a>
+        <a href="reels.html" class="nav-icon-btn" data-tab="reels" title="Reels"><i class="fas fa-film"></i></a>
+        <a href="departments.html" class="nav-icon-btn" data-tab="departments" title="Departments"><i class="fas fa-building"></i></a>
+        <a href="events.html" class="nav-icon-btn" data-tab="events" title="Events"><i class="fas fa-calendar-alt"></i></a>
+    </div>
+    <div class="navbar-right">
+        <button class="navbar-action-btn" onclick="window.location.href='messenger.html'" title="Messenger"><i class="fab fa-facebook-messenger"></i></button>
+        <button class="navbar-action-btn" onclick="window.location.href='../home.html'" title="Notifications"><i class="fas fa-bell"></i></button>
+        <button class="navbar-action-btn" onclick="window.location.href='profile.html'" title="Account"><div class="avatar-placeholder" style="width:32px;height:32px;font-size:0.85rem;border-radius:50%;">?</div></button>
+    </div>
+</nav>
+<script src="../js/config.js"></script>
+<script>
+function handleBack(){ try{ if(history.length>1 && document.referrer) history.back(); else window.location.href='../home.html'; }catch{ window.location.href='../home.html'; } }
+(function(){
+  const path=window.location.pathname.toLowerCase();
+  document.querySelectorAll('.nav-icon-btn').forEach(btn=>{
+    const href=(btn.getAttribute('href')||'').toLowerCase();
+    const target=href.split('/').pop().split('?')[0];
+    const current=path.split('/').pop().split('?')[0] || 'groups.html';
+    btn.classList.toggle('active', target===current);
+  });
+})();
+</script>
+<div class="resources-hero"><h1 style="font-size:2rem;font-weight:800;"><i class="fas fa-book-open"></i> Academic Resources</h1><p style="opacity:0.85;margin-top:8px;">Share and access notes, assignments, slides & more</p></div>
+<div class="resources-container">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+        <div class="filters">
+            <select class="filter-select" id="ownerFilter" onchange="load()" style="font-weight:700;"><option value="">📚 All Resources</option><option value="shared">🌍 Shared by Others</option><option value="mine">👤 My Uploads</option></select>
+            <select class="filter-select" id="deptFilter" onchange="load()"><option value="">All Departments</option><option>CSE</option><option>SWE</option><option>ITM</option><option>CIS</option><option>EEE</option><option>ETE</option><option>Civil Engineering</option><option>Textile Engineering</option><option>Architecture</option><option>BBA</option><option>Innovation & Entrepreneurship</option><option>Real Estate</option><option>Tourism & Hospitality</option><option>Pharmacy</option><option>Public Health</option><option>Nutrition & Food Engineering</option><option>Genetic Engineering & Biotech</option><option>English</option><option>Law</option><option>Journalism & Media</option><option>Development Studies</option></select>
+            <select class="filter-select" id="batchFilter" onchange="load()"><option value="">All Batches</option><option>Spring 2026</option><option>Fall 2025</option><option>Spring 2025</option><option>Fall 2024</option></select>
+        </div>
+        <button onclick="document.getElementById('uploadModal').classList.add('show')" style="background:var(--blue);color:white;border:none;border-radius:10px;padding:10px 20px;font-family:inherit;font-size:0.88rem;font-weight:700;cursor:pointer;"><i class="fas fa-upload"></i> Upload Resource</button>
+    </div>
+    <div class="resources-list" id="resourcesList"><div style="text-align:center;padding:40px;color:#65676b;"><i class="fas fa-spinner fa-spin fa-2x"></i></div></div>
+</div>
+<div class="modal-overlay" id="uploadModal">
+    <div class="modal" style="width:460px;">
+        <div class="modal-header"><span class="modal-title">Upload Resource</span><button class="modal-close" onclick="document.getElementById('uploadModal').classList.remove('show')"><i class="fas fa-times"></i></button></div>
+        <div class="modal-body" style="display:flex;flex-direction:column;gap:12px;">
+            <input id="resTitle" type="text" placeholder="Title *" style="padding:10px;border:1.5px solid var(--border,#e4e6eb);border-radius:8px;font-family:inherit;">
+            <textarea id="resDesc" placeholder="Description" rows="2" style="padding:10px;border:1.5px solid var(--border,#e4e6eb);border-radius:8px;font-family:inherit;resize:vertical;"></textarea>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <select id="resDept" style="padding:10px;border:1.5px solid var(--border,#e4e6eb);border-radius:8px;font-family:inherit;"><option value="">Department</option><option>CSE</option><option>SWE</option><option>ITM</option><option>CIS</option><option>EEE</option><option>ETE</option><option>Civil Engineering</option><option>Textile Engineering</option><option>Architecture</option><option>BBA</option><option>Innovation & Entrepreneurship</option><option>Real Estate</option><option>Tourism & Hospitality</option><option>Pharmacy</option><option>Public Health</option><option>Nutrition & Food Engineering</option><option>Genetic Engineering & Biotech</option><option>English</option><option>Law</option><option>Journalism & Media</option><option>Development Studies</option></select>
+                <input id="resBatch" placeholder="Batch" style="padding:10px;border:1.5px solid var(--border,#e4e6eb);border-radius:8px;font-family:inherit;">
+            </div>
+            <input id="resSubject" placeholder="Subject" style="padding:10px;border:1.5px solid var(--border,#e4e6eb);border-radius:8px;font-family:inherit;">
+            <label id="fileLabel" style="display:flex;align-items:center;gap:10px;padding:12px;border:1.5px dashed var(--border,#e4e6eb);border-radius:8px;cursor:pointer;color:var(--blue,#0866ff);font-weight:600;font-size:0.88rem;transition:all 0.15s;">
+                <i class="fas fa-paperclip"></i> <span id="fileLabelText">Choose file (PDF, DOCX, PPTX...)</span>
+                <input type="file" id="resFile" style="display:none" accept=".pdf,.doc,.docx,.ppt,.pptx,.zip,.txt,.jpg,.png" onchange="onFileChosen(this)">
+            </label>
+            <div id="fileChosenInfo" style="display:none;font-size:0.8rem;color:#059669;background:#d1fae5;padding:8px 10px;border-radius:6px;margin-top:-4px;"><i class="fas fa-check-circle"></i> <span id="chosenFileName"></span> (<span id="chosenFileSize"></span>)</div>
+            <button type="button" onclick="uploadResource()" style="padding:12px;background:var(--blue,#0866ff);color:white;border:none;border-radius:8px;font-family:inherit;font-size:0.95rem;font-weight:700;cursor:pointer;">Upload</button>
+        </div>
+    </div>
+</div>
+<div id="toast-container" style="position:fixed;bottom:24px;right:24px;z-index:9999;"></div>
+<script>
+const API = (typeof window.API !== 'undefined' ? window.API : (function(){ var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000/api'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin+'/api'; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin+'/api':'http://localhost:5000/api'; return 'http://localhost:5000/api'; } return window.location.origin+'/api'; })());
+function getToken(){ return localStorage.getItem('token'); }
+function getCurrentUserId(){ try{ const u=JSON.parse(localStorage.getItem('user')||'null'); return String(u?.id||u?._id||''); }catch{ return ''; } }
+if(!getToken()) window.location.href='../index.html';
+if(localStorage.getItem('darkMode')==='1') document.body.setAttribute('data-theme','dark');
+const ICONS={pdf:'fa-file-pdf',doc:'fa-file-word',docx:'fa-file-word',ppt:'fa-file-powerpoint',pptx:'fa-file-powerpoint',zip:'fa-file-archive',default:'fa-file-alt'};
+async function apiFetch(p,o={}) { const t=getToken(); const h={'Authorization':`Bearer ${t}`,...(o.headers||{})}; if(!(o.body instanceof FormData)) h['Content-Type']='application/json'; return fetch(`${API}${p}`,{...o,headers:h}); }
+async function load(){
+    const dept=document.getElementById('deptFilter').value; const batch=document.getElementById('batchFilter').value; const owner=document.getElementById('ownerFilter')?.value||'';
+    let url='/resources?'; if(dept) url+=`department=${encodeURIComponent(dept)}&`; if(batch) url+=`batch=${encodeURIComponent(batch)}`;
+    // For "My Uploads" use backend user_id filter (most efficient)
+    if(owner==='mine'){ const myId=getCurrentUserId(); if(myId) url+=`user_id=${encodeURIComponent(myId)}&`; }
+    const el=document.getElementById('resourcesList');
+    el.innerHTML='<div style="text-align:center;padding:40px;color:#65676b;"><i class="fas fa-spinner fa-spin fa-2x"></i> Loading...</div>';
+    try{
+        const res=await apiFetch(url);
+        if(!res.ok){ const d=await res.json().catch(()=>({})); throw new Error(d.message||`Server ${res.status}`); }
+        let resources=await res.json();
+        // Client-side filter for "Shared by Others"
+        if(owner==='shared'){
+            const myId=getCurrentUserId();
+            resources=resources.filter(r=> String(r.user_id)!==String(myId));
+        }
+        if(!Array.isArray(resources) || !resources.length){
+            const msg=owner==='mine'?'You haven\'t uploaded any resources yet.': owner==='shared'?'No shared resources from others yet.': 'No resources found. Be the first to share!';
+            const icon=owner==='mine'?'fa-user':'fa-book';
+            el.innerHTML=`<div style="text-align:center;padding:60px;color:#65676b;"><i class="fas ${icon}" style="font-size:3rem;opacity:0.3;display:block;margin-bottom:12px;"></i>${msg}</div>`;return;
+        }
+        el.innerHTML=resources.map(r=>{const ext=(r.fileUrl||'').split('.').pop().toLowerCase();const icon=ICONS[ext]||ICONS.default;const liked=r.isLiked;return `<div class="resource-card"><div class="resource-icon"><i class="fas ${icon}"></i></div><div class="resource-info"><div class="resource-title">${esc(r.title)}</div><div class="resource-meta">${esc(r.fullName||'Anonymous')} · ${esc(r.department||'')} ${esc(r.batch||'')} ${r.subject?'· '+esc(r.subject):''} · ${r.downloads||0} downloads · ❤️ ${r.like_count||0} likes</div></div><button onclick="toggleResourceLike('${r.id}', this)" style="background:${liked?'#fce7f3':'var(--bg)'};color:${liked?'#e11d48':'var(--text-secondary)'};border:1px solid ${liked?'#f9a8d4':'var(--border)'};padding:6px 10px;border-radius:20px;font-size:0.75rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:4px;flex-shrink:0;"><i class="${liked?'fas':'far'} fa-heart"></i> <span>${r.like_count||0}</span></button><a href="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${r.fileUrl}" download><button class="btn-download" onclick="countDownload('${r.id}')"><i class="fas fa-download"></i> Download</button></a><button onclick="if(confirm('Delete this resource?')) deleteResource('${r.id}')" style="background:#fee2e2;color:#e41e3f;border:none;padding:6px 10px;border-radius:6px;font-size:0.75rem;font-weight:700;cursor:pointer;margin-left:6px;"><i class="fas fa-trash"></i></button></div>`;}).join('');
+    }catch(e){
+        console.error('[Resources] load failed', e);
+        el.innerHTML=`<div style="text-align:center;padding:40px;color:#e41e3f;"><i class="fas fa-exclamation-triangle" style="font-size:2rem;display:block;margin-bottom:8px;"></i>Failed to load: ${esc(e.message)}<br><button onclick="load()" style="margin-top:12px;background:#0866ff;color:white;border:none;padding:8px 16px;border-radius:8px;font-weight:700;cursor:pointer;">Retry</button></div>`;
+    }
+}
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function onFileChosen(input){
+    const file=input.files[0];
+    const label=document.getElementById('fileLabel');
+    const info=document.getElementById('fileChosenInfo');
+    const nameEl=document.getElementById('chosenFileName');
+    const sizeEl=document.getElementById('chosenFileSize');
+    const text=document.getElementById('fileLabelText');
+    if(file){
+        const size=file.size<1024?file.size+' B':file.size<1048576?(file.size/1024).toFixed(1)+' KB':(file.size/1048576).toFixed(1)+' MB';
+        text.textContent=file.name;
+        label.style.borderColor='#10b981'; label.style.background='#ecfdf5'; label.style.color='#065f46';
+        nameEl.textContent=file.name; sizeEl.textContent=size; info.style.display='block';
+    } else {
+        text.textContent='Choose file (PDF, DOCX, PPTX...)';
+        label.style.borderColor='var(--border,#e4e6eb)'; label.style.background=''; label.style.color='var(--blue,#0866ff)';
+        info.style.display='none';
+    }
+}
+async function countDownload(id){try{await apiFetch(`/resources/${id}/download`);}catch{}}
+async function uploadResource(){
+    const file=document.getElementById('resFile').files[0]; const title=document.getElementById('resTitle').value.trim();
+    console.log('[Upload] file:', file? file.name+' '+file.size : 'NO FILE', 'title:', title);
+    if(!file||!title){showToast('Title and file required — file choose koro','error'); if(!file) document.getElementById('fileLabel').style.borderColor='#e41e3f'; return;}
+    const btn=document.querySelector('#uploadModal button[onclick="uploadResource()"]'); const orig=btn?btn.textContent:''; if(btn){btn.textContent='Uploading...'; btn.disabled=true;}
+    const fd=new FormData(); fd.append('file',file); fd.append('title',title); fd.append('description',document.getElementById('resDesc').value); fd.append('department',document.getElementById('resDept').value); fd.append('batch',document.getElementById('resBatch').value); fd.append('subject',document.getElementById('resSubject').value);
+    try{
+        console.log('[Upload] POST', `${API}/resources`);
+        const res=await apiFetch('/resources',{method:'POST',body:fd});
+        const data=await res.json().catch(()=>({}));
+        console.log('[Upload] res', res.status, data);
+        if(!res.ok) throw new Error(data.message||`Upload failed (${res.status})`);
+        document.getElementById('uploadModal').classList.remove('show');
+        document.getElementById('resTitle').value=''; document.getElementById('resDesc').value=''; document.getElementById('resFile').value=''; document.getElementById('resSubject').value=''; onFileChosen({files:[]});
+        // Auto update Shared count 1-2-3 animation
+        try{
+            const myId=getCurrentUserId();
+            const cntRes=await apiFetch(`/resources?user_id=${myId}`);
+            if(cntRes.ok){ const arr=await cntRes.json(); const c=Array.isArray(arr)?arr.length:0; try{ let u=JSON.parse(localStorage.getItem('user')||'{}'); u.resourceCount=c; u.sharedCount=c; localStorage.setItem('user', JSON.stringify(u)); localStorage.setItem('resourceUpdateTs', String(Date.now())); }catch{} showToast(`✅ Uploaded! Shared: ${c} resources`,'success'); }
+            else showToast('✅ Uploaded!','success');
+        }catch{ showToast('✅ Uploaded!','success'); }
+        load();
+    }catch(e){ console.error('[Upload]',e); showToast(e.message||'Upload failed','error'); }
+    finally{ if(btn){btn.textContent='Upload'; btn.disabled=false; } }
+}
+async function deleteResource(id){
+    if(!confirm('Delete this resource?')) return;
+    try{
+        const res=await apiFetch(`/resources/${id}`,{method:'DELETE'});
+        const data=await res.json().catch(()=>({}));
+        if(!res.ok) throw new Error(data.message||'Failed');
+        try{
+            const myId=getCurrentUserId();
+            const cntRes=await apiFetch(`/resources?user_id=${myId}`);
+            if(cntRes.ok){ const arr=await cntRes.json(); const c=Array.isArray(arr)?arr.length:0; try{ let u=JSON.parse(localStorage.getItem('user')||'{}'); u.resourceCount=c; u.sharedCount=c; localStorage.setItem('user', JSON.stringify(u)); localStorage.setItem('resourceUpdateTs', String(Date.now())); }catch{} showToast(`🗑️ Deleted — Shared: ${c}`,'success'); }
+            else showToast('🗑️ Deleted','success');
+        }catch{ showToast('🗑️ Deleted','success'); }
+        load();
+    }catch(e){ showToast(e.message||'Failed','error'); }
+}
+async function toggleResourceLike(id, btn){
+    const icon=btn.querySelector('i'); const span=btn.querySelector('span');
+    const wasLiked=icon.classList.contains('fas');
+    try{
+        const res=await apiFetch(`/resources/${id}/like`,{method:'POST'});
+        const data=await res.json().catch(()=>({}));
+        if(!res.ok) throw new Error(data.message||'Failed');
+        const liked=data.isLiked;
+        icon.className= liked ? 'fas fa-heart' : 'far fa-heart';
+        btn.style.background= liked ? '#fce7f3' : 'var(--bg)';
+        btn.style.color= liked ? '#e11d48' : 'var(--text-secondary)';
+        btn.style.borderColor= liked ? '#f9a8d4' : 'var(--border)';
+        if(span) span.textContent=data.like_count||0;
+        // Re-sort by likes — reload to show most liked on top
+        setTimeout(()=>load(), 400);
+    }catch(e){ showToast(e.message||'Failed','error'); }
+}
+// Close modal on overlay click
+document.getElementById('uploadModal').addEventListener('click', e=>{ if(e.target===document.getElementById('uploadModal')) e.currentTarget.classList.remove('show'); });
+function showToast(msg,type){const t=document.createElement('div');t.style.cssText=`background:${type==='error'?'#e41e3f':'#1c1e21'};color:white;padding:12px 18px;border-radius:8px;font-size:0.88rem;font-family:Inter,sans-serif;`;t.textContent=msg;document.getElementById('toast-container').appendChild(t);setTimeout(()=>t.remove(),3200);}
+load();
+</script>
+</body>
+</html>

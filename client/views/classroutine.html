@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Class Routine | DIU Nexus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/home.css">
+    <style>
+        body{padding-top:64px;}
+        .hero{background:linear-gradient(135deg,#0891b2,#0e7490);padding:40px 24px;text-align:center;color:white;}
+        .hero h1{font-size:2rem;font-weight:800;}
+        .container{max-width:900px;margin:0 auto;padding:24px 16px;}
+        .days-tabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:20px;padding-bottom:4px;scrollbar-width:none;}
+        .days-tabs::-webkit-scrollbar{display:none;}
+        .day-tab{padding:8px 18px;border-radius:20px;border:1.5px solid var(--border,#e4e6eb);font-family:inherit;font-size:0.85rem;font-weight:600;cursor:pointer;background:var(--surface,#fff);white-space:nowrap;transition:all 0.15s;}
+        .day-tab.active,.day-tab:hover{background:#0891b2;color:white;border-color:#0891b2;}
+        .day-tab.today{border-color:#0891b2;color:#0891b2;}
+        .class-list{display:flex;flex-direction:column;gap:10px;}
+        .class-card{background:var(--surface,#fff);border-radius:12px;padding:14px 16px;box-shadow:0 2px 6px rgba(0,0,0,0.06);display:flex;gap:14px;align-items:center;border-left:4px solid;}
+        .class-time{min-width:80px;text-align:center;}
+        .class-time .t{font-size:0.9rem;font-weight:800;}
+        .class-time .d{font-size:0.72rem;color:#65676b;font-weight:500;}
+        .class-info{flex:1;}
+        .class-name{font-weight:700;font-size:0.95rem;margin-bottom:2px;}
+        .class-meta{font-size:0.78rem;color:#65676b;}
+        .class-room{font-size:0.8rem;font-weight:600;color:#0891b2;}
+        .add-btn{position:fixed;bottom:24px;right:24px;width:56px;height:56px;border-radius:50%;background:#0891b2;color:white;border:none;font-size:1.5rem;cursor:pointer;box-shadow:0 4px 16px rgba(8,145,178,0.4);display:flex;align-items:center;justify-content:center;z-index:100;transition:transform 0.2s;}
+        .add-btn:hover{transform:scale(1.1);}
+        .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;align-items:center;justify-content:center;}
+        .modal-overlay.show{display:flex;}
+        .modal{background:var(--surface,#fff);border-radius:16px;padding:24px;width:100%;max-width:420px;}
+        .form-group{margin-bottom:12px;}
+        .form-group label{display:block;font-size:0.82rem;font-weight:600;margin-bottom:4px;color:#65676b;}
+        .form-group input,.form-group select{width:100%;padding:10px 12px;border:1.5px solid var(--border,#e4e6eb);border-radius:8px;font-family:inherit;font-size:0.88rem;background:var(--surface,#fff);color:var(--text,#1c1e21);outline:none;}
+        .btn-add{width:100%;padding:12px;background:#0891b2;color:white;border:none;border-radius:8px;font-family:inherit;font-size:0.95rem;font-weight:700;cursor:pointer;margin-top:8px;}
+        .empty-day{text-align:center;padding:60px 20px;color:#65676b;}
+        .empty-day i{font-size:3rem;opacity:0.3;display:block;margin-bottom:12px;}
+        #toast-container{position:fixed;bottom:24px;right:104px;z-index:9999;}
+    
+        /* Fix: Pill till missing + button blocked — ensure pills and following buttons are clickable */
+        .filter-bar, .category-tabs, .cats, .filter-tabs, .cat-tabs, .filter-pill, .cat-tab, .cat, .blood-type-grid, .search-bar {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 1;
+        }
+        .filter-chip, .cat-tab, .cat, .blood-btn, .btn-join, .btn-view, .btn-post, .btn-submit, .btn-sell, .contact-btn, .post-action, .member-row button, .file-row a {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 2;
+        }
+        /* Ensure no sticky pill blocks content */
+        .category-tabs, .filter-bar, .cats {
+            overflow-x: auto;
+            overflow-y: visible;
+            max-height: none;
+        }
+
+    </style>
+</head>
+<body>
+<script src="../js/config.js"></script>
+<script src="../js/shared.js"></script>
+<div class="hero"><h1><i class="fas fa-calendar-week"></i> Class Routine</h1><p style="opacity:0.85;margin-top:6px;">Your weekly class schedule at DIU</p></div>
+<div class="container">
+    <div class="days-tabs" id="daysTabs"></div>
+    <div class="class-list" id="classList"></div>
+</div>
+<button class="add-btn" title="Add Class" onclick="document.getElementById('addModal').classList.add('show')">+</button>
+<div class="modal-overlay" id="addModal">
+    <div class="modal">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <h2 style="font-weight:800;font-size:1.05rem;">Add Class</h2>
+            <button onclick="document.getElementById('addModal').classList.remove('show')" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:#65676b;"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="form-group"><label>Course Name *</label><input id="cName" placeholder="e.g., Data Structures"></div>
+        <div class="form-group"><label>Course Code</label><input id="cCode" placeholder="e.g., CSE-215"></div>
+        <div class="form-group"><label>Day</label>
+            <select id="cDay"><option>Sunday</option><option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option></select>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div class="form-group"><label>Start Time</label><input type="time" id="cStart"></div>
+            <div class="form-group"><label>End Time</label><input type="time" id="cEnd"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div class="form-group"><label>Room</label><input id="cRoom" placeholder="e.g., A-501"></div>
+            <div class="form-group"><label>Teacher</label><input id="cTeacher" placeholder="e.g., Dr. Ahmed"></div>
+        </div>
+        <div class="form-group"><label>Color</label>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <label style="cursor:pointer;"><input type="radio" name="cColor" value="#0891b2" checked style="display:none;"><div style="width:28px;height:28px;border-radius:50%;background:#0891b2;border:3px solid #0891b2;"></div></label>
+                <label style="cursor:pointer;"><input type="radio" name="cColor" value="#0866ff" style="display:none;"><div style="width:28px;height:28px;border-radius:50%;background:#0866ff;"></div></label>
+                <label style="cursor:pointer;"><input type="radio" name="cColor" value="#7c3aed" style="display:none;"><div style="width:28px;height:28px;border-radius:50%;background:#7c3aed;"></div></label>
+                <label style="cursor:pointer;"><input type="radio" name="cColor" value="#059669" style="display:none;"><div style="width:28px;height:28px;border-radius:50%;background:#059669;"></div></label>
+                <label style="cursor:pointer;"><input type="radio" name="cColor" value="#f97316" style="display:none;"><div style="width:28px;height:28px;border-radius:50%;background:#f97316;"></div></label>
+                <label style="cursor:pointer;"><input type="radio" name="cColor" value="#e41e3f" style="display:none;"><div style="width:28px;height:28px;border-radius:50%;background:#e41e3f;"></div></label>
+            </div>
+        </div>
+        <button class="btn-add" onclick="addClass()"><i class="fas fa-plus"></i> Add Class</button>
+    </div>
+</div>
+<div id="toast-container"></div>
+<script>
+if(localStorage.getItem('darkMode')==='1') document.body.setAttribute('data-theme','dark');
+const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday'];
+let activeDay=DAYS[new Date().getDay()===6?0:Math.min(new Date().getDay()-0,4)]||DAYS[0];
+let classes=JSON.parse(localStorage.getItem('diu_routine')||'[]');
+const todayName=DAYS[new Date().getDay()-0]||'';
+const tabs=document.getElementById('daysTabs');
+DAYS.forEach(d=>{
+    const btn=document.createElement('button');
+    btn.className='day-tab'+(d===activeDay?' active':'')+(d===todayName?' today':'');
+    btn.textContent=d+(d===todayName?' (Today)':'');
+    btn.onclick=()=>{activeDay=d;document.querySelectorAll('.day-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');render();};
+    tabs.appendChild(btn);
+});
+function render(){
+    const el=document.getElementById('classList');
+    const dayClasses=classes.filter(c=>c.day===activeDay).sort((a,b)=>a.start.localeCompare(b.start));
+    if(!dayClasses.length){el.innerHTML='<div class="empty-day"><i class="fas fa-mug-hot"></i>No classes on '+activeDay+'<br><span style="font-size:0.85rem;margin-top:4px;display:block;">Enjoy your free time! ☕</span></div>';return;}
+    el.innerHTML=dayClasses.map((c,i)=>`<div class="class-card" style="border-color:${c.color||'#0891b2'};">
+        <div class="class-time"><div class="t">${fmt12(c.start)}</div><div class="d">to</div><div class="t">${fmt12(c.end)}</div></div>
+        <div class="class-info"><div class="class-name">${c.name}${c.code?` <span style="font-size:0.78rem;color:#65676b;font-weight:500;">(${c.code})</span>`:''}</div><div class="class-meta">${c.teacher?'👨🏫 '+c.teacher:''}</div><div class="class-room">${c.room?'📍 '+c.room:''}</div></div>
+        <button onclick="deleteClass(${i})" style="background:none;border:none;color:#65676b;cursor:pointer;padding:4px;"><i class="fas fa-trash-alt"></i></button>
+    </div>`).join('');
+}
+function addClass(){
+    const name=document.getElementById('cName').value.trim();
+    if(!name){showToast('Course name required');return;}
+    const color=document.querySelector('input[name=cColor]:checked')?.value||'#0891b2';
+    classes.push({name,code:document.getElementById('cCode').value,day:document.getElementById('cDay').value,start:document.getElementById('cStart').value,end:document.getElementById('cEnd').value,room:document.getElementById('cRoom').value,teacher:document.getElementById('cTeacher').value,color});
+    localStorage.setItem('diu_routine',JSON.stringify(classes));
+    document.getElementById('addModal').classList.remove('show');
+    showToast('✅ Class added!'); render();
+}
+function deleteClass(idx){
+    if(!confirm('Remove this class?')) return;
+    const dayClasses=classes.filter(c=>c.day===activeDay);
+    const toDelete=dayClasses[idx];
+    classes=classes.filter(c=>c!==toDelete);
+    localStorage.setItem('diu_routine',JSON.stringify(classes));
+    showToast('Class removed'); render();
+}
+function fmt12(t){if(!t)return '';const[h,m]=t.split(':');const hr=parseInt(h);return `${hr===0?12:hr>12?hr-12:hr}:${m} ${hr>=12?'PM':'AM'}`;}
+function showToast(msg){const t=document.createElement('div');t.style.cssText='background:#1c1e21;color:white;padding:12px 18px;border-radius:8px;font-size:0.88rem;font-family:Inter,sans-serif;';t.textContent=msg;document.getElementById('toast-container').appendChild(t);setTimeout(()=>t.remove(),3100);}
+render();
+</script>
+</body></html>

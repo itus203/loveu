@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile | DIU Nexus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/home.css">
+    <style>
+        body { padding-top: 64px; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); }
+        .profile-cover { height: 360px; background: linear-gradient(135deg, #0a66ff 0%, #063a90 60%, #021a45 100%); position: relative; overflow: hidden; border-bottom: 1px solid rgba(0,0,0,0.06); background-size: cover; background-position: center 35%; background-repeat: no-repeat; }
+        .profile-cover::after { content:''; position:absolute; left:0; right:0; bottom:0; height:90px; background: linear-gradient(transparent, rgba(0,0,0,0.18)); pointer-events:none; }
+        .profile-cover img { width: 100%; height: 100%; object-fit: cover; object-position: center 35%; display:block; }
+        .profile-cover-edit { position: absolute; bottom: 16px; right: 20px; background: rgba(0,0,0,0.72); color: white; border: 1px solid rgba(255,255,255,0.18); border-radius: 8px; padding: 9px 15px; font-family: inherit; font-size: 0.82rem; font-weight: 700; cursor: pointer; backdrop-filter: blur(8px); display: flex; align-items: center; gap: 7px; z-index:3; transition: background 0.15s; }
+        .profile-cover-edit:hover { background: rgba(0,0,0,0.82); }
+        .profile-header { background: var(--surface); border-bottom: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+        .profile-header-inner { max-width: 1060px; margin: 0 auto; padding: 0 20px 0 20px; }
+        .profile-avatar-section { display: flex; align-items: flex-end; gap: 22px; padding: 0 0 18px 0; flex-wrap: wrap; }
+        .profile-avatar-wrap { position: relative; flex-shrink: 0; margin-top: -72px; z-index: 10; }
+        .profile-avatar { width: 168px; height: 168px; border-radius: 50%; border: 5px solid var(--surface); object-fit: cover; background: var(--surface-alt); box-shadow: 0 6px 20px rgba(0,0,0,0.18), 0 1px 3px rgba(0,0,0,0.12); display:block; }
+        .profile-avatar-placeholder { width: 168px; height: 168px; border-radius: 50%; border: 5px solid var(--surface); background: linear-gradient(135deg, #0a66ff, #0540a0); color: white; font-size: 3.2rem; font-weight: 800; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(0,0,0,0.18), 0 1px 3px rgba(0,0,0,0.12); letter-spacing: -1px; }
+        .profile-avatar-edit { position: absolute; bottom: 8px; right: 8px; width: 42px; height: 42px; border-radius: 50%; background: var(--surface); border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1rem; color: var(--text); box-shadow: 0 3px 10px rgba(0,0,0,0.18); transition: transform 0.12s; }
+        .profile-avatar-edit:hover { transform: scale(1.05); }
+        .profile-info { flex: 1; padding-top: 16px; min-width: 260px; }
+        .profile-info h1 { font-size: 1.65rem; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .profile-info .verified-badge { font-size: 0.75rem; background: #e7f0ff; color: #0866ff; padding: 4px 10px; border-radius: 20px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; border: 1px solid #bfdbfe; }
+        .profile-info .friend-count { color: var(--text-secondary); font-size: 0.9rem; margin-top: 6px; font-weight: 500; }
+        .profile-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+        .btn-edit { background: var(--surface-alt, #e4e6eb); color: var(--text); border: none; border-radius: 8px; padding: 8px 16px; font-family: inherit; font-size: 0.88rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-friend { background: #0866ff; color: white; border: none; border-radius: 8px; padding: 8px 16px; font-family: inherit; font-size: 0.88rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-message { background: var(--surface-alt, #e4e6eb); color: var(--text); border: none; border-radius: 8px; padding: 8px 16px; font-family: inherit; font-size: 0.88rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+        
+        .profile-tabs { display: flex; gap: 4px; margin-top: 12px; }
+        .profile-tab { padding: 12px 20px; background: none; border: none; border-bottom: 3px solid transparent; font-family: inherit; font-size: 0.92rem; font-weight: 700; color: var(--text-secondary); cursor: pointer; transition: all 0.15s; }
+        .profile-tab.active { color: #0866ff; border-bottom-color: #0866ff; }
+        .profile-tab:hover:not(.active) { color: var(--text); }
+        
+        .profile-body { max-width: 960px; margin: 0 auto; padding: 20px 16px 60px; display: grid; grid-template-columns: 320px 1fr; gap: 16px; align-items: start; }
+        .about-card { background: var(--surface); border-radius: 14px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); border: 1px solid var(--border); }
+        .about-card h3 { font-weight: 800; margin-bottom: 14px; font-size: 1.05rem; display: flex; align-items: center; justify-content: space-between; }
+        .about-item { display: flex; align-items: flex-start; gap: 12px; padding: 8px 0; font-size: 0.88rem; color: var(--text-secondary); border-bottom: 1px solid var(--border); }
+        .about-item:last-child { border-bottom: none; }
+        .about-item i { width: 20px; text-align: center; color: #0866ff; font-size: 1rem; margin-top: 2px; }
+        .about-item .item-content { flex: 1; }
+        .about-item .item-label { font-size: 0.72rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary); opacity: 0.8; }
+        .about-item .item-val { color: var(--text); font-weight: 600; margin-top: 2px; }
+        
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        .email-lock-badge { background: #f0fdf4; border: 1.5px solid #86efac; color: #166534; padding: 12px; border-radius: 10px; font-size: 0.82rem; line-height: 1.5; margin-top: 12px; }
+        [data-theme="dark"] .email-lock-badge { background: rgba(22, 101, 52, 0.2); border-color: #166534; color: #86efac; }
+        
+        /* Friends Grid */
+        .friends-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+        .friend-card-item { background: var(--surface); border-radius: 12px; padding: 14px; display: flex; align-items: center; gap: 12px; border: 1px solid var(--border); }
+        .friend-card-avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background: #0866ff; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; flex-shrink: 0; }
+
+        @media (max-width:768px) {
+            .profile-cover { height: 240px; }
+            .profile-body { grid-template-columns: 1fr; }
+            .profile-avatar { width: 118px; height: 118px; border-width:4px; }
+            .profile-avatar-placeholder { width: 118px; height: 118px; font-size: 2.3rem; border-width:4px; }
+            .profile-avatar-wrap { margin-top: -52px; }
+            .profile-cover-edit { bottom:10px; right:12px; padding:7px 12px; font-size:0.78rem; }
+        }
+    
+        /* Fix: Pill till missing + button blocked — ensure pills and following buttons are clickable */
+        .filter-bar, .category-tabs, .cats, .filter-tabs, .cat-tabs, .filter-pill, .cat-tab, .cat, .blood-type-grid, .search-bar {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 1;
+        }
+        .filter-chip, .cat-tab, .cat, .blood-btn, .btn-join, .btn-view, .btn-post, .btn-submit, .btn-sell, .contact-btn, .post-action, .member-row button, .file-row a {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 2;
+        }
+        /* Ensure no sticky pill blocks content */
+        .category-tabs, .filter-bar, .cats {
+            overflow-x: auto;
+            overflow-y: visible;
+            max-height: none;
+        }
+
+    </style>
+</head>
+<body>
+<script src="../js/shared.js">
+let isSubscribed = false;
+async function checkSubscriptionStatus(uid) {
+    if (uid === currentUser.id) return;
+    try {
+        const res = await apiFetch(`/creator/${uid}/status`);
+        isSubscribed = res.isSubscribed;
+        const btn = document.getElementById('subscribeBtn');
+        btn.style.display = 'inline-block';
+        if (isSubscribed) {
+            btn.innerHTML = '<i class="fas fa-check"></i> Subscribed';
+            btn.style.background = 'var(--surface)';
+            btn.style.color = 'var(--text)';
+        } else {
+            btn.innerHTML = '<i class="fas fa-star"></i> Subscribe';
+            btn.style.background = 'linear-gradient(45deg, #FFD700, #FFA500)';
+            btn.style.color = 'black';
+        }
+    } catch(e) { console.error('Subscription error'); }
+}
+
+async function toggleSubscription() {
+    const uid = new URLSearchParams(window.location.search).get('id') || currentUser.id;
+    try {
+        const res = await apiFetch(`/creator/${uid}/subscribe`, { method: 'POST' });
+        showToast(res.message);
+        checkSubscriptionStatus(uid);
+    } catch(e) { showToast('Failed to subscribe', 'error'); }
+}
+
+const originalLoadProfile = loadProfile;
+loadProfile = async function() {
+    await originalLoadProfile();
+    const uid = new URLSearchParams(window.location.search).get('id');
+    if (uid && uid != currentUser.id) {
+        checkSubscriptionStatus(uid);
+    }
+};
+
+</script>
+
+<div id="profilePage">
+    <div class="profile-cover" id="coverSection" style="cursor:pointer;" title="Cover photo — click to view" onclick="openProfileLightbox('cover')">
+        <button class="profile-cover-edit" onclick="event.stopPropagation(); document.getElementById('coverFileInput').click()" id="coverEditBtn" style="display:none;">
+            <i class="fas fa-camera"></i> Edit Cover Photo
+        </button>
+        <input type="file" id="coverFileInput" accept="image/*" style="display:none" onchange="uploadCover(this)">
+    </div>
+    <div class="profile-header">
+        <div class="profile-header-inner">
+            <div class="profile-avatar-section">
+                <div class="profile-avatar-wrap">
+                    <div class="profile-avatar-placeholder" id="profileAvatarEl">?</div>
+                    <label class="profile-avatar-edit" id="avatarEditBtn" style="display:none;"><i class="fas fa-camera"></i><input type="file" accept="image/*" style="display:none" onchange="uploadAvatar(this)"></label>
+                </div>
+                <div class="profile-info">
+                    <h1 id="profileName">
+                        Loading...
+                    </h1>
+                    <div class="friend-count"><span id="profileFriendCount">0</span> friends · <span id="profilePostCount">0</span> posts · <span id="profileResourceCount">0</span> resources</div>
+                    <div class="profile-actions" id="profileActions">
+                    <button id="subscribeBtn" onclick="toggleSubscription()" style="display:none; background:linear-gradient(45deg, #FFD700, #FFA500); color:black; border:none; padding:8px 24px; border-radius:20px; font-weight:bold; cursor:pointer;"><i class="fas fa-star"></i> Subscribe</button></div>
+                </div>
+            </div>
+            <div class="profile-tabs">
+                <button class="profile-tab active" onclick="showTab('posts')"><i class="fas fa-stream"></i> Posts</button>
+                <button class="profile-tab" onclick="showTab('about')"><i class="fas fa-user-check"></i> About & Institutional ID</button>
+                <button class="profile-tab" onclick="showTab('friends')"><i class="fas fa-user-friends"></i> Friends</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN PROFILE CONTENT -->
+    <div class="profile-body" id="profileBodyWrap">
+        <!-- LEFT SIDEBAR SUMMARY (Always visible on posts tab) -->
+        <div id="leftSidebarWrap">
+            <div class="about-card" id="aboutCard">
+                <h3><span><i class="fas fa-id-card" style="color:#0866ff;"></i> Intro & Identity</span></h3>
+                <div id="aboutInfo">
+                    <div style="color:#65676b;font-size:0.85rem;"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT TAB CONTENT CONTAINERS -->
+        <div id="mainTabContainer">
+            <!-- POSTS TAB -->
+            <div class="tab-panel active" id="tab-posts">
+                <div id="postsSection"><div style="text-align:center;padding:40px;color:#65676b;"><i class="fas fa-spinner fa-spin"></i> Loading posts...</div></div>
+            </div>
+
+            <!-- FULL ABOUT TAB -->
+            <div class="tab-panel" id="tab-about">
+                <div class="about-card" style="margin-bottom:16px;">
+                    <h3><span><i class="fas fa-shield-alt" style="color:#059669;"></i> Verified Institutional DIU Record</span></h3>
+                    <div id="fullAboutInfo"></div>
+                    <div class="email-lock-badge">
+                        <i class="fas fa-lock"></i> <strong>Institutional Email & Student ID Locking:</strong>
+                        This email address is permanently bound to the student's official Daffodil International University identity upon registration. It cannot be modified, deleted, or hidden, guaranteeing zero anonymous abuse and complete accountability.
+                    </div>
+                </div>
+            </div>
+
+            <!-- FRIENDS TAB -->
+            <div class="tab-panel" id="tab-friends">
+                <div class="about-card">
+                    <h3 style="display:flex;align-items:center;justify-content:space-between;"><span><i class="fas fa-users" style="color:#0866ff;"></i> Friends <span id="friendsTabCount" style="background:#e7f0ff;color:#0866ff;padding:2px 10px;border-radius:12px;font-size:0.78rem;font-weight:800;margin-left:8px;">0</span></span><span style="font-size:0.78rem;color:var(--text-secondary);font-weight:600;" id="friendsTabSub">0 friends</span></h3>
+                    <div id="friendsListContainer"><div style="text-align:center;padding:30px;color:#65676b;"><i class="fas fa-spinner fa-spin"></i> Loading friends...</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Profile Modal (NOTE: Email is deliberately excluded and uneditable) -->
+<div class="modal-overlay" id="editModal">
+    <div class="modal" style="width:480px;">
+        <div class="modal-header">
+            <span class="modal-title"><i class="fas fa-user-edit" style="color:#0866ff;"></i> Edit Profile</span>
+            <button class="modal-close" onclick="document.getElementById('editModal').classList.remove('show')"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body" style="display:flex;flex-direction:column;gap:12px;padding:20px;">
+            <div>
+                <label style="font-size:0.75rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;">Full Name</label>
+                <input type="text" id="editName" placeholder="Full Name" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:0.9rem;background:var(--bg);color:var(--text);outline:none;margin-top:4px;">
+            </div>
+            
+            <!-- Read-only locked email display -->
+            <div>
+                <label style="font-size:0.75rem;font-weight:700;color:#059669;text-transform:uppercase;"><i class="fas fa-lock"></i> Institutional DIU Email (Locked)</label>
+                <input type="text" id="editEmailLocked" disabled style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-family:monospace;font-size:0.9rem;background:var(--surface-alt);color:var(--text-secondary);cursor:not-allowed;margin-top:4px;">
+                <span style="font-size:0.72rem;color:var(--text-secondary);">Your registered DIU email is permanent and cannot be modified.</span>
+            </div>
+
+            <div>
+                <label style="font-size:0.75rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;">Bio / Tagline</label>
+                <textarea id="editBio" placeholder="Tell everyone about yourself..." rows="3" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:0.88rem;resize:vertical;background:var(--bg);color:var(--text);outline:none;margin-top:4px;"></textarea>
+            </div>
+
+            <div>
+                <label style="font-size:0.75rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;">Department</label>
+                <select id="editDept" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:0.88rem;background:var(--bg);color:var(--text);outline:none;margin-top:4px;">
+                    <option value="">Select Department</option>
+                    <option>CSE</option><option>SWE</option><option>ITM</option><option>CIS</option>
+                    <option>EEE</option><option>ETE</option><option>Civil Engineering</option>
+                    <option>Textile Engineering</option><option>Architecture</option>
+                    <option>BBA</option><option>Innovation & Entrepreneurship</option>
+                    <option>Real Estate</option><option>Tourism & Hospitality</option>
+                    <option>Pharmacy</option><option>Public Health</option>
+                    <option>Nutrition & Food Engineering</option><option>Genetic Engineering & Biotech</option>
+                    <option>English</option><option>Law (LLB)</option>
+                    <option>Journalism & Media</option><option>Development Studies</option>
+                </select>
+            </div>
+
+            <div>
+                <label style="font-size:0.75rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;">Batch / Semester</label>
+                <input type="text" id="editBatch" placeholder="e.g. 64 / Spring 2024" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:0.88rem;background:var(--bg);color:var(--text);outline:none;margin-top:4px;">
+            </div>
+
+            <button onclick="saveProfile()" style="padding:12px;background:#0866ff;color:white;border:none;border-radius:8px;font-family:inherit;font-size:0.95rem;font-weight:700;cursor:pointer;margin-top:8px;box-shadow:0 2px 8px rgba(8,102,255,0.3);">
+                Save Changes
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Verified Email Accountability Modal -->
+<div class="modal-overlay" id="emailViewModal">
+    <div class="modal" style="width:420px;text-align:center;">
+        <div class="modal-header">
+            <span class="modal-title"><i class="fas fa-shield-alt" style="color:#0866ff;"></i> Verified Institutional Email</span>
+            <button class="modal-close" onclick="closeEmailModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body" style="padding:24px 20px;display:flex;flex-direction:column;align-items:center;gap:14px;">
+            <div style="width:64px;height:64px;border-radius:50%;background:#e7f0ff;color:#0866ff;display:flex;align-items:center;justify-content:center;font-size:1.8rem;">
+                <i class="fas fa-envelope-open-text"></i>
+            </div>
+            <div>
+                <h3 id="modalEmailUser" style="font-size:1.1rem;font-weight:800;margin-bottom:4px;">DIU Member</h3>
+                <p style="font-size:0.8rem;color:var(--text-secondary);">Official Daffodil International University Account</p>
+            </div>
+            
+            <div style="width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:12px;display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                <span id="modalEmailAddress" style="font-family:monospace;font-weight:700;font-size:0.95rem;color:#0866ff;word-break:break-all;">student@diu.edu.bd</span>
+                <button onclick="copyEmailToClipboard()" style="background:#0866ff;color:white;border:none;padding:6px 12px;border-radius:6px;font-size:0.8rem;font-weight:700;cursor:pointer;flex-shrink:0;">
+                    <i class="fas fa-copy"></i> Copy
+                </button>
+            </div>
+
+            <div style="font-size:0.76rem;color:#059669;background:#d1fae5;padding:10px 12px;border-radius:8px;width:100%;text-align:left;display:flex;align-items:center;gap:8px;line-height:1.4;">
+                <i class="fas fa-check-circle" style="font-size:1rem;flex-shrink:0;"></i>
+                <span>This account is officially tied to the registered <strong>@diu.edu.bd</strong> address for campus safety, identity verification, and strict accountability.</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="toast-container" style="position:fixed;bottom:24px;right:24px;z-index:9999;"></div>
+
+<!-- Profile Pic / Cover Lightbox — FB-like -->
+<div id="profileLightbox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:9999;align-items:center;justify-content:center;cursor:pointer;" onclick="closeProfileLightbox()">
+    <img id="profileLightboxImg" src="" style="max-width:90vw;max-height:90vh;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.5);">
+    <button onclick="closeProfileLightbox()" style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,0.15);border:none;color:white;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);"><i class="fas fa-times"></i></button>
+</div>
+
+<!-- Admin Warn/Ban Modals -->
+<div id="warnModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:10000;align-items:center;justify-content:center;padding:16px;">
+    <div style="background:var(--surface);border-radius:14px;width:100%;max-width:420px;padding:20px;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+        <h3 style="font-weight:800;margin-bottom:12px;"><i class="fas fa-exclamation-triangle" style="color:#856404;"></i> Warn <span id="warnUserName"></span></h3>
+        <input type="hidden" id="warnUserId">
+        <div style="margin-bottom:10px;"><label style="font-size:0.78rem;font-weight:700;color:var(--text-secondary);">Reason *</label><textarea id="warnReason" rows="3" placeholder="Reason for warning..." style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;margin-top:4px;"></textarea></div>
+        <div style="margin-bottom:12px;"><label style="font-size:0.78rem;font-weight:700;color:var(--text-secondary);">Severity</label><select id="warnSeverity" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;margin-top:4px;"><option value="warning">Warning</option><option value="notice">Notice</option><option value="final_warning">Final Warning</option></select></div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;"><button onclick="closeWarnModal()" style="background:var(--bg);border:1px solid var(--border);padding:8px 16px;border-radius:8px;font-weight:700;cursor:pointer;">Cancel</button><button onclick="submitWarn()" style="background:#856404;color:white;border:none;padding:8px 16px;border-radius:8px;font-weight:700;cursor:pointer;">Send Warn</button></div>
+    </div>
+</div>
+<div id="banModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:10000;align-items:center;justify-content:center;padding:16px;">
+    <div style="background:var(--surface);border-radius:14px;width:100%;max-width:420px;padding:20px;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+        <h3 style="font-weight:800;margin-bottom:12px;color:#dc2626;"><i class="fas fa-ban"></i> Ban <span id="banUserName"></span></h3>
+        <input type="hidden" id="banUserId">
+        <div style="margin-bottom:10px;"><label style="font-size:0.78rem;font-weight:700;color:var(--text-secondary);">Reason *</label><textarea id="banReason" rows="3" placeholder="Reason for ban..." style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;margin-top:4px;"></textarea></div>
+        <div style="margin-bottom:10px;"><label style="font-size:0.78rem;font-weight:700;color:var(--text-secondary);">Duration</label><select id="banDuration" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;margin-top:4px;"><option value="7">7 days</option><option value="30">30 days</option><option value="365">365 days</option><option value="permanent">Permanent</option></select></div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;"><button onclick="closeBanModal()" style="background:var(--bg);border:1px solid var(--border);padding:8px 16px;border-radius:8px;font-weight:700;cursor:pointer;">Cancel</button><button onclick="submitBan()" style="background:#dc2626;color:white;border:none;padding:8px 16px;border-radius:8px;font-weight:700;cursor:pointer;">Ban User</button></div>
+    </div>
+</div>
+
+<script>
+const API = (typeof window.API !== 'undefined' ? window.API : (function(){ var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000/api'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin+'/api'; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin+'/api':'http://localhost:5000/api'; return 'http://localhost:5000/api'; } return window.location.origin+'/api'; })());
+const token = localStorage.getItem('token');
+const myUser = JSON.parse(localStorage.getItem('user') || 'null');
+if (!token) window.location.href = '../index.html';
+if (localStorage.getItem('darkMode') === '1') document.body.setAttribute('data-theme', 'dark');
+
+const params = new URLSearchParams(window.location.search);
+const profileUserId = params.get('id');
+const myId = String(myUser?._id || myUser?.id || '');
+
+let profileData = null;
+
+async function apiFetch(path, opts = {}) {
+    const h = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, ...(opts.headers || {}) };
+    if (opts.body instanceof FormData) delete h['Content-Type'];
+    return fetch(`${API}${path}`, { ...opts, headers: h });
+}
+
+async function loadProfile() {
+    try {
+        const endpoint = profileUserId ? `/users/profile/${profileUserId}` : `/users/profile`;
+        const res = await apiFetch(endpoint);
+        if (res.ok) {
+            profileData = await res.json();
+            renderProfile(profileData);
+            loadUserPosts(profileData._id || profileData.id);
+            return;
+        }
+        throw new Error('API return not ok');
+    } catch (e) {
+        console.warn('loadProfile fallback:', e);
+        // Fail-safe graceful fallback to local storage so UI is never stuck
+        if (!profileUserId && myUser) {
+            profileData = {
+                _id: myId,
+                fullName: myUser.fullName || 'DIU Student',
+                email: myUser.email || 'student@diu.edu.bd',
+                role: myUser.role || 'Student',
+                department: myUser.department || 'CSE',
+                batch: myUser.batch || 'Batch 64',
+                profilePicture: myUser.profilePicture || null,
+                coverPicture: null,
+                bio: myUser.bio || 'Proud Daffodil International University member.',
+                friendCount: 0,
+                postCount: 0,
+                createdAt: new Date().toISOString()
+            };
+            renderProfile(profileData);
+            loadUserPosts(myId);
+        } else {
+            showToast('Unable to load profile data', 'error');
+            document.getElementById('profileName').textContent = 'User Profile';
+            document.getElementById('aboutInfo').innerHTML = '<div style="color:#e41e3f;">Failed to load user information.</div>';
+            document.getElementById('postsSection').innerHTML = '<div style="text-align:center;padding:30px;color:#65676b;">No posts found.</div>';
+        }
+    }
+}
+
+function renderProfile(u) {
+    const isOwner = !profileUserId || String(u._id || u.id) === myId;
+    document.title = `${u.fullName} | DIU Nexus`;
+    
+    // Header name with role & verified badge
+    document.getElementById('profileName').innerHTML = `
+        ${esc(u.fullName)}
+        <span class="verified-badge"><i class="fas fa-check-circle" style="color:#0866ff;"></i> Verified DIU ${u.role || 'Student'}</span>
+    `;
+    document.getElementById('profileFriendCount').textContent = u.friendCount || 0;
+    document.getElementById('profilePostCount').textContent = u.postCount || 0;
+    // Resource count — like posts/friends, updates on share
+    (async()=>{
+        try{
+            const rRes = await apiFetch(`/resources?user_id=${u._id || u.id}`);
+            if(rRes.ok){ const rData = await rRes.json(); document.getElementById('profileResourceCount').textContent = Array.isArray(rData) ? rData.length : 0; }
+        }catch{}
+    })();
+    
+    const avatarEl = document.getElementById('profileAvatarEl');
+    if (u.profilePicture) {
+        avatarEl.outerHTML = `<img id="profileAvatarEl" class="profile-avatar" src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${u.profilePicture}" alt="${esc(u.fullName)}" onerror="this.outerHTML='<div id=\\'profileAvatarEl\\' class=\\'profile-avatar-placeholder\\'>${getInitials(u.fullName)}</div>'">`;
+    } else {
+        avatarEl.className = 'profile-avatar-placeholder';
+        avatarEl.textContent = getInitials(u.fullName);
+    }
+    
+    if (u.coverPicture) {
+        document.getElementById('coverSection').style.backgroundImage = `url(${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${u.coverPicture})`;
+        document.getElementById('coverSection').style.backgroundSize = 'cover';
+        document.getElementById('coverSection').style.backgroundPosition = 'center';
+    }
+
+    // Show/hide cover and avatar camera upload buttons
+    const avatarEditBtn = document.getElementById('avatarEditBtn');
+    const coverEditBtn = document.getElementById('coverEditBtn');
+    if (avatarEditBtn) avatarEditBtn.style.display = isOwner ? 'flex' : 'none';
+    if (coverEditBtn) coverEditBtn.style.display = isOwner ? 'flex' : 'none';
+
+    // Make avatar and cover clickable for lightbox (FB-like)
+    setTimeout(() => {
+        const avEl = document.getElementById('profileAvatarEl');
+        if (avEl) {
+            avEl.style.cursor = 'pointer';
+            avEl.title = 'Click to view profile picture';
+            avEl.onclick = () => openProfileLightbox('avatar');
+        }
+    }, 100);
+
+    // Student ID derivation from email (e.g. 221-15-5849@diu.edu.bd)
+    const emailPrefix = u.email ? u.email.split('@')[0] : '';
+    const studentId = /\d/.test(emailPrefix) ? emailPrefix : `#${1000 + Number(u._id || u.id || 1)}`;
+
+    // Left Sidebar About Summary
+    document.getElementById('aboutInfo').innerHTML = `
+        ${u.bio ? `<div class="about-item"><i class="fas fa-quote-left"></i><div class="item-content"><div class="item-label">Bio</div><div class="item-val" style="font-style:italic;">"${esc(u.bio)}"</div></div></div>` : ''}
+        <div class="about-item"><i class="fas fa-fingerprint"></i><div class="item-content"><div class="item-label">Student / DIU ID</div><div class="item-val" style="font-family:monospace;font-weight:700;color:#0866ff;">${esc(studentId)}</div></div></div>
+        <div class="about-item"><i class="fas fa-envelope-shield" style="color:#059669;"></i><div class="item-content"><div class="item-label">Registered Institutional Email</div><div class="item-val" style="font-family:monospace;font-size:0.85rem;color:#059669;word-break:break-all;">${esc(u.email || 'N/A')}</div></div></div>
+        ${u.department ? `<div class="about-item"><i class="fas fa-graduation-cap"></i><div class="item-content"><div class="item-label">Department</div><div class="item-val">${esc(u.department)}</div></div></div>` : ''}
+        ${u.batch ? `<div class="about-item"><i class="fas fa-layer-group"></i><div class="item-content"><div class="item-label">Batch</div><div class="item-val">${esc(u.batch)}</div></div></div>` : ''}
+        <div class="about-item"><i class="fas fa-user-shield"></i><div class="item-content"><div class="item-label">Account Role</div><div class="item-val">${esc(u.role || 'Student')}</div></div></div>
+        <div class="about-item" style="cursor:pointer;" onclick="openEmailModal('${esc(u.email)}')">
+            <i class="fas fa-shield-alt" style="color:#0866ff;"></i>
+            <div class="item-content">
+                <div class="item-label">Identity Status</div>
+                <div class="item-val" style="color:#0866ff;font-weight:700;">Verified DIU Member <i class="fas fa-external-link-alt" style="font-size:0.7rem;"></i></div>
+            </div>
+        </div>
+    `;
+
+    // Full Detailed About View (Inside About Tab)
+    document.getElementById('fullAboutInfo').innerHTML = `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-top:12px;">
+            <div style="background:var(--bg);padding:14px;border-radius:10px;border:1px solid var(--border);">
+                <div style="font-size:0.75rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;">Student / Member ID</div>
+                <div style="font-size:1.1rem;font-weight:800;color:#0866ff;font-family:monospace;margin-top:4px;">${esc(studentId)}</div>
+            </div>
+            <div style="background:var(--bg);padding:14px;border-radius:10px;border:1px solid var(--border);">
+                <div style="font-size:0.75rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;">Verified Email (Non-Editable)</div>
+                <div style="font-size:0.95rem;font-weight:700;color:#059669;font-family:monospace;margin-top:4px;word-break:break-all;">
+                    <i class="fas fa-lock"></i> ${esc(u.email || 'N/A')}
+                </div>
+            </div>
+            <div style="background:var(--bg);padding:14px;border-radius:10px;border:1px solid var(--border);">
+                <div style="font-size:0.75rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;">Department & Faculty</div>
+                <div style="font-size:1rem;font-weight:700;margin-top:4px;">${esc(u.department || 'Daffodil International University')}</div>
+            </div>
+            <div style="background:var(--bg);padding:14px;border-radius:10px;border:1px solid var(--border);">
+                <div style="font-size:0.75rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;">Batch / Academic Session</div>
+                <div style="font-size:1rem;font-weight:700;margin-top:4px;">${esc(u.batch || 'Current Student')}</div>
+            </div>
+            <div style="background:var(--bg);padding:14px;border-radius:10px;border:1px solid var(--border);">
+                <div style="font-size:0.75rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;">Role & Access Level</div>
+                <div style="font-size:1rem;font-weight:700;margin-top:4px;">${esc(u.role || 'Student')}</div>
+            </div>
+            <div style="background:var(--bg);padding:14px;border-radius:10px;border:1px solid var(--border);">
+                <div style="font-size:0.75rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;">Account Registered On</div>
+                <div style="font-size:0.92rem;font-weight:600;margin-top:4px;color:var(--text-secondary);">
+                    ${u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'}) : 'Verified DIU Member'}
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Actions Header Buttons
+    const actions = document.getElementById('profileActions');
+    const emailBtnHtml = `<button class="btn-email-view" onclick="openEmailModal('${esc(u.email)}')" style="padding:8px 14px;background:#e7f0ff;color:#0866ff;border:none;border-radius:8px;font-family:inherit;font-size:0.86rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;"><i class="fas fa-shield-alt"></i> View Verified Email</button>`;
+    
+    if (isOwner) {
+        actions.innerHTML = `
+            <button class="btn-edit" onclick="openEditModal()"><i class="fas fa-pen"></i> Edit Profile</button>
+            ${emailBtnHtml}
+        `;
+    } else {
+        const isAdmin = myUser && myUser.role==='Admin';
+        const adminBtns = isAdmin ? `<button onclick="openWarnModal('${u._id||u.id}','${esc(u.fullName)}')" style="background:#fff3cd;color:#856404;border:1px solid #ffeaa7;padding:8px 14px;border-radius:8px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;"><i class="fas fa-exclamation-triangle"></i> Warn</button><button onclick="openBanModal('${u._id||u.id}','${esc(u.fullName)}')" style="background:#fee2e2;color:#dc2626;border:none;padding:8px 14px;border-radius:8px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;"><i class="fas fa-ban"></i> Ban</button>` : '';
+        actions.innerHTML = `
+            <button class="btn-friend" id="friendBtn" disabled><i class="fas fa-spinner fa-spin"></i> Loading...</button>
+            <button class="btn-message" onclick="window.location.href='messenger.html?userId=${u._id || u.id}'">
+                <i class="fas fa-comment"></i> Message
+            </button>
+            ${emailBtnHtml}
+            ${adminBtns}`;
+        loadFriendshipStatus(u._id || u.id);
+    }
+}
+
+function showTab(tab) {
+    const tabs = ['posts', 'about', 'friends'];
+    document.querySelectorAll('.profile-tab').forEach((t, i) => {
+        t.classList.toggle('active', tabs[i] === tab);
+    });
+
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(`tab-${tab}`).classList.add('active');
+
+    // On mobile or about tab, adjust layout
+    const leftSidebar = document.getElementById('leftSidebarWrap');
+    if (tab === 'about') {
+        leftSidebar.style.display = 'none';
+        document.getElementById('profileBodyWrap').style.gridTemplateColumns = '1fr';
+    } else {
+        leftSidebar.style.display = 'block';
+        document.getElementById('profileBodyWrap').style.gridTemplateColumns = window.innerWidth <= 768 ? '1fr' : '320px 1fr';
+    }
+
+    if (tab === 'friends') {
+        loadProfileFriends(profileData?._id || profileData?.id || myId);
+    }
+}
+
+async function loadProfileFriends(userId) {
+    const container = document.getElementById('friendsListContainer');
+    const countEl = document.getElementById('friendsTabCount');
+    const subEl = document.getElementById('friendsTabSub');
+    try {
+        const res = await apiFetch(`/friends/user/${userId}`);
+        if (!res.ok) throw new Error();
+        const friends = await res.json();
+        const count = friends ? friends.length : 0;
+        if(countEl) countEl.textContent = count;
+        if(subEl) subEl.textContent = `${count} ${count===1?'friend':'friends'}`;
+        // Also update header count if on own profile
+        const headerCount = document.getElementById('profileFriendCount');
+        if(headerCount && String(userId)===String(myId)) headerCount.textContent = count;
+        if (!friends || !friends.length) {
+            container.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-secondary);"><i class="fas fa-user-friends" style="font-size:2rem;opacity:0.3;display:block;margin-bottom:8px;"></i>No friends added yet.</div>';
+            return;
+        }
+        container.innerHTML = `
+            <div class="friends-grid">
+                ${friends.map(f => {
+                    const fid = f._id || f.id;
+                    const avatar = f.profilePicture ? `<img src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${f.profilePicture}" class="friend-card-avatar" style="cursor:pointer;" onclick="event.stopPropagation(); location.href='profile.html?id=${fid}'">` : `<div class="friend-card-avatar" style="cursor:pointer;" onclick="event.stopPropagation(); location.href='profile.html?id=${fid}'">${getInitials(f.fullName)}</div>`;
+                    return `
+                    <div class="friend-card-item" onclick="location.href='profile.html?id=${fid}'" style="cursor:pointer;transition:transform 0.15s, box-shadow 0.15s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.08)'" onmouseout="this.style.transform=''; this.style.boxShadow='';">
+                        ${avatar}
+                        <div style="flex:1;min-width:0;" onclick="event.stopPropagation(); location.href='profile.html?id=${fid}'">
+                            <div style="font-weight:700;font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;" title="${esc(f.fullName)}">${esc(f.fullName)}</div>
+                            <div style="font-size:0.75rem;color:var(--text-secondary);">${esc(f.department || 'DIU')} ${f.batch ? `(${esc(f.batch)})` : ''}</div>
+                        </div>
+                        <button onclick="event.stopPropagation(); window.location.href='profile.html?id=${fid}'" style="background:#e7f0ff;color:#0866ff;border:none;border-radius:6px;padding:6px 10px;font-size:0.75rem;font-weight:700;cursor:pointer;flex-shrink:0;">View</button>
+                    </div>`;
+                }).join('')}
+            </div>
+        `;
+    } catch {
+        container.innerHTML = '<div style="color:var(--text-secondary);text-align:center;padding:20px;">Friends list is private or unavailable.</div>';
+    }
+}
+
+async function loadFriendshipStatus(userId) {
+    try {
+        const res = await apiFetch(`/friends/status/${userId}`);
+        const data = await res.json();
+        const btn = document.getElementById('friendBtn');
+        if (!btn) return;
+        switch (data.status) {
+            case 'friends':
+                btn.innerHTML = `<i class="fas fa-user-check"></i> Friends`;
+                btn.style.background = '#e7f0ff';
+                btn.style.color = '#0866ff';
+                btn.disabled = false;
+                btn.onclick = () => showUnfriendMenu(userId);
+                break;
+            case 'sent':
+                btn.innerHTML = `<i class="fas fa-user-clock"></i> Request Sent`;
+                btn.style.background = '#e7f0ff';
+                btn.style.color = '#0866ff';
+                btn.disabled = false;
+                btn.onclick = () => cancelRequest(userId);
+                break;
+            case 'received':
+                btn.innerHTML = `<i class="fas fa-user-check"></i> Accept Request`;
+                btn.style.background = '#0866ff';
+                btn.style.color = 'white';
+                btn.disabled = false;
+                btn.onclick = () => acceptRequest(userId);
+                break;
+            default:
+                btn.innerHTML = `<i class="fas fa-user-plus"></i> Add Friend`;
+                btn.style.background = '#0866ff';
+                btn.style.color = 'white';
+                btn.disabled = false;
+                btn.onclick = () => addFriend(userId);
+        }
+    } catch { }
+}
+
+async function addFriend(userId) {
+    const btn = document.getElementById('friendBtn');
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; }
+    try {
+        const res = await apiFetch(`/friends/request/${userId}`, { method: 'POST' });
+        if (res.ok) {
+            showToast('Friend request sent!', 'success');
+            if (btn) {
+                btn.innerHTML = '<i class="fas fa-user-clock"></i> Request Sent';
+                btn.style.background = '#e7f0ff';
+                btn.style.color = '#0866ff';
+                btn.disabled = false;
+                btn.onclick = () => cancelRequest(userId);
+            }
+        } else {
+            showToast('Failed to send request', 'error');
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-user-plus"></i> Add Friend'; }
+        }
+    } catch {
+        showToast('Failed', 'error');
+        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-user-plus"></i> Add Friend'; }
+    }
+}
+
+async function acceptRequest(userId) {
+    const btn = document.getElementById('friendBtn');
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; }
+    try {
+        const res = await apiFetch(`/friends/accept/${userId}`, { method: 'PUT' });
+        if (res.ok) {
+            showToast('✅ You are now friends!', 'success');
+            await loadProfile();
+        } else {
+            showToast('Failed to accept', 'error');
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-user-plus"></i> Accept Request'; }
+        }
+    } catch {
+        showToast('Error', 'error');
+        if (btn) { btn.disabled = false; }
+    }
+}
+
+async function cancelRequest(userId) {
+    const btn = document.getElementById('friendBtn');
+    if (btn) { btn.disabled = true; }
+    try {
+        await apiFetch(`/friends/decline/${userId}`, { method: 'DELETE' });
+        showToast('Request cancelled', 'info');
+        if (btn) {
+            btn.innerHTML = '<i class="fas fa-user-plus"></i> Add Friend';
+            btn.style.background = '#0866ff';
+            btn.style.color = 'white';
+            btn.disabled = false;
+            btn.onclick = () => addFriend(userId);
+        }
+    } catch {
+        showToast('Error', 'error');
+        if (btn) btn.disabled = false;
+    }
+}
+
+function showUnfriendMenu(userId) {
+    const btn = document.getElementById('friendBtn');
+    if (!btn) return;
+    const existing = document.getElementById('unfriendMenu');
+    if (existing) { existing.remove(); return; }
+    const menu = document.createElement('div');
+    menu.id = 'unfriendMenu';
+    menu.style.cssText = 'position:absolute;top:44px;left:0;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.12);padding:6px;z-index:100;min-width:180px;';
+    menu.innerHTML = `
+        <button onclick="goToFriendsPage('${userId}')" style="display:flex;align-items:center;gap:8px;width:100%;padding:10px 14px;background:none;border:none;border-radius:8px;font-family:inherit;font-size:0.88rem;cursor:pointer;color:var(--text);" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='none'">
+            <i class="fas fa-users" style="color:#0866ff;width:16px;"></i> View Friends
+        </button>
+        <button onclick="unfriend('${userId}')" style="display:flex;align-items:center;gap:8px;width:100%;padding:10px 14px;background:none;border:none;border-radius:8px;font-family:inherit;font-size:0.88rem;cursor:pointer;color:#e41e3f;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='none'">
+            <i class="fas fa-user-minus" style="width:16px;"></i> Unfriend
+        </button>`;
+    btn.parentElement.style.position = 'relative';
+    btn.parentElement.appendChild(menu);
+    const close = (e) => { if (!menu.contains(e.target) && e.target !== btn) { menu.remove(); document.removeEventListener('click', close); } };
+    setTimeout(() => document.addEventListener('click', close), 10);
+}
+
+async function unfriend(userId) {
+    document.getElementById('unfriendMenu')?.remove();
+    const btn = document.getElementById('friendBtn');
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; }
+    try {
+        await apiFetch(`/friends/unfriend/${userId}`, { method: 'DELETE' });
+        showToast('Unfriended', 'info');
+        await loadProfile();
+    } catch {
+        showToast('Error', 'error');
+        if (btn) btn.disabled = false;
+    }
+}
+
+function goToFriendsPage(userId) { window.location.href = `profile.html?id=${userId}`; }
+
+async function loadUserPosts(userId) {
+    const el = document.getElementById('postsSection');
+    try {
+        const res = await apiFetch(`/posts/user/${userId}`);
+        const posts = await res.json();
+        if (!posts || posts.length === 0) {
+            el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-secondary);background:var(--surface);border-radius:14px;border:1px solid var(--border);"><i class="fas fa-newspaper" style="font-size:2.5rem;opacity:0.3;display:block;margin-bottom:8px;"></i>No posts shared yet.</div>';
+            return;
+        }
+        // Reuse FB-like post card (same as home.html) — react/comment/share fully visible
+        el.innerHTML = posts.map(p => {
+            // Map user_id -> user object for card compatibility
+            const mapped = {
+                _id: p.id || p._id,
+                id: p.id || p._id,
+                content: p.content,
+                mediaUrl: p.mediaUrl,
+                mediaType: p.mediaType,
+                visibility: p.visibility || 'Public',
+                created_at: p.created_at,
+                user: { fullName: p.fullName, profilePicture: p.profilePicture, _id: p.user_id || userId },
+                user_id: p.user_id || userId,
+                fullName: p.fullName,
+                reactionCount: p.reactionCount || 0,
+                commentCount: p.commentCount || 0,
+                myReaction: p.myReaction || null,
+                isSaved: p.isSaved || 0
+            };
+            return buildProfilePostCard(mapped);
+        }).join('');
+        // Attach global click handler for post menus if not already
+        document.addEventListener('click', (e)=>{
+            if(!e.target.closest('.post-menu-btn') && !e.target.closest('.dropdown-menu')) {
+                document.querySelectorAll('.dropdown-menu.show').forEach(m=>m.classList.remove('show'));
+            }
+        });
+    } catch {
+        el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-secondary);background:var(--surface);border-radius:14px;border:1px solid var(--border);">No posts to display.</div>';
+    }
+}
+
+function buildProfilePostCard(post){
+    const myId = String(myUser?._id || myUser?.id || '');
+    const isOwner = String(post.user?._id || post.user_id) === myId;
+    const isAdmin = myUser?.role === 'Admin';
+    const initials = getInitials(post.user?.fullName || post.fullName);
+    const avatarHtml = post.user?.profilePicture
+        ? `<img class="avatar" src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${post.user.profilePicture}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;cursor:pointer;" onclick="window.location.href='profile.html?id=${post.user?._id || post.user_id}'">`
+        : `<div class="avatar-placeholder" style="width:40px;height:40px;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0a66ff,#0540a0);color:white;border-radius:50%;" onclick="window.location.href='profile.html?id=${post.user?._id || post.user_id}'">${initials}</div>`;
+    const mediaHtml = post.mediaUrl ? (post.mediaType === 'video'
+        ? `<div class="post-media"><video src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${post.mediaUrl}" controls style="width:100%;max-height:420px;border-radius:12px;margin-top:10px;"></video></div>`
+        : `<div class="post-media"><img src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${post.mediaUrl}" alt="Post media" loading="lazy" style="width:100%;max-height:420px;object-fit:cover;border-radius:12px;margin-top:10px;cursor:pointer;" onclick="window.open(this.src,'_blank')"></div>`
+    ) : '';
+    const reactedClass = post.myReaction ? `reacted ${post.myReaction}` : '';
+    const reactedIcon = post.myReaction ? getReactionIcon(post.myReaction) : '👍';
+    const savedIcon = post.isSaved ? 'fas fa-bookmark text-blue' : 'far fa-bookmark';
+    const reactionCount = (post.reactionCount || 0);
+    const commentCount = (post.commentCount || 0);
+    const taggedHtml = post.mentions && post.mentions.length ? `<div style="font-size:0.82rem;color:#0866ff;margin:6px 0;">with ${post.mentions.map(m=>`<a href="profile.html?id=${m.id}" style="color:#0866ff;font-weight:700;text-decoration:none;">${esc(m.name)}</a>`).join(', ')}</div>` : '';
+    // Respect content with mentions highlight
+    let contentHtml = '';
+    if(post.content){
+        let c = esc(post.content);
+        // highlight @mentions
+        c = c.replace(/@([A-Za-z ]+?)(?=\s|$)/g, '<span style="color:#0866ff;font-weight:700;">@$1</span>');
+        contentHtml = `<div class="post-content" style="font-size:0.95rem;line-height:1.6;white-space:pre-wrap;word-break:break-word;margin-top:6px;">${c}</div>`;
+    }
+    return `
+    <div class="post-card" id="post-${post._id || post.id}" style="background:var(--surface);border-radius:14px;padding:16px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,0.07);border:1px solid var(--border);">
+        <div class="post-header" style="display:flex;align-items:center;justify-content:space-between;">
+            <div class="post-author" style="display:flex;align-items:center;gap:10px;">
+                ${avatarHtml}
+                <div>
+                    <div class="post-author-name" onclick="window.location.href='profile.html?id=${post.user?._id || post.user_id}'" style="cursor:pointer; font-weight:800; font-size:0.95rem; display:flex; align-items:center; gap:6px;">${esc(post.user?.fullName || post.fullName || 'Unknown')}<span class="diu-verified" style="background:#e7f0ff;color:#0866ff;font-size:0.62rem;padding:2px 6px;border-radius:10px;border:1px solid #bfdbfe;display:inline-flex;align-items:center;gap:3px;"><i class="fas fa-check" style="font-size:0.6rem;"></i> Verified</span></div>
+                    <div class="post-author-meta" style="font-size:0.78rem;color:var(--text-secondary);display:flex;gap:6px;align-items:center;"><span>${timeAgo(post.created_at)}</span><span>·</span><i class="fas ${post.visibility === 'Public' ? 'fa-globe-americas' : 'fa-user-friends'}" title="${post.visibility}"></i></div>
+                </div>
+            </div>
+            <div style="position:relative;">
+                <button class="post-menu-btn" onclick="togglePostMenu('${post._id || post.id}')" style="background:var(--bg);border:none;width:34px;height:34px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);"><i class="fas fa-ellipsis-h"></i></button>
+                <div class="dropdown-menu" id="post-menu-${post._id || post.id}" style="right:0;top:40px;min-width:200px;position:absolute;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.12);padding:6px;display:none;z-index:20;">
+                    ${isOwner ? `<button class="dropdown-item" onclick="editPost('${post._id || post.id}', \`${(post.content||'').replace(/`/g,'\\`').replace(/\$/g,'\\$')}\`)" style="display:flex;gap:8px;align-items:center;width:100%;padding:10px 12px;background:none;border:none;border-radius:8px;font-size:0.88rem;cursor:pointer;text-align:left;"><i class="fas fa-pen"></i> Edit post</button><button class="dropdown-item danger" onclick="deletePost('${post._id || post.id}')" style="display:flex;gap:8px;align-items:center;width:100%;padding:10px 12px;background:none;border:none;border-radius:8px;font-size:0.88rem;cursor:pointer;color:#e41e3f;text-align:left;"><i class="fas fa-trash"></i> Delete post</button>` : ''}
+                    ${isAdmin ? `<button class="dropdown-item danger" onclick="adminDeletePost('${post._id || post.id}')" style="display:flex;gap:8px;align-items:center;width:100%;padding:10px 12px;background:none;border:none;border-radius:8px;font-size:0.88rem;cursor:pointer;color:#e41e3f;text-align:left;"><i class="fas fa-shield-alt"></i> Admin Delete</button>` : ''}
+                    ${!isOwner && !isAdmin ? `<button class="dropdown-item" onclick="reportPost('${post._id || post.id}', event)" style="display:flex;gap:8px;align-items:center;width:100%;padding:10px 12px;background:none;border:none;border-radius:8px;font-size:0.88rem;cursor:pointer;text-align:left;"><i class="fas fa-flag"></i> Report post</button>` : ''}
+                    <button class="dropdown-item" onclick="toggleSavePost('${post._id || post.id}', this)" style="display:flex;gap:8px;align-items:center;width:100%;padding:10px 12px;background:none;border:none;border-radius:8px;font-size:0.88rem;cursor:pointer;text-align:left;"><i class="${savedIcon}"></i> ${post.isSaved ? 'Unsave' : 'Save'} post</button>
+                </div>
+            </div>
+        </div>
+        ${contentHtml}
+        ${taggedHtml}
+        ${mediaHtml}
+        <div class="post-stats" style="display:flex;justify-content:space-between;align-items:center;padding:10px 0 8px;border-bottom:1px solid var(--border);font-size:0.82rem;color:var(--text-secondary);margin-top:10px;">
+            <div class="post-reaction-count" onclick="openReactionsModal && openReactionsModal('${post._id || post.id}')" style="cursor:pointer;display:flex;align-items:center;gap:6px;">${reactionCount > 0 ? `<span style="background:#e7f0ff;padding:2px 6px;border-radius:10px;font-size:0.75rem;">👍❤️😂</span><span id="reaction-count-${post._id || post.id}" style="font-weight:700;color:var(--text-secondary);">${reactionCount}</span>` : `<span id="reaction-count-${post._id || post.id}"></span>`}</div>
+            <div style="cursor:pointer;font-weight:600;" onclick="toggleProfileComments('${post._id || post.id}')">${commentCount > 0 ? `${commentCount} comment${commentCount>1?'s':''}` : 'Comment'}</div>
+        </div>
+        <div class="post-actions" style="display:flex;justify-content:space-around;padding:6px 0 2px;">
+            <div class="post-action-wrap" style="position:relative;">
+                <button class="post-action ${reactedClass}" id="react-btn-${post._id || post.id}" onclick="doProfileReact(event,'${post._id || post.id}','${post.myReaction||'like'}')" style="background:none;border:none;padding:8px 14px;border-radius:8px;font-weight:700;font-size:0.88rem;cursor:pointer;display:flex;align-items:center;gap:6px;color:${post.myReaction?'#0866ff':'var(--text-secondary)'};"><span>${reactedIcon}</span> <span>${post.myReaction ? post.myReaction.charAt(0).toUpperCase()+post.myReaction.slice(1) : 'Like'}</span></button>
+            </div>
+            <button class="post-action" onclick="toggleProfileComments('${post._id || post.id}')" style="background:none;border:none;padding:8px 14px;border-radius:8px;font-weight:700;font-size:0.88rem;cursor:pointer;display:flex;align-items:center;gap:6px;color:var(--text-secondary);"><i class="far fa-comment-alt"></i> Comment</button>
+            <button class="post-action" onclick="sharePost && sharePost('${post._id || post.id}')" style="background:none;border:none;padding:8px 14px;border-radius:8px;font-weight:700;font-size:0.88rem;cursor:pointer;display:flex;align-items:center;gap:6px;color:var(--text-secondary);"><i class="fas fa-share"></i> Share</button>
+        </div>
+        <div class="post-comments" id="comments-${post._id || post.id}" style="display:none;border-top:1px solid var(--border);padding-top:12px;margin-top:8px;">
+            <div class="comments-list" id="comments-list-${post._id || post.id}" style="display:flex;flex-direction:column;gap:10px;"></div>
+            <div class="comment-input-row" style="display:flex;gap:8px;align-items:center;margin-top:12px;">
+                <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#0a66ff,#0540a0);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.75rem;flex-shrink:0;">${getInitials(myUser?.fullName)}</div>
+                <div style="flex:1;position:relative;background:var(--bg);border-radius:20px;padding:6px 12px;display:flex;align-items:center;border:1px solid var(--border);">
+                    <input class="comment-input" id="cinput-${post._id || post.id}" placeholder="Write a comment... use @ to mention" style="flex:1;background:none;border:none;outline:none;font-size:0.88rem;font-family:inherit;" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();submitProfileComment('${post._id || post.id}',this);}" oninput="handleMentionInput(this, '${post._id || post.id}')">
+                </div>
+                <button class="comment-send" onclick="submitProfileComment('${post._id || post.id}',document.getElementById('cinput-${post._id || post.id}'))" style="background:#0866ff;color:white;border:none;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;"><i class="fas fa-paper-plane" style="font-size:0.85rem;"></i></button>
+            </div>
+        </div>
+    </div>`;
+}
+
+function getReactionIcon(type){
+    const icons={like:'👍',love:'❤️',haha:'😂',wow:'😮',sad:'😢',angry:'😡'};
+    return icons[type]||'👍';
+}
+async function toggleProfileComments(postId){
+    const el=document.getElementById('comments-'+postId);
+    if(!el) return;
+    el.style.display = el.style.display==='none' || !el.style.display ? 'block' : 'none';
+    if(el.style.display==='block'){
+        const list=document.getElementById('comments-list-'+postId);
+        if(list && list.children.length===0) await loadProfileComments(postId);
+    }
+}
+async function loadProfileComments(postId){
+    const list=document.getElementById('comments-list-'+postId);
+    try{
+        const res=await apiFetch('/posts/'+postId);
+        const post=await res.json();
+        list.innerHTML='';
+        (post.comments||[]).forEach(c=> list.insertAdjacentHTML('beforeend', buildProfileComment(c)));
+    }catch{ list.innerHTML='<div style="padding:8px;color:var(--text-secondary);font-size:0.82rem">Failed to load comments</div>'; }
+}
+function buildProfileComment(c){
+    const initials=getInitials(c.fullName||'?');
+    const pic=c.profilePicture||c.user?.profilePicture;
+    const name=c.fullName||c.user?.fullName||'DIU Member';
+    const avatarHtml=pic?`<img src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${pic}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">`:`<div style="width:32px;height:32px;border-radius:50%;background:#0866ff;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.75rem;">${initials}</div>`;
+    let content=esc(c.content||'');
+    content=content.replace(/@([A-Za-z0-9_ ]+)/g,'<span style="color:#0866ff;font-weight:700;">@$1</span>');
+    const isOwner=String(c.user_id)===String(myUser?._id||myUser?.id);
+    return `<div style="display:flex;gap:8px;align-items:flex-start;">
+        ${avatarHtml}
+        <div style="flex:1;">
+            <div style="background:var(--bg);border-radius:16px;padding:8px 12px;display:inline-block;max-width:100%;">
+                <div style="font-weight:700;font-size:0.82rem;">${esc(name)}</div>
+                <div style="font-size:0.88rem;line-height:1.4;word-break:break-word;">${content}</div>
+            </div>
+            <div style="display:flex;gap:10px;padding:4px 6px;font-size:0.72rem;color:var(--text-secondary);">
+                <span>${timeAgo(c.created_at)}</span>
+                ${isOwner?`<button onclick="editProfileComment('${c.id}','${(c.content||'').replace(/'/g,'&#39;')}','${c.post_id}')" style="background:none;border:none;font-weight:700;color:#0866ff;cursor:pointer;font-size:0.72rem;">Edit</button><button onclick="deleteProfileComment('${c.id}','${c.post_id}',this)" style="background:none;border:none;font-weight:700;color:#e41e3f;cursor:pointer;font-size:0.72rem;">Delete</button>`:''}
+            </div>
+        </div>
+    </div>`;
+}
+async function submitProfileComment(postId, inputEl){
+    const content=inputEl.value.trim();
+    if(!content) return;
+    try{
+        const res=await apiFetch('/posts/'+postId+'/comment',{method:'POST',body:JSON.stringify({content})});
+        const comment=await res.json();
+        const list=document.getElementById('comments-list-'+postId);
+        if(list) list.insertAdjacentHTML('beforeend', buildProfileComment({...comment, fullName:comment.fullName||myUser.fullName, profilePicture:comment.profilePicture||myUser.profilePicture, created_at: new Date().toISOString()}));
+        inputEl.value='';
+        // update count
+        const countEl=document.getElementById('comments-list-'+postId);
+        // simple reload? we can just keep
+    }catch{ showToast('Failed to post comment','error'); }
+}
+async function doProfileReact(e, postId, type){
+    e.stopPropagation();
+    try{
+        const res=await apiFetch('/reactions/'+postId,{method:'POST',body:JSON.stringify({type})});
+        const data=await res.json();
+        const btn=document.getElementById('react-btn-'+postId);
+        if(data.action==='removed'){
+            btn.style.color='var(--text-secondary)';
+            btn.innerHTML='<span>👍</span> <span>Like</span>';
+        } else {
+            btn.style.color='#0866ff';
+            btn.innerHTML=`<span>${getReactionIcon(type)}</span> <span>${type.charAt(0).toUpperCase()+type.slice(1)}</span>`;
+        }
+    }catch{ showToast('Failed to react','error'); }
+}
+function togglePostMenu(postId){
+    const menu=document.getElementById('post-menu-'+postId);
+    if(!menu) return;
+    const isShow=menu.style.display==='block';
+    document.querySelectorAll('.dropdown-menu').forEach(m=>m.style.display='none');
+    menu.style.display=isShow?'none':'block';
+}
+async function deletePost(postId){
+    if(!confirm('Delete this post?')) return;
+    try{ await apiFetch('/posts/'+postId,{method:'DELETE'}); document.getElementById('post-'+postId)?.remove(); showToast('Post deleted','success'); }catch{ showToast('Failed','error'); }
+}
+async function editPost(postId, oldContent){
+    const nc=prompt('Edit post:', oldContent);
+    if(nc===null) return;
+    if(!nc.trim()){ showToast('Empty','error'); return; }
+    try{ const res=await apiFetch('/posts/'+postId,{method:'PUT',body:JSON.stringify({content:nc})}); const d=await res.json(); if(!res.ok) throw new Error(d.message); const el=document.getElementById('post-'+postId); if(el){ const c=el.querySelector('.post-content'); if(c) c.textContent=nc; } showToast('Post updated','success'); }catch(e){ showToast(e.message,'error'); }
+}
+async function adminDeletePost(postId){
+    if(!confirm('Admin delete this post?')) return;
+    try{ const res=await apiFetch('/posts/'+postId,{method:'DELETE'}); if(!res.ok) throw new Error('Failed'); document.getElementById('post-'+postId)?.remove(); showToast('Admin deleted','success'); }catch(e){ showToast(e.message,'error'); }
+}
+async function toggleSavePost(postId, btn){
+    try{ const res=await apiFetch('/saved/'+postId,{method:'POST'}); const d=await res.json(); showToast(d.action==='saved'?'Saved':'Unsaved','success'); }catch{ showToast('Failed','error'); }
+}
+async function deleteProfileComment(cid, postId, btn){
+    if(!confirm('Delete comment?')) return;
+    try{ await apiFetch('/posts/'+postId+'/comments/'+cid,{method:'DELETE'}); btn.closest('div[style*=\"display:flex;gap:8px\"]')?.parentElement?.remove(); }catch{ showToast('Failed','error'); }
+}
+async function editProfileComment(cid, old, postId){
+    const nc=prompt('Edit comment:', old);
+    if(nc===null) return;
+    try{ await apiFetch('/posts/'+postId+'/comments/'+cid,{method:'PUT',body:JSON.stringify({content:nc})}); showToast('Updated','success'); loadProfileComments(postId); }catch{ showToast('Failed','error'); }
+}
+function handleMentionInput(input, postId){
+    // simple @ mention autocomplete - show friends list if @ detected
+    const val=input.value;
+    const atPos=val.lastIndexOf('@');
+    if(atPos>=0){
+        const query=val.slice(atPos+1).toLowerCase();
+        // fetch friends for autocomplete - reuse friends cache if available
+        // For now just show toast hint
+        // Future: dropdown with friends
+    }
+}
+
+function openEditModal() {
+    document.getElementById('editName').value = profileData?.fullName || '';
+    document.getElementById('editEmailLocked').value = profileData?.email || 'student@diu.edu.bd';
+    document.getElementById('editBio').value = profileData?.bio || '';
+    document.getElementById('editDept').value = profileData?.department || '';
+    document.getElementById('editBatch').value = profileData?.batch || '';
+    document.getElementById('editModal').classList.add('show');
+}
+
+async function saveProfile() {
+    const formData = new FormData();
+    formData.append('fullName', document.getElementById('editName').value.trim());
+    formData.append('bio', document.getElementById('editBio').value.trim());
+    formData.append('department', document.getElementById('editDept').value);
+    formData.append('batch', document.getElementById('editBatch').value.trim());
+
+    try {
+        const res = await fetch(`${API}/users/profile`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData
+        });
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        
+        // Update local storage
+        const stored = JSON.parse(localStorage.getItem('user') || '{}');
+        if (data.user) {
+            Object.assign(stored, {
+                fullName: data.user.fullName,
+                department: data.user.department,
+                batch: data.user.batch,
+                bio: data.user.bio
+            });
+            localStorage.setItem('user', JSON.stringify(stored));
+        }
+        document.getElementById('editModal').classList.remove('show');
+        showToast('✅ Profile updated successfully!', 'success');
+        await loadProfile();
+    } catch {
+        showToast('Failed to update profile', 'error');
+    }
+}
+
+async function uploadAvatar(input) {
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) { showToast('Image too large (max 10MB)', 'error'); return; }
+    showToast('Uploading profile picture...', 'info');
+    const formData = new FormData();
+    formData.append('profilePicture', file);
+    try {
+        const res = await fetch(`${API}/users/profile`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData
+        });
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        const stored = JSON.parse(localStorage.getItem('user') || '{}');
+        stored.profilePicture = data.user?.profilePicture || stored.profilePicture;
+        localStorage.setItem('user', JSON.stringify(stored));
+        showToast('✅ Profile picture updated!', 'success');
+        await loadProfile();
+    } catch {
+        showToast('Failed to upload picture', 'error');
+    }
+}
+
+async function uploadCover(input) {
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) { showToast('Image too large (max 10MB)', 'error'); return; }
+    showToast('Uploading cover photo...', 'info');
+    const formData = new FormData();
+    formData.append('coverPicture', file);
+    try {
+        const res = await fetch(`${API}/users/profile`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData
+        });
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        showToast('✅ Cover photo updated!', 'success');
+        await loadProfile();
+    } catch {
+        showToast('Failed to upload cover', 'error');
+    }
+}
+
+function getInitials(name) {
+    if (!name) return '?';
+    return name.trim().split(' ').slice(0,2).map(n => n[0]?.toUpperCase()).join('');
+}
+
+function esc(s) {
+    return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function timeAgo(d) {
+    if(!d) return '';
+    let dt = typeof d === 'string' && !d.includes('T') ? d.replace(' ', 'T') + 'Z' : d;
+    const s = Math.max(0, (Date.now() - new Date(dt).getTime()) / 1000);
+    if(s < 60) return 'Just now';
+    if(s < 3600) return Math.floor(s/60) + 'm ago';
+    if(s < 86400) return Math.floor(s/3600) + 'h ago';
+    return Math.floor(s/86400) + 'd ago';
+}
+
+function showToast(msg, type='info') {
+    const t = document.createElement('div');
+    t.style.cssText = 'background:#1c1e21;color:white;padding:12px 18px;border-radius:10px;font-size:0.88rem;font-family:Inter,sans-serif;margin-top:6px;box-shadow:0 4px 14px rgba(0,0,0,0.25);';
+    t.textContent = msg;
+    document.getElementById('toast-container').appendChild(t);
+    setTimeout(() => t.remove(), 3200);
+}
+function openWarnModal(uid, name){ document.getElementById('warnUserId').value=uid; document.getElementById('warnUserName').textContent=name; document.getElementById('warnReason').value=''; document.getElementById('warnModal').style.display='flex'; }
+function closeWarnModal(){ document.getElementById('warnModal').style.display='none'; }
+async function submitWarn(){
+    const userId=document.getElementById('warnUserId').value; const reason=document.getElementById('warnReason').value.trim(); const severity=document.getElementById('warnSeverity').value;
+    if(!reason){ showToast('Reason required','error'); return; }
+    try{ const res=await apiFetch('/admin/warn-user',{method:'POST', body:JSON.stringify({userId, reason, severity})}); const d=await res.json().catch(()=>({})); if(!res.ok) throw new Error(d.message||'Failed'); showToast('✅ Warn sent + notification','success'); closeWarnModal(); }catch(e){ showToast(e.message,'error'); }
+}
+function openBanModal(uid, name){ document.getElementById('banUserId').value=uid; document.getElementById('banUserName').textContent=name; document.getElementById('banReason').value=''; document.getElementById('banModal').style.display='flex'; }
+function closeBanModal(){ document.getElementById('banModal').style.display='none'; }
+async function submitBan(){
+    const userId=document.getElementById('banUserId').value; const reason=document.getElementById('banReason').value.trim(); const dur=document.getElementById('banDuration').value;
+    if(!reason){ showToast('Reason required','error'); return; }
+    const isPermanent=dur==='permanent'; const durationDays=isPermanent?null:parseInt(dur,10);
+    try{ const res=await apiFetch('/admin/ban-user',{method:'POST', body:JSON.stringify({userId, reason, durationDays, isPermanent})}); const d=await res.json().catch(()=>({})); if(!res.ok) throw new Error(d.message||'Failed'); showToast(isPermanent?'⛔ Permanently banned':'✅ Banned + notification','success'); closeBanModal(); }catch(e){ showToast(e.message,'error'); }
+}
+document.getElementById('warnModal').addEventListener('click', e=>{ if(e.target===document.getElementById('warnModal')) closeWarnModal(); });
+document.getElementById('banModal').addEventListener('click', e=>{ if(e.target===document.getElementById('banModal')) closeBanModal(); });
+
+function openEmailModal(email) {
+    const modal = document.getElementById('emailViewModal');
+    if (!modal) return;
+    document.getElementById('modalEmailUser').textContent = profileData?.fullName || 'DIU Member';
+    document.getElementById('modalEmailAddress').textContent = email || profileData?.email || 'N/A';
+    modal.classList.add('show');
+}
+
+function closeEmailModal() {
+    document.getElementById('emailViewModal')?.classList.remove('show');
+}
+
+function copyEmailToClipboard() {
+    const email = document.getElementById('modalEmailAddress').textContent;
+    navigator.clipboard.writeText(email).then(() => {
+        showToast('✅ Institutional Email copied to clipboard!', 'success');
+    }).catch(() => {
+        showToast('Email: ' + email);
+    });
+}
+
+function openProfileLightbox(type){
+    const lb = document.getElementById('profileLightbox');
+    const img = document.getElementById('profileLightboxImg');
+    if(!profileData) return;
+    let src = '';
+    if(type==='avatar' && profileData.profilePicture) src = ((window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())) + profileData.profilePicture;
+    else if(type==='cover' && profileData.coverPicture) src = ((window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())) + profileData.coverPicture;
+    else if(type==='cover' && !profileData.coverPicture) return;
+    else if(type==='avatar' && !profileData.profilePicture) {
+        // No avatar — show initials placeholder
+        img.style.display='none';
+        lb.style.display='flex';
+        // Create temp placeholder if needed
+        setTimeout(()=>{ if(lb.style.display==='flex' && img.style.display==='none'){ lb.style.display='none'; showToast('No profile picture yet'); }}, 800);
+        return;
+    }
+    if(src){
+        img.src = src;
+        img.style.display='block';
+        lb.style.display='flex';
+    }
+}
+function closeProfileLightbox(){
+    const lb=document.getElementById('profileLightbox');
+    if(lb) lb.style.display='none';
+    const img=document.getElementById('profileLightboxImg');
+    if(img) img.src='';
+}
+
+loadProfile();
+
+let isSubscribed = false;
+async function checkSubscriptionStatus(uid) {
+    if (uid === currentUser.id) return;
+    try {
+        const res = await apiFetch(`/creator/${uid}/status`);
+        isSubscribed = res.isSubscribed;
+        const btn = document.getElementById('subscribeBtn');
+        btn.style.display = 'inline-block';
+        if (isSubscribed) {
+            btn.innerHTML = '<i class="fas fa-check"></i> Subscribed';
+            btn.style.background = 'var(--surface)';
+            btn.style.color = 'var(--text)';
+        } else {
+            btn.innerHTML = '<i class="fas fa-star"></i> Subscribe';
+            btn.style.background = 'linear-gradient(45deg, #FFD700, #FFA500)';
+            btn.style.color = 'black';
+        }
+    } catch(e) { console.error('Subscription error'); }
+}
+
+async function toggleSubscription() {
+    const uid = new URLSearchParams(window.location.search).get('id') || currentUser.id;
+    try {
+        const res = await apiFetch(`/creator/${uid}/subscribe`, { method: 'POST' });
+        showToast(res.message);
+        checkSubscriptionStatus(uid);
+    } catch(e) { showToast('Failed to subscribe', 'error'); }
+}
+
+const originalLoadProfile = loadProfile;
+loadProfile = async function() {
+    await originalLoadProfile();
+    const uid = new URLSearchParams(window.location.search).get('id');
+    if (uid && uid != currentUser.id) {
+        checkSubscriptionStatus(uid);
+    }
+};
+
+</script>
+</body>
+</html>
+

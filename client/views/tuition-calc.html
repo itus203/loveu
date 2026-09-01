@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>DIU Tuition Fee & Course Credit Calculator | DIU Nexus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/home.css">
+    <style>
+        body { padding-top: 64px; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); }
+        .fee-wrap { max-width: 1000px; margin: 0 auto; padding: 24px 16px 80px; }
+        
+        .page-hero {
+            background: linear-gradient(135deg, #0d9488, #0f766e);
+            border-radius: 16px;
+            padding: 28px 24px;
+            color: white;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 4px 20px rgba(13, 148, 136, 0.25);
+        }
+        .page-hero i { font-size: 3rem; opacity: 0.95; }
+        .page-hero h1 { font-size: 1.6rem; font-weight: 800; margin: 0; }
+        .page-hero p { opacity: 0.9; margin: 6px 0 0; font-size: 0.92rem; }
+
+        .calc-card {
+            background: var(--surface);
+            border-radius: 14px;
+            padding: 24px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 800;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text);
+        }
+
+        .calc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 20px; }
+
+        .form-label { display: block; font-size: 0.78rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 6px; text-transform: uppercase; }
+        .calc-input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            background: var(--bg);
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.15s;
+        }
+        .calc-input:focus { border-color: #0d9488; }
+
+        /* Course List Table */
+        .course-table-wrap {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+        .course-row {
+            display: grid;
+            grid-template-columns: 2fr 1.2fr 1fr 40px;
+            gap: 10px;
+            padding: 10px 14px;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface);
+        }
+        .course-row.hdr {
+            background: var(--surface-alt);
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+        .course-row:last-child { border-bottom: none; }
+        @media(max-width: 600px) {
+            .course-row { grid-template-columns: 1.5fr 1fr 1fr 34px; gap: 6px; padding: 8px; }
+        }
+
+        .add-course-btn {
+            background: var(--surface-alt);
+            border: 1.5px dashed #0d9488;
+            color: #0d9488;
+            font-weight: 700;
+            padding: 10px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-family: inherit;
+            font-size: 0.9rem;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .add-course-btn:hover {
+            background: rgba(13, 148, 136, 0.1);
+        }
+
+        .del-btn {
+            background: none;
+            border: none;
+            color: #e41e3f;
+            cursor: pointer;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.75;
+            transition: opacity 0.15s;
+        }
+        .del-btn:hover { opacity: 1; transform: scale(1.1); }
+
+        /* Results & Breakdown */
+        .results-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media(max-width: 768px) {
+            .results-container { grid-template-columns: 1fr; }
+        }
+
+        .result-box {
+            background: linear-gradient(135deg, rgba(13, 148, 136, 0.08), rgba(20, 184, 166, 0.04));
+            border: 2px dashed #0d9488;
+            border-radius: 14px;
+            padding: 24px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .total-amount { font-size: 2.5rem; font-weight: 800; color: #0d9488; margin: 10px 0; }
+
+        .breakdown-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 14px;
+        }
+        .breakdown-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+        .breakdown-row:last-child { border-bottom: none; font-weight: 800; }
+
+        /* Installment Card */
+        .installments-card {
+            background: var(--surface);
+            border-radius: 14px;
+            padding: 20px;
+            border: 1px solid var(--border);
+        }
+        .inst-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 14px;
+            background: var(--surface-alt);
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        .inst-title { font-weight: 700; font-size: 0.92rem; }
+        .inst-desc { font-size: 0.78rem; color: var(--text-secondary); }
+        .inst-amount { font-weight: 800; font-size: 1.1rem; color: #0d9488; }
+    
+        /* Fix: Pill till missing + button blocked — ensure pills and following buttons are clickable */
+        .filter-bar, .category-tabs, .cats, .filter-tabs, .cat-tabs, .filter-pill, .cat-tab, .cat, .blood-type-grid, .search-bar {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 1;
+        }
+        .filter-chip, .cat-tab, .cat, .blood-btn, .btn-join, .btn-view, .btn-post, .btn-submit, .btn-sell, .contact-btn, .post-action, .member-row button, .file-row a {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 2;
+        }
+        /* Ensure no sticky pill blocks content */
+        .category-tabs, .filter-bar, .cats {
+            overflow-x: auto;
+            overflow-y: visible;
+            max-height: none;
+        }
+
+    </style>
+</head>
+<body>
+<script src="../js/config.js"></script>
+<script src="../js/shared.js"></script>
+
+<div class="fee-wrap">
+    <div class="page-hero">
+        <i class="fas fa-calculator"></i>
+        <div>
+            <h1>💰 DIU Tuition Fee & Waiver Calculator</h1>
+            <p>Custom Credit Breakdown, Lab Credits, Individual Courses & 3-Installment Schedule</p>
+        </div>
+    </div>
+
+    <!-- Department & Custom Rate Section -->
+    <div class="calc-card">
+        <div class="section-title">
+            <i class="fas fa-sliders-h" style="color:#0d9488;"></i> 1. Department & Credit Rate Setup
+        </div>
+        <div class="calc-grid">
+            <div>
+                <label class="form-label">Select Department Preset</label>
+                <select class="calc-input" id="deptSelect" onchange="onDeptChange()">
+                    <option value="4200">CSE / SWE (BDT 4,200 / credit)</option>
+                    <option value="4000">EEE / ETE (BDT 4,000 / credit)</option>
+                    <option value="4500">Pharmacy (BDT 4,500 / credit)</option>
+                    <option value="3800">BBA / Economics (BDT 3,800 / credit)</option>
+                    <option value="3500">English (BDT 3,500 / credit)</option>
+                    <option value="3800">Civil Engineering (BDT 3,800 / credit)</option>
+                    <option value="3600">Textile Engineering (BDT 3,600 / credit)</option>
+                    <option value="3600">Journalism & MC (BDT 3,600 / credit)</option>
+                    <option value="custom">✏️ Custom Per-Credit Amount</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label">Per-Credit Fee (BDT ) *</label>
+                <input class="calc-input" id="costPerCredit" type="number" value="4200" min="500" step="50" oninput="calculateAll()">
+            </div>
+            <div>
+                <label class="form-label">Scholarship / Waiver %</label>
+                <select class="calc-input" id="waiverSelect" onchange="onWaiverSelectChange()">
+                    <option value="0">0% (Regular / No Waiver)</option>
+                    <option value="10">10% Waiver</option>
+                    <option value="15">15% Waiver</option>
+                    <option value="20">20% Waiver</option>
+                    <option value="25">25% Waiver</option>
+                    <option value="30">30% Waiver</option>
+                    <option value="40">40% Waiver</option>
+                    <option value="50">50% (Merit / Result Waiver)</option>
+                    <option value="75">75% Waiver</option>
+                    <option value="100">100% (Full Freedom Fighter / Golden)</option>
+                    <option value="custom">✏️ Custom Waiver %</option>
+                </select>
+            </div>
+            <div id="customWaiverBox" style="display:none;">
+                <label class="form-label">Custom Waiver % (0-100)</label>
+                <input class="calc-input" id="customWaiverInput" type="number" value="0" min="0" max="100" oninput="calculateAll()">
+            </div>
+            <div>
+                <label class="form-label">Semester Registration Fee (BDT )</label>
+                <input class="calc-input" id="regFeeInput" type="number" value="6500" min="0" oninput="calculateAll()">
+            </div>
+        </div>
+    </div>
+
+    <!-- Course-by-Course Breakdown Section -->
+    <div class="calc-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+            <div class="section-title" style="margin-bottom:0;">
+                <i class="fas fa-book-open" style="color:#0d9488;"></i> 2. Courses & Credits Selection
+            </div>
+            <div style="font-size:0.88rem;font-weight:700;color:#0d9488;">
+                Total Credits: <span id="hdrTotalCredits">14.5</span>
+            </div>
+        </div>
+
+        <div class="course-table-wrap">
+            <div class="course-row hdr">
+                <div>Course Name</div>
+                <div>Course Type</div>
+                <div>Credits</div>
+                <div></div>
+            </div>
+            <div id="coursesList">
+                <!-- Dynamic Course Rows will be injected here -->
+            </div>
+        </div>
+
+        <button class="add-course-btn" onclick="addCourseRow()">
+            <i class="fas fa-plus-circle"></i> Add Another Course / Lab
+        </button>
+    </div>
+
+    <!-- Calculation Results & Installments -->
+    <div class="results-container">
+        <!-- Summary Box -->
+        <div class="result-box">
+            <div style="font-size:0.9rem;font-weight:800;color:var(--text-secondary);text-transform:uppercase;">
+                Estimated Payable Semester Fee
+            </div>
+            <div class="total-amount" id="totalPayableAmount">BDT  0</div>
+            
+            <div class="breakdown-list">
+                <div class="breakdown-row">
+                    <span>Total Enrolled Credits</span>
+                    <span id="bTotalCredits">0 credits</span>
+                </div>
+                <div class="breakdown-row">
+                    <span>Theory / Lab Breakdown</span>
+                    <span id="bTheoryLabCount">0 Theory, 0 Lab</span>
+                </div>
+                <div class="breakdown-row">
+                    <span>Gross Tuition Fee</span>
+                    <span id="bGrossTuition">BDT  0</span>
+                </div>
+                <div class="breakdown-row" style="color:#0d9488;">
+                    <span>Waiver Discount (<span id="bWaiverPct">0%</span>)</span>
+                    <span id="bWaiverSavings">- BDT  0</span>
+                </div>
+                <div class="breakdown-row">
+                    <span>Semester Registration Fee</span>
+                    <span id="bRegFee">+ BDT  6,500</span>
+                </div>
+                <div class="breakdown-row" style="font-size:1.05rem;color:#0d9488;border-top:2px solid var(--border);padding-top:10px;">
+                    <span>Net Total Payable</span>
+                    <span id="bNetTotal">BDT  0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3-Installment Schedule Card -->
+        <div class="installments-card">
+            <div class="section-title">
+                <i class="fas fa-calendar-check" style="color:#0d9488;"></i> 3-Installment Payment Plan
+            </div>
+            <p style="font-size:0.84rem;color:var(--text-secondary);margin-bottom:14px;">
+                DIU standard semester payment installment distribution:
+            </p>
+
+            <div class="inst-row">
+                <div>
+                    <div class="inst-title">1st Installment (At Registration)</div>
+                    <div class="inst-desc">Registration fee + 40% of Tuition</div>
+                </div>
+                <div class="inst-amount" id="inst1">BDT  0</div>
+            </div>
+
+            <div class="inst-row">
+                <div>
+                    <div class="inst-title">2nd Installment (Before Midterm)</div>
+                    <div class="inst-desc">30% of Tuition fee</div>
+                </div>
+                <div class="inst-amount" id="inst2">BDT  0</div>
+            </div>
+
+            <div class="inst-row">
+                <div>
+                    <div class="inst-title">3rd Installment (Before Final Exam)</div>
+                    <div class="inst-desc">Remaining 30% of Tuition fee</div>
+                </div>
+                <div class="inst-amount" id="inst3">BDT  0</div>
+            </div>
+
+            <button onclick="window.print()" style="width:100%;margin-top:14px;padding:10px;background:var(--surface-alt);border:1px solid var(--border);border-radius:8px;font-weight:700;cursor:pointer;color:var(--text);font-family:inherit;">
+                <i class="fas fa-print"></i> Print / Save Tuition Slip
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+if (localStorage.getItem('darkMode') === '1') document.body.setAttribute('data-theme','dark');
+
+// Predefined initial course list
+let courses = [
+    { name: 'Theory Course 1', type: 'Theory (3.0 Credits)', credits: 3.0 },
+    { name: 'Theory Course 2', type: 'Theory (3.0 Credits)', credits: 3.0 },
+    { name: 'Theory Course 3', type: 'Theory (3.0 Credits)', credits: 3.0 },
+    { name: 'Theory Course 4', type: 'Theory (3.0 Credits)', credits: 3.0 },
+    { name: 'Lab Course 1', type: 'Lab (1.5 Credits)', credits: 1.5 },
+    { name: 'Lab Course 2', type: 'Lab (1.0 Credit)', credits: 1.0 }
+];
+
+function renderCourseRows() {
+    const container = document.getElementById('coursesList');
+    container.innerHTML = courses.map((c, i) => `
+        <div class="course-row">
+            <input class="calc-input" value="${esc(c.name)}" placeholder="e.g. Algorithms" oninput="courses[${i}].name=this.value">
+            <select class="calc-input" onchange="onCourseTypeChange(${i}, this.value)">
+                <option value="3.0" ${c.credits === 3.0 ? 'selected' : ''}>Theory (3.0 Credits)</option>
+                <option value="2.0" ${c.credits === 2.0 ? 'selected' : ''}>Theory (2.0 Credits)</option>
+                <option value="4.0" ${c.credits === 4.0 ? 'selected' : ''}>Theory (4.0 Credits)</option>
+                <option value="1.5" ${c.credits === 1.5 ? 'selected' : ''}>Lab (1.5 Credits)</option>
+                <option value="1.0" ${c.credits === 1.0 ? 'selected' : ''}>Lab (1.0 Credit)</option>
+                <option value="0.75" ${c.credits === 0.75 ? 'selected' : ''}>Lab (0.75 Credits)</option>
+                <option value="custom" ${![3.0, 2.0, 4.0, 1.5, 1.0, 0.75].includes(c.credits) ? 'selected' : ''}>✏️ Custom Credits</option>
+            </select>
+            <input class="calc-input" type="number" step="0.25" min="0" max="10" value="${c.credits}" oninput="courses[${i}].credits=parseFloat(this.value)||0; calculateAll();">
+            <button class="del-btn" onclick="removeCourseRow(${i})" title="Delete course"><i class="fas fa-trash-alt"></i></button>
+        </div>
+    `).join('');
+    calculateAll();
+}
+
+function onCourseTypeChange(index, val) {
+    if (val !== 'custom') {
+        courses[index].credits = parseFloat(val);
+    }
+    renderCourseRows();
+}
+
+function addCourseRow() {
+    courses.push({ name: `Course ${courses.length + 1}`, type: 'Theory (3.0 Credits)', credits: 3.0 });
+    renderCourseRows();
+}
+
+function removeCourseRow(index) {
+    if (courses.length <= 1) {
+        alert('You must have at least 1 course.');
+        return;
+    }
+    courses.splice(index, 1);
+    renderCourseRows();
+}
+
+function onDeptChange() {
+    const sel = document.getElementById('deptSelect').value;
+    if (sel !== 'custom') {
+        document.getElementById('costPerCredit').value = sel;
+    }
+    calculateAll();
+}
+
+function onWaiverSelectChange() {
+    const val = document.getElementById('waiverSelect').value;
+    const customBox = document.getElementById('customWaiverBox');
+    if (val === 'custom') {
+        customBox.style.display = 'block';
+    } else {
+        customBox.style.display = 'none';
+    }
+    calculateAll();
+}
+
+function calculateAll() {
+    const costPerCredit = parseFloat(document.getElementById('costPerCredit').value) || 0;
+    const regFee = parseFloat(document.getElementById('regFeeInput').value) || 0;
+
+    let waiverPct = 0;
+    const waiverSel = document.getElementById('waiverSelect').value;
+    if (waiverSel === 'custom') {
+        waiverPct = parseFloat(document.getElementById('customWaiverInput').value) || 0;
+    } else {
+        waiverPct = parseFloat(waiverSel) || 0;
+    }
+
+    let totalCredits = 0;
+    let theoryCount = 0;
+    let labCount = 0;
+
+    courses.forEach(c => {
+        const cr = parseFloat(c.credits) || 0;
+        totalCredits += cr;
+        if (cr >= 2.0) theoryCount++;
+        else labCount++;
+    });
+
+    const grossTuition = totalCredits * costPerCredit;
+    const waiverSavings = grossTuition * (waiverPct / 100);
+    const netTuition = grossTuition - waiverSavings;
+    const totalPayable = netTuition + regFee;
+
+    // 3-Installment plan calculation:
+    // Inst 1: Registration Fee + 40% of Net Tuition
+    // Inst 2: 30% of Net Tuition
+    // Inst 3: 30% of Net Tuition
+    const inst1 = regFee + (netTuition * 0.40);
+    const inst2 = netTuition * 0.30;
+    const inst3 = netTuition * 0.30;
+
+    // Update UI elements
+    document.getElementById('hdrTotalCredits').textContent = totalCredits.toFixed(2);
+    document.getElementById('totalPayableAmount').textContent = 'BDT  ' + Math.round(totalPayable).toLocaleString();
+    document.getElementById('bTotalCredits').textContent = `${totalCredits.toFixed(2)} Credits`;
+    document.getElementById('bTheoryLabCount').textContent = `${theoryCount} Theory, ${labCount} Lab`;
+    document.getElementById('bGrossTuition').textContent = 'BDT  ' + Math.round(grossTuition).toLocaleString();
+    document.getElementById('bWaiverPct').textContent = `${waiverPct}%`;
+    document.getElementById('bWaiverSavings').textContent = '- BDT  ' + Math.round(waiverSavings).toLocaleString();
+    document.getElementById('bRegFee').textContent = '+ BDT  ' + Math.round(regFee).toLocaleString();
+    document.getElementById('bNetTotal').textContent = 'BDT  ' + Math.round(totalPayable).toLocaleString();
+
+    document.getElementById('inst1').textContent = 'BDT  ' + Math.round(inst1).toLocaleString();
+    document.getElementById('inst2').textContent = 'BDT  ' + Math.round(inst2).toLocaleString();
+    document.getElementById('inst3').textContent = 'BDT  ' + Math.round(inst3).toLocaleString();
+}
+
+function esc(s) { return String(s||'').replace(/"/g, '&quot;'); }
+
+renderCourseRows();
+</script>
+</body>
+</html>

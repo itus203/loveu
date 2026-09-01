@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Marketplace | DIU Nexus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/home.css">
+    <style>
+        body{padding-top:64px;}
+        .hero{background:linear-gradient(135deg,#7c3aed,#5b21b6);padding:40px 24px;text-align:center;color:white;}
+        .hero h1{font-size:2rem;font-weight:800;margin-bottom:8px;}
+        .container{max-width:900px;margin:0 auto;padding:24px 16px;}
+        .cats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+        .cat{padding:6px 16px;border-radius:20px;border:1.5px solid var(--border,#e4e6eb);font-family:inherit;font-size:0.82rem;font-weight:600;cursor:pointer;background:var(--surface,#fff);transition:all 0.15s;}
+        .cat.active,.cat:hover{background:#7c3aed;color:white;border-color:#7c3aed;}
+        .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;}
+        .item-card{background:var(--surface,#fff);border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);cursor:pointer;transition:transform 0.2s;}
+        .item-card:hover{transform:translateY(-3px);}
+        .item-img{height:160px;background:linear-gradient(135deg,#7c3aed22,#7c3aed44);display:flex;align-items:center;justify-content:center;font-size:3rem;overflow:hidden;}
+        .item-img img{width:100%;height:100%;object-fit:cover;}
+        .item-info{padding:12px;}
+        .item-price{font-size:1.1rem;font-weight:800;color:#7c3aed;margin-bottom:2px;}
+        .item-title{font-weight:600;font-size:0.9rem;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+        .item-meta{font-size:0.75rem;color:#65676b;}
+        .btn-sell{background:#7c3aed;color:white;border:none;border-radius:10px;padding:10px 20px;font-family:inherit;font-size:0.88rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;}
+        .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;align-items:center;justify-content:center;}
+        .modal-overlay.show{display:flex;}
+        .modal{background:var(--surface,#fff);border-radius:16px;padding:24px;width:100%;max-width:440px;max-height:90vh;overflow-y:auto;}
+        .form-group{margin-bottom:12px;}
+        .form-group label{display:block;font-size:0.82rem;font-weight:600;margin-bottom:4px;color:#65676b;}
+        .form-group input,.form-group textarea,.form-group select{width:100%;padding:10px 12px;border:1.5px solid var(--border,#e4e6eb);border-radius:8px;font-family:inherit;font-size:0.88rem;background:var(--surface,#fff);color:var(--text,#1c1e21);outline:none;}
+        .btn-submit{width:100%;padding:12px;background:#7c3aed;color:white;border:none;border-radius:8px;font-family:inherit;font-size:0.95rem;font-weight:700;cursor:pointer;margin-top:8px;}
+        #toast-container{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+    
+        /* Fix: Pill till missing + button blocked — ensure pills and following buttons are clickable */
+        .filter-bar, .category-tabs, .cats, .filter-tabs, .cat-tabs, .filter-pill, .cat-tab, .cat, .blood-type-grid, .search-bar {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 1;
+        }
+        .filter-chip, .cat-tab, .cat, .blood-btn, .btn-join, .btn-view, .btn-post, .btn-submit, .btn-sell, .contact-btn, .post-action, .member-row button, .file-row a {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 2;
+        }
+        /* Ensure no sticky pill blocks content */
+        .category-tabs, .filter-bar, .cats {
+            overflow-x: auto;
+            overflow-y: visible;
+            max-height: none;
+        }
+
+    </style>
+</head>
+<body>
+<script src="../js/config.js"></script>
+<script src="../js/shared.js"></script>
+<div class="hero"><h1><i class="fas fa-store"></i> DIU Marketplace</h1><p style="opacity:0.85;">Buy & sell with fellow students</p></div>
+<div class="container">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px;">
+        <div class="cats" id="catFilter">
+            <button class="cat active" onclick="setCategory('',this)">All</button>
+            <button class="cat" onclick="setCategory('Books',this)">📚 Books</button>
+            <button class="cat" onclick="setCategory('Electronics',this)">💻 Electronics</button>
+            <button class="cat" onclick="setCategory('Clothing',this)">👕 Clothing</button>
+            <button class="cat" onclick="setCategory('Stationery',this)">✏️ Stationery</button>
+            <button class="cat" onclick="setCategory('Other',this)">📦 Other</button>
+        </div>
+        <button class="btn-sell" onclick="document.getElementById('sellModal').classList.add('show')"><i class="fas fa-plus"></i> Sell Item</button>
+    </div>
+    <div class="grid" id="itemGrid"><div style="grid-column:1/-1;text-align:center;padding:40px;color:#65676b;"><i class="fas fa-spinner fa-spin fa-2x"></i></div></div>
+</div>
+
+<div class="modal-overlay" id="sellModal">
+    <div class="modal">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <h2 style="font-weight:800;font-size:1.1rem;">List Item for Sale</h2>
+            <button onclick="document.getElementById('sellModal').classList.remove('show')" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:#65676b;"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="form-group"><label>Title *</label><input id="sellTitle" placeholder="What are you selling? — e.g., Mobile, Book"></div>
+        <div class="form-group"><label>Category</label>
+            <select id="sellCat"><option>Books</option><option>Electronics</option><option>Clothing</option><option>Stationery</option><option>Other</option></select>
+        </div>
+        <div class="form-group"><label>Price (BDT ) *</label><input id="sellPrice" type="number" min="0" placeholder="0 for free"></div>
+        <div class="form-group" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div><label style="display:block;font-size:0.82rem;font-weight:600;margin-bottom:4px;color:#65676b;">Student ID *</label><input id="sellStudentId" placeholder="e.g., 222-15-1234" style="width:100%;padding:10px 12px;border:1.5px solid var(--border,#e4e6eb);border-radius:8px;font-family:inherit;font-size:0.88rem;"></div>
+            <div><label style="display:block;font-size:0.82rem;font-weight:600;margin-bottom:4px;color:#65676b;">Phone *</label><input id="sellPhone" placeholder="01XXXXXXXXX" type="tel" style="width:100%;padding:10px 12px;border:1.5px solid var(--border,#e4e6eb);border-radius:8px;font-family:inherit;font-size:0.88rem;"></div>
+        </div>
+        <div class="form-group"><label>Address *</label><input id="sellAddress" placeholder="Enter your address — e.g., Khagan, Ashulia, Dattapara"></div>
+        <div class="form-group"><label>Description</label><textarea id="sellDesc" rows="3" placeholder="Condition, details — We are here to save your time, describe honestly..."></textarea></div>
+        <div class="form-group"><label>Photo</label><input type="file" id="sellImg" accept="image/*" style="padding:6px;"></div>
+        <div style="font-size:0.72rem; color:#6b7280; background:#f9fafb; border:1px dashed #e5e7eb; padding:8px 10px; border-radius:8px; margin-bottom:4px;">📢 <b>Globally visible:</b> Your listing (with ID, phone & address) will be visible to <b>all DIU students</b> — like Blood requests.</div>
+        <button class="btn-submit" onclick="submitSell()">Post Listing</button>
+    </div>
+</div>
+<div id="toast-container"></div>
+<script>
+const API = (typeof window.API !== 'undefined' ? window.API : (function(){ var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000/api'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin+'/api'; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin+'/api':'http://localhost:5000/api'; return 'http://localhost:5000/api'; } return window.location.origin+'/api'; })());,token=localStorage.getItem('token');
+let currentCat='';
+const EMOJIS={Books:'📚',Electronics:'💻',Clothing:'👕',Stationery:'✏️',Other:'📦'};
+async function apiFetch(p,o={}) { const h={'Authorization':`Bearer ${token}`,...(o.headers||{})}; if(!(o.body instanceof FormData))h['Content-Type']='application/json'; return fetch(`${API}${p}`,{...o,headers:h}); }
+function setCategory(cat,btn){currentCat=cat;document.querySelectorAll('.cat').forEach(b=>b.classList.remove('active'));btn.classList.add('active');load();}
+async function load(){
+    try{
+        const url='/marketplace'+(currentCat?`?category=${currentCat}`:'');
+        const res=await apiFetch(url); const items=await res.json();
+        const el=document.getElementById('itemGrid');
+        if(!items.length){el.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:60px;color:#65676b;"><i class="fas fa-store" style="font-size:3rem;opacity:0.3;display:block;margin-bottom:12px;"></i>No items listed yet — Be the first to post!</div>';return;}
+        el.innerHTML=items.map(i=>`<div class="item-card" style="position:relative;">
+            <div class="item-img">${i.imageUrl?`<img src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${i.imageUrl}">`:(EMOJIS[i.category]||'📦')}</div>
+            <div class="item-info">
+                <div class="item-price">${i.price===0?'Free':'BDT '+i.price}</div>
+                <div class="item-title">${esc(i.title)}</div>
+                <div class="item-meta">${esc(i.category)} · ${timeAgo(i.created_at)} · by ${esc(i.fullName||'DIU Student')}</div>
+                <div style="margin-top:6px; padding-top:6px; border-top:1px dashed #e5e7eb; font-size:0.78rem; line-height:1.4; color:#374151;">
+                    ${i.studentId?`<div><i class="fas fa-id-card" style="color:#7c3aed;"></i> <b>ID:</b> ${esc(i.studentId)}</div>`:''}
+                    ${i.phone||i.contact?`<div><i class="fas fa-phone" style="color:#059669;"></i> <a href="tel:${esc(i.phone||i.contact)}" style="color:#059669; font-weight:600; text-decoration:none;">${esc(i.phone||i.contact)}</a></div>`:''}
+                    ${i.address?`<div><i class="fas fa-map-marker-alt" style="color:#f59e0b;"></i> ${esc(i.address)}</div>`:''}
+                </div>
+                ${i.description?`<div style="margin-top:6px; font-size:0.82rem; color:#4b5563; background:#f9fafb; padding:6px 8px; border-radius:6px;">${esc(i.description)}</div>`:''}
+                <div style="display:flex;gap:6px;margin-top:8px;">
+                    <button onclick="reportContent('marketplace', ${i.id})" style="flex:1;padding:6px;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;font-size:0.75rem;font-weight:600;cursor:pointer;color:#e41e3f;display:flex;align-items:center;justify-content:center;gap:4px;"><i class="fas fa-flag"></i> Report</button>
+                </div>
+            </div>
+            <div style="position:absolute; top:8px; right:8px; background:rgba(0,0,0,0.55); color:white; font-size:0.68rem; padding:3px 7px; border-radius:12px; backdrop-filter:blur(4px);"><i class="fas fa-globe"></i> Global</div>
+            <button onclick="reportContent('marketplace', ${i.id})" title="Report" style="position:absolute;top:8px;left:8px;background:rgba(255,255,255,0.95);border:none;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#e41e3f;box-shadow:0 2px 6px rgba(0,0,0,0.1);"><i class="fas fa-flag" style="font-size:0.7rem;"></i></button>
+        </div>`).join('');
+    }catch(e){ console.error(e); document.getElementById('itemGrid').innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:#e41e3f;">Failed to load — Check connection</div>';}
+}
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+async function submitSell(){
+    const title=document.getElementById('sellTitle').value.trim();
+    const price=document.getElementById('sellPrice').value;
+    const phone=document.getElementById('sellPhone').value.trim();
+    const address=document.getElementById('sellAddress').value.trim();
+    const studentId=document.getElementById('sellStudentId').value.trim();
+    // Auto-fill from logged in user if empty
+    const fallbackId = studentId || (JSON.parse(localStorage.getItem('user')||'{}').studentId) || (JSON.parse(localStorage.getItem('user')||'{}').email) || '';
+    if(!title||price===''){showToast('Title and price required');return;}
+    if(!phone){ showToast('Phone number required — buyers need to contact you'); return; }
+    if(!address){ showToast('Address required — Enter your location'); return; }
+    const fd=new FormData();
+    fd.append('title',title);
+    fd.append('category',document.getElementById('sellCat').value);
+    fd.append('price',price);
+    fd.append('description',document.getElementById('sellDesc').value);
+    fd.append('phone',phone);
+    fd.append('address',address);
+    fd.append('studentId', fallbackId || studentId);
+    const imgFile=document.getElementById('sellImg').files[0];if(imgFile)fd.append('image',imgFile);
+    try{
+        const res=await apiFetch('/marketplace',{method:'POST',body:fd});
+        const data=await res.json().catch(()=>({}));
+        if(!res.ok) throw new Error(data.message||'Failed');
+        document.getElementById('sellModal').classList.remove('show');
+        // Clear form
+        ['sellTitle','sellPrice','sellPhone','sellAddress','sellStudentId','sellDesc'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+        document.getElementById('sellImg').value='';
+        showToast('✅ Listed — Globally visible to all DIU students!');
+        load();
+    }catch(e){ showToast(e.message||'Failed to list','error'); }
+}
+function timeAgo(d) {
+    if(!d) return '';
+    let dt = typeof d === 'string' && !d.includes('T') ? d.replace(' ', 'T') + 'Z' : d;
+    const s = Math.max(0, (Date.now() - new Date(dt).getTime()) / 1000);
+    if(s < 60) return 'Just now';
+    if(s < 3600) return Math.floor(s/60) + 'm ago';
+    if(s < 86400) return Math.floor(s/3600) + 'h ago';
+    return Math.floor(s/86400) + 'd ago';
+}
+function showToast(msg){const t=document.createElement('div');t.style.cssText='background:#1c1e21;color:white;padding:12px 18px;border-radius:8px;font-size:0.88rem;font-family:Inter,sans-serif;';t.textContent=msg;document.getElementById('toast-container').appendChild(t);setTimeout(()=>t.remove(),3100);}
+load();
+</script>
+</body></html>

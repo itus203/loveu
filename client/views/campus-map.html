@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>DIU Campus Map & Room Finder | DIU Nexus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/home.css">
+    <style>
+        body { padding-top: 64px; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); }
+        .map-wrap { max-width: 1080px; margin: 0 auto; padding: 24px 16px 80px; }
+        
+        .page-hero {
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            border-radius: 16px;
+            padding: 28px 24px;
+            color: white;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 4px 20px rgba(2, 132, 199, 0.25);
+        }
+        .page-hero i { font-size: 2.8rem; opacity: 0.95; }
+        .page-hero h1 { font-size: 1.55rem; font-weight: 800; margin: 0; }
+        .page-hero p { opacity: 0.9; margin: 4px 0 0; font-size: 0.88rem; }
+
+        /* Room Decoder Box */
+        .decoder-card {
+            background: var(--surface);
+            border-radius: 14px;
+            padding: 24px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+        .dec-row { display: flex; gap: 12px; margin-top: 14px; flex-wrap: wrap; }
+        .dec-input {
+            flex: 1; min-width: 240px; padding: 12px 16px;
+            border: 2px solid var(--border); border-radius: 10px;
+            font-family: inherit; font-size: 0.95rem; outline: none;
+            background: var(--bg); color: var(--text);
+        }
+        .dec-input:focus { border-color: #0284c7; }
+        .dec-btn {
+            padding: 12px 24px; background: #0284c7; color: white;
+            border: none; border-radius: 10px; font-family: inherit;
+            font-weight: 700; font-size: 0.95rem; cursor: pointer;
+            display: flex; align-items: center; gap: 8px;
+            transition: background 0.15s;
+        }
+        .dec-btn:hover { background: #0369a1; }
+
+        .decoder-result {
+            margin-top: 16px; padding: 18px 20px; border-radius: 12px;
+            background: #e0f2fe; color: #0369a1; font-weight: 600;
+            border: 1.5px solid #bae6fd; display: none; line-height: 1.6;
+        }
+        [data-theme="dark"] .decoder-result { background: rgba(2, 132, 199, 0.15); border-color: #0284c7; color: #38bdf8; }
+
+        /* Map Embed Frame */
+        .map-frame-card {
+            background: var(--surface); border-radius: 14px;
+            overflow: hidden; border: 1px solid var(--border);
+            margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .map-frame-hdr {
+            padding: 16px 20px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            font-weight: 800; font-size: 1.05rem;
+        }
+        .gmap-iframe { width: 100%; height: 400px; border: none; }
+
+        /* Landmarks Grid */
+        .landmarks-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+        .land-card {
+            background: var(--surface); border-radius: 14px; padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 1px solid var(--border);
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .land-card:hover { transform: translateY(-2px); border-color: #0284c7; box-shadow: 0 6px 20px rgba(0,0,0,0.09); }
+        .land-hdr { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+        .land-icon {
+            width: 44px; height: 44px; border-radius: 12px;
+            background: #e0f2fe; color: #0284c7;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.25rem; flex-shrink: 0;
+        }
+        .land-name { font-size: 1.05rem; font-weight: 800; color: var(--text); }
+        .land-loc { font-size: 0.76rem; color: #0284c7; font-weight: 700; text-transform: uppercase; }
+        .land-desc { font-size: 0.85rem; line-height: 1.5; color: var(--text-secondary); margin-top: 8px; }
+        .land-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+        .land-tag { font-size: 0.72rem; padding: 3px 8px; border-radius: 6px; background: var(--bg); border: 1px solid var(--border); color: var(--text-secondary); font-weight: 600; }
+    
+        /* Fix: Pill till missing + button blocked — ensure pills and following buttons are clickable */
+        .filter-bar, .category-tabs, .cats, .filter-tabs, .cat-tabs, .filter-pill, .cat-tab, .cat, .blood-type-grid, .search-bar {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 1;
+        }
+        .filter-chip, .cat-tab, .cat, .blood-btn, .btn-join, .btn-view, .btn-post, .btn-submit, .btn-sell, .contact-btn, .post-action, .member-row button, .file-row a {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 2;
+        }
+        /* Ensure no sticky pill blocks content */
+        .category-tabs, .filter-bar, .cats {
+            overflow-x: auto;
+            overflow-y: visible;
+            max-height: none;
+        }
+
+    </style>
+</head>
+<body>
+<script src="../js/config.js"></script>
+<script src="../js/shared.js"></script>
+
+<div class="map-wrap">
+    <div class="page-hero">
+        <i class="fas fa-map-marked-alt"></i>
+        <div>
+            <h1>🏫 DIU Campus Map & Building Guide</h1>
+            <p>Daffodil Smart City, Ashulia — Real Academic Buildings (AB1–AB4), Knowledge Tower, Labs & Facilities</p>
+        </div>
+    </div>
+
+    <!-- Official DIU Room Number Decoder -->
+    <div class="decoder-card">
+        <div style="font-weight:800;font-size:1.1rem;margin-bottom:4px;">
+            <i class="fas fa-search-location" style="color:#0284c7;"></i> Official DIU Room Decoder
+        </div>
+        <p style="font-size:0.84rem;color:var(--text-secondary);">
+            Enter any room code from your class schedule (e.g. <code>AB1-504</code>, <code>AB4-302</code>, <code>AB3-305</code>, <code>KT-702</code>, <code>AB1-302</code>, <code>AB4-601</code>):
+        </p>
+        <div class="dec-row">
+            <input class="dec-input" id="roomInp" placeholder="Enter room code, e.g. AB1-504, AB4-302, KT-702" onkeydown="if(event.key==='Enter')decodeRoom()">
+            <button class="dec-btn" onclick="decodeRoom()"><i class="fas fa-compass"></i> Locate Room</button>
+        </div>
+        <div id="roomResult" class="decoder-result"></div>
+    </div>
+
+    <!-- Live Google Satellite Map of DIU Ashulia Campus -->
+    <div class="map-frame-card">
+        <div class="map-frame-hdr">
+            <span><i class="fas fa-satellite" style="color:#0284c7;"></i> Daffodil Smart City (DSC), Ashulia Satellite Map</span>
+            <a href="https://maps.google.com/?q=Daffodil+International+University+Ashulia" target="_blank" style="font-size:0.84rem;color:#0284c7;text-decoration:none;font-weight:700;">
+                <i class="fas fa-external-link-alt"></i> Open in Google Maps
+            </a>
+        </div>
+        <iframe class="gmap-iframe" loading="lazy" allowfullscreen 
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3648.4069818817756!2d90.31849767595462!3d23.87515438396913!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3755b8ada2664e21%3A0x3c87943bc08e047a!2sDaffodil%20International%20University!5e0!3m2!1sen!2sbd!4v1700000000000!5m2!1sen!2sbd">
+        </iframe>
+    </div>
+
+    <!-- Official DIU DSC Academic Buildings -->
+    <h3 style="font-size:1.15rem;font-weight:800;margin-bottom:16px;color:var(--text);"><i class="fas fa-university" style="color:#0284c7;"></i> Official Academic Buildings & Zones</h3>
+    <div class="landmarks-grid">
+        <!-- AB-1 -->
+        <div class="land-card">
+            <div class="land-hdr">
+                <div class="land-icon"><i class="fas fa-laptop-code"></i></div>
+                <div>
+                    <div class="land-name">Academic Building 1 (AB-1)</div>
+                    <div class="land-loc">Faculty of Science & IT (FSIT)</div>
+                </div>
+            </div>
+            <div class="land-desc">
+                Houses the <strong>CSE & SWE</strong> departments, advanced computer labs (Lab 201–206, 301–306), AI & Robotics Lab (402), Head of CSE Office (AB1-504), Head of SWE Office (AB1-512), and classrooms on floors 1 to 6.
+            </div>
+            <div class="land-tags">
+                <span class="land-tag">CSE & SWE</span>
+                <span class="land-tag">Computer Labs</span>
+                <span class="land-tag">Floors 1–6</span>
+            </div>
+        </div>
+
+        <!-- AB-4 — Knowledge Tower (Facility Summary from image) -->
+        <div class="land-card" style="border:1.5px solid #059669;">
+            <div class="land-hdr">
+                <div class="land-icon" style="background:#059669;color:white;"><i class="fas fa-building"></i></div>
+                <div>
+                    <div class="land-name">Academic Building 4 (AB-4) — Knowledge Tower</div>
+                    <div class="land-loc">AB4 Facility Summary • Daffodil Insiders</div>
+                </div>
+            </div>
+            <div style="margin:12px 0; border:1px solid #e5e7eb; border-radius:10px; overflow:hidden; font-size:0.80rem;">
+                <div style="display:grid; grid-template-columns:50px 1fr 70px; background:#0f766e; color:white; font-weight:700; padding:8px 10px; text-align:center;"><span>SN</span><span style="text-align:left;">Name</span><span>Count</span></div>
+                <div style="display:grid; grid-template-columns:50px 1fr 70px; padding:7px 10px; background:#f0fdfa; border-bottom:1px solid #e5e7eb; text-align:center;"><span>1</span><span style="text-align:left;">Department</span><span style="font-weight:700;">20</span></div>
+                <div style="display:grid; grid-template-columns:50px 1fr 70px; padding:7px 10px; background:white; border-bottom:1px solid #e5e7eb; text-align:center;"><span>2</span><span style="text-align:left;">Office</span><span style="font-weight:700;">26</span></div>
+                <div style="display:grid; grid-template-columns:50px 1fr 70px; padding:7px 10px; background:#f0fdfa; border-bottom:1px solid #e5e7eb; text-align:center;"><span>3</span><span style="text-align:left;">Dean Office</span><span style="font-weight:700;">04</span></div>
+                <div style="display:grid; grid-template-columns:50px 1fr 70px; padding:7px 10px; background:white; border-bottom:1px solid #e5e7eb; text-align:center;"><span>4</span><span style="text-align:left;">Conference Hall & Meeting Room</span><span style="font-weight:700;">06</span></div>
+                <div style="display:grid; grid-template-columns:50px 1fr 70px; padding:7px 10px; background:#f0fdfa; text-align:center;"><span>5</span><span style="text-align:left;">Lounge</span><span style="font-weight:700;">02</span></div>
+            </div>
+            <div class="land-desc" style="font-size:0.78rem; color:#065f46; background:#ecfdf5; padding:8px 10px; border-radius:8px;">
+                <strong>Source:</strong> Daffodil Insiders — AB4 (Knowledge Tower) Facility Summary • <a href="https://daffodilvarsity.edu.bd" target="_blank" style="color:#059669; text-decoration:underline;">daffodilvarsity.edu.bd</a>
+            </div>
+            <div class="land-tags">
+                <span class="land-tag" style="background:#ecfdf5;color:#065f46;border-color:#a7f3d0;">20 Departments</span>
+                <span class="land-tag" style="background:#ecfdf5;color:#065f46;">26 Offices</span>
+                <span class="land-tag">1–15 Floors</span>
+            </div>
+        </div>
+
+        <!-- AB-3 -->
+        <div class="land-card">
+            <div class="land-hdr">
+                <div class="land-icon" style="background:#dcfce7;color:#15803d;"><i class="fas fa-flask"></i></div>
+                <div>
+                    <div class="land-name">Academic Building 3 (AB-3)</div>
+                    <div class="land-loc">Faculty of Allied Health & Business</div>
+                </div>
+            </div>
+            <div class="land-desc">
+                Home to <strong>Pharmacy, Public Health, Nutrition & Food Engineering (NFE)</strong>, and BBA. Features Pharmacy Analytical Labs (AB3-305), Microbiology Labs, Law Moot Court, and FBE Dean Office (AB3-501).
+            </div>
+            <div class="land-tags">
+                <span class="land-tag">Pharmacy & NFE</span>
+                <span class="land-tag">BBA</span>
+                <span class="land-tag">Floors 1–7</span>
+            </div>
+        </div>
+
+        <!-- AB-2 -->
+        <div class="land-card">
+            <div class="land-hdr">
+                <div class="land-icon" style="background:#f3e8ff;color:#7e22ce;"><i class="fas fa-palette"></i></div>
+                <div>
+                    <div class="land-name">Academic Building 2 (AB-2)</div>
+                    <div class="land-loc">Humanities, Architecture & Media</div>
+                </div>
+            </div>
+            <div class="land-desc">
+                Houses <strong>Architecture Design Studios</strong>, English Language Labs, Journalism & Media Production Studios, and Innovation & Entrepreneurship incubator hubs.
+            </div>
+            <div class="land-tags">
+                <span class="land-tag">Architecture</span>
+                <span class="land-tag">English & Media</span>
+                <span class="land-tag">Floors 1–8</span>
+            </div>
+        </div>
+
+        <!-- Main Building — Floor Map from image -->
+        <div class="land-card" style="border:1.5px solid #0f766e;">
+            <div class="land-hdr">
+                <div class="land-icon" style="background:#0f766e;color:white;"><i class="fas fa-landmark"></i></div>
+                <div>
+                    <div class="land-name">Main Building — Floor Map Direction</div>
+                    <div class="land-loc">Daffodil Smart City • G01 to 3rd Floor</div>
+                </div>
+            </div>
+            <div style="font-size:0.78rem; border:1px solid #e5e7eb; border-radius:10px; overflow:hidden; margin-top:10px;">
+                <div style="display:grid; grid-template-columns:110px 1fr; background:#0f766e; color:white; font-weight:700; padding:8px 10px;"><span>Floor / Level</span><span>Office</span></div>
+                <div style="display:grid; grid-template-columns:110px 1fr; padding:8px 10px; background:#f0fdfa; border-bottom:1px solid #e5e7eb;"><span style="font-weight:700;">G01 (Lab Floor)</span><span>Store Room (Controller of Examinations), IT Office, CSE Labs, CSE Classroom, AI Lab, IT Store</span></div>
+                <div style="display:grid; grid-template-columns:110px 1fr; padding:8px 10px; background:white; border-bottom:1px solid #e5e7eb;"><span style="font-weight:700;">Basement 01</span><span>Office of Safety & Security, CCTV Control, Maintenance, Store Management, Photo Gallery (Red to Green)</span></div>
+                <div style="display:grid; grid-template-columns:110px 1fr; padding:8px 10px; background:#f0fdfa; border-bottom:1px solid #e5e7eb;"><span style="font-weight:700;">1st Floor</span><span>Teacher's/Students Lounge, Coffee Corner, Kiosk, Art & Performance Center, Registrar/HR/International/Harmony/Students Affairs/CDC/Branding, Mothers Room, Amar Security, Classroom, IT Room, Brand Shop</span></div>
+                <div style="display:grid; grid-template-columns:110px 1fr; padding:8px 10px; background:white; border-bottom:1px solid #e5e7eb;"><span style="font-weight:700;">2nd Floor</span><span>Dept. of CSE, AR/VR Lab, NLP & ML Lab, Health Informatics Lab, Exam Control (CSE), CSE Faculty Room, Classroom, IT Room</span></div>
+                <div style="display:grid; grid-template-columns:110px 1fr; padding:8px 10px; background:#f0fdfa;"><span style="font-weight:700;">3rd Floor</span><span>International Conference Hall, S.M. Mahbub Hall, HRDI, Future DIU, Faculty Room, Classroom, Embedded/Cyber/ACM/CPC Labs, IT Room</span></div>
+            </div>
+            <div class="land-tags">
+                <span class="land-tag" style="background:#ecfdf5;color:#065f46;">G01 + Basement + 1-3F</span>
+                <span class="land-tag">CSE Labs</span>
+                <span class="land-tag">Admin Hub</span>
+            </div>
+        </div>
+
+        <!-- Knowledge Tower — Full 4th-15th from images -->
+        <div class="land-card" style="border:1.5px solid #7c3aed;">
+            <div class="land-hdr">
+                <div class="land-icon" style="background:#7c3aed;color:white;"><i class="fas fa-book-reader"></i></div>
+                <div>
+                    <div class="land-name">Knowledge Tower (KT) — 4th to 15th Floor</div>
+                    <div class="land-loc">Central Library, Administration & All Departments</div>
+                </div>
+            </div>
+            <div style="max-height:380px; overflow-y:auto; border:1px solid #e5e7eb; border-radius:10px; font-size:0.76rem; margin-top:10px;">
+                <div style="display:grid; grid-template-columns:90px 1fr; background:#0f766e; color:white; font-weight:700; padding:7px 10px; position:sticky; top:0;"><span>Floor</span><span>Office / Lab</span></div>
+                <div style="display:grid; grid-template-columns:90px 1fr; padding:6px 10px; background:#f0fdfa; border-bottom:1px solid #e5e7eb;"><span style="font-weight:700;">4th Floor</span><span>Office of Librarian, Kabi Nazrul Eduplex, Rabindranath Knowledge Park, IT Room, Newspaper Section, Jasim Uddin Park, Silence/Admin & Faculty/ Bangladesh Corner, Individual Carrel, Mind Mapping, Napping, Photo Gallery, General Section</span></div>
+                <div style="display:grid; grid-template-columns:90px 1fr; padding:6px 10px; background:white; border-bottom:1px solid #e5e7eb;"><span style="font-weight:700;">5th Floor</span><span>Office of VC/Pro-VC, Lutfar Rahman Hall, Software Section, Female Common Room, Faculty Room CSE, IOT/Multidisciplinary/Computer Lab CSE, Classroom, IT Room</span></div>
+                <div style="display:grid; grid-template-columns:90px 1fr; padding:6px 10px; background:#f0fdfa; border-bottom:1px solid #e5e7eb;"><span style="font-weight:700;">6th Floor</span><span>Prof. Aminul Islam Hall, Conference Room, Dept. SWE, Dept. ITM, Cyber Security/Robotic/Data Science/Computer Lab, Classroom, Faculty Room, Exam Control (SWE), IT Room</span></div>
+                <div style="display:grid; grid-template-columns:90px 1fr; padding:6px 10px; background:white; border-bottom:1px solid #e5e7eb;"><span style="font-weight:700;">7th Floor</span><span>Dean FSIT, DIU Blended Learning Center, Go Edu, JEGH, Dept. CIS, Dept. Public Health, Classroom, Lab, Faculty Room, Data Center</span></div>
+                <div style="display:grid; grid-template-columns:90px 1fr; padding:6px 10px; background:#f0fdfa; border-bottom:1px solid #e5e7eb;"><span style="font-weight:700;">8th Floor</span><span>Dept. Agricultural Science, Dept. Accounting, Faculty/Lab/Classroom, IT Room</span></div>
+                <div style="display:grid; grid-template-columns:90px 1fr; padding:6px 10px; background:white; border-bottom:1px solid #e5e7eb;"><span style="font-weight:700;">9th Floor</span><span>Dean Academic Affairs, Dept. Management/ESDM/Finance & Banking, Faculty/Lab/Classroom</span></div>
+                <div style="display:grid; grid-template-columns:90px 1fr; padding:6px 10px; background:#f0fdfa; border-bottom:1px solid #e5e7eb;"><span style="font-weight:700;">10th Floor</span><span>Dept. MCT, Dept. Architecture, Faculty/Lab/Classroom</span></div>
+                <div style="display:grid; grid-template-columns:90px 1fr; padding:6px 10px; background:white; border-bottom:1px solid #e5e7eb;"><span style="font-weight:700;">11th Floor</span><span>Dept. Business Admin, Dept. Real Estate, Lab/Classroom, Faculty Room, Dean FBE, Belt & Road Center</span></div>
+                <div style="display:grid; grid-template-columns:90px 1fr; padding:6px 10px; background:#f0fdfa; border-bottom:1px solid #e5e7eb;"><span style="font-weight:700;">12th Floor</span><span>Dept. English, Dept. LAW, Dean FHSS, Dept. Development Studies/Marketing, Lab/Classroom</span></div>
+                <div style="display:grid; grid-template-columns:90px 1fr; padding:6px 10px; background:white; border-bottom:1px solid #e5e7eb;"><span style="font-weight:700;">13th Floor</span><span>Dept. Innovation & Entrepreneurship, Dept. Tourism & Hospitality, Faculty/Lab/Classroom</span></div>
+                <div style="display:grid; grid-template-columns:90px 1fr; padding:6px 10px; background:#f0fdfa; border-bottom:1px solid #e5e7eb;"><span style="font-weight:700;">14th Floor</span><span>Classroom, Marketing Lab</span></div>
+                <div style="display:grid; grid-template-columns:90px 1fr; padding:6px 10px; background:white;"><span style="font-weight:700;">15th Floor</span><span>DIU Astrophysics Center, Classroom</span></div>
+            </div>
+            <div class="land-desc" style="font-size:0.74rem; color:#6b7280; margin-top:8px;">Source: Daffodil Insiders — Full Floor Map Direction • <a href="https://daffodilvarsity.edu.bd" target="_blank" style="color:#7c3aed;">daffodilvarsity.edu.bd</a></div>
+            <div class="land-tags">
+                <span class="land-tag" style="background:#ede9fe;color:#5b21b6;">4th–15th Floor</span>
+                <span class="land-tag">Central Library</span>
+                <span class="land-tag">VC Secretariat</span>
+            </div>
+        </div>
+
+        <!-- Green Garden & Playground -->
+        <div class="land-card">
+            <div class="land-hdr">
+                <div class="land-icon" style="background:#d1fae5;color:#059669;"><i class="fas fa-tree"></i></div>
+                <div>
+                    <div class="land-name">Daffodil Green Garden & Central Field</div>
+                    <div class="land-loc">Recreation & Sports Ground</div>
+                </div>
+            </div>
+            <div class="land-desc">
+                Full-size Cricket & Football ground, open amphitheater, natural lakeside walking tracks, Shahid Minar, and green seating zones.
+            </div>
+            <div class="land-tags">
+                <span class="land-tag">Central Ground</span>
+                <span class="land-tag">Lakeside</span>
+                <span class="land-tag">Amphitheater</span>
+            </div>
+        </div>
+
+        <!-- Food Court -->
+        <div class="land-card">
+            <div class="land-hdr">
+                <div class="land-icon" style="background:#ffedd5;color:#c2410c;"><i class="fas fa-utensils"></i></div>
+                <div>
+                    <div class="land-name">Central Food Court & Cafeteria</div>
+                    <div class="land-loc">Dining & Student Lounge</div>
+                </div>
+            </div>
+            <div class="land-desc">
+                Multi-cuisine campus dining, Nescafe corners, student snack lounges, and lakeside hangout gazebos.
+            </div>
+            <div class="land-tags">
+                <span class="land-tag">Food Court</span>
+                <span class="land-tag">Cafeteria</span>
+                <span class="land-tag">Student Hangout</span>
+            </div>
+        </div>
+
+        <!-- Yunus Khan Scholar Garden -->
+        <div class="land-card">
+            <div class="land-hdr">
+                <div class="land-icon" style="background:#fee2e2;color:#b91c1c;"><i class="fas fa-bed"></i></div>
+                <div>
+                    <div class="land-name">Yunus Khan Scholar Garden (YKSG)</div>
+                    <div class="land-loc">Student Residential Halls</div>
+                </div>
+            </div>
+            <div class="land-desc">
+                Male & Female student dormitories with modern dining halls, indoor sports facilities, study zones, and 24/7 campus security.
+            </div>
+            <div class="land-tags">
+                <span class="land-tag">Male & Female Halls</span>
+                <span class="land-tag">Dining</span>
+                <span class="land-tag">Hostel Area</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+if (localStorage.getItem('darkMode') === '1') document.body.setAttribute('data-theme','dark');
+
+function decodeRoom() {
+    const raw = document.getElementById('roomInp').value.trim().toUpperCase();
+    const res = document.getElementById('roomResult');
+    if (!raw) return;
+
+    const clean = raw.replace(/\s+/g, '');
+    let building = "";
+    let floor = "";
+    let roomNum = "";
+    let details = "";
+
+    // Specific Known Faculty / Office Rooms
+    if (clean === 'AB1-504' || clean === 'AB1504') {
+        building = "Academic Building 1 (AB-1 — FSIT Block)";
+        floor = "5th Floor";
+        roomNum = "504";
+        details = "👨‍🏫 Head Office, Department of Computer Science and Engineering (CSE).";
+    } else if (clean === 'AB1-512' || clean === 'AB1512') {
+        building = "Academic Building 1 (AB-1 — FSIT Block)";
+        floor = "5th Floor";
+        roomNum = "512";
+        details = "👨‍🏫 Head Office, Department of Software Engineering (SWE).";
+    } else if (clean === 'AB4-302' || clean === 'AB4302') {
+        building = "Academic Building 4 (AB-4 — Engineering Block)";
+        floor = "3rd Floor";
+        roomNum = "302";
+        details = "👨‍🏫 Head Office, Department of Civil Engineering.";
+    } else if (clean === 'AB4-601' || clean === 'AB4601') {
+        building = "Academic Building 4 (AB-4 — Engineering Block)";
+        floor = "6th Floor";
+        roomNum = "601";
+        details = "👨‍🏫 Head Office, Department of Electrical & Electronic Engineering (EEE).";
+    } else if (clean === 'AB3-305' || clean === 'AB3305') {
+        building = "Academic Building 3 (AB-3 — Health Sciences Block)";
+        floor = "3rd Floor";
+        roomNum = "305";
+        details = "👨‍🏫 Head Office & Labs, Department of Pharmacy.";
+    } else if (clean === 'AB3-501' || clean === 'AB3501') {
+        building = "Academic Building 3 (AB-3 — Business Block)";
+        floor = "5th Floor";
+        roomNum = "501";
+        details = "👨‍🏫 Dean Office, Faculty of Business & Entrepreneurship (FBE).";
+    } else if (clean === 'KT-702' || clean === 'KT702') {
+        building = "Knowledge Tower (KT)";
+        floor = "7th Floor";
+        roomNum = "702";
+        details = "👨‍🏫 Dean Office, Faculty of Science & Information Technology (FSIT).";
+    } else if (clean === 'KT-701' || clean === 'KT701') {
+        building = "Knowledge Tower (KT)";
+        floor = "7th Floor";
+        roomNum = "701";
+        details = "🏛️ Vice Chancellor (VC) Secretariat & Executive Meeting Room.";
+    } else if (clean.startsWith('AB1') || clean.startsWith('AB-1')) {
+        const digits = clean.replace(/[^0-9]/g, '');
+        // e.g. AB1-302 -> digits '1302' or '302'
+        const roomDigits = digits.startsWith('1') && digits.length >= 4 ? digits.substring(1) : digits;
+        const flDigit = roomDigits.charAt(0);
+        floor = flDigit ? `${flDigit}${getOrdinal(flDigit)} Floor` : 'Floor 1–6';
+        building = "Academic Building 1 (AB-1 — FSIT / Science Block)";
+        details = "CSE & SWE Classrooms, High-Tech Computer Labs, AI & Robotics Lab.";
+        roomNum = roomDigits;
+    } else if (clean.startsWith('AB4') || clean.startsWith('AB-4')) {
+        const digits = clean.replace(/[^0-9]/g, '');
+        const roomDigits = digits.startsWith('4') && digits.length >= 4 ? digits.substring(1) : digits;
+        const flDigit = roomDigits.charAt(0);
+        floor = flDigit ? `${flDigit}${getOrdinal(flDigit)} Floor` : 'Floor 1–8';
+        building = "Academic Building 4 (AB-4 — Engineering Complex)";
+        details = "EEE, Civil Engineering, Textile Labs, Machine Workshops & Classrooms.";
+        roomNum = roomDigits;
+    } else if (clean.startsWith('AB3') || clean.startsWith('AB-3')) {
+        const digits = clean.replace(/[^0-9]/g, '');
+        const roomDigits = digits.startsWith('3') && digits.length >= 4 ? digits.substring(1) : digits;
+        const flDigit = roomDigits.charAt(0);
+        floor = flDigit ? `${flDigit}${getOrdinal(flDigit)} Floor` : 'Floor 1–7';
+        building = "Academic Building 3 (AB-3 — Health Sciences & BBA Block)";
+        details = "Pharmacy Labs, Nutrition Labs, BBA Classrooms, Moot Court.";
+        roomNum = roomDigits;
+    } else if (clean.startsWith('AB2') || clean.startsWith('AB-2')) {
+        const digits = clean.replace(/[^0-9]/g, '');
+        const roomDigits = digits.startsWith('2') && digits.length >= 4 ? digits.substring(1) : digits;
+        const flDigit = roomDigits.charAt(0);
+        floor = flDigit ? `${flDigit}${getOrdinal(flDigit)} Floor` : 'Floor 1–8';
+        building = "Academic Building 2 (AB-2 — Architecture & Humanities)";
+        details = "Architecture Design Studios, Media & English Labs.";
+        roomNum = roomDigits;
+    } else if (clean.startsWith('KT')) {
+        const digits = clean.replace(/[^0-9]/g, '');
+        const flDigit = digits.charAt(0);
+        floor = flDigit ? `${flDigit}${getOrdinal(flDigit)} Floor` : 'Administrative Floors';
+        building = "Knowledge Tower (KT)";
+        details = "Central Library (2nd–3rd Floor), Exam Control (4th), VC & Dean Offices (7th).";
+        roomNum = digits;
+    } else {
+        building = "Daffodil Smart City Campus";
+        floor = "Consult Department Schedule";
+        details = "Please verify your routine slip or consult the departmental notice board.";
+        roomNum = raw;
+    }
+
+    res.innerHTML = `
+        <div style="font-size:1.05rem;margin-bottom:6px;color:#0284c7;">📍 <strong>${esc(raw)}</strong> — Location Found:</div>
+        <div>🏢 <strong>Building:</strong> ${building}</div>
+        <div>🪜 <strong>Floor / Level:</strong> ${floor} ${roomNum ? `(Room: ${esc(roomNum)})` : ''}</div>
+        <div style="font-size:0.84rem;margin-top:6px;opacity:0.95;">ℹ️ <em>${details}</em></div>
+    `;
+    res.style.display = 'block';
+}
+
+function getOrdinal(n) {
+    const s = ["th", "st", "nd", "rd"];
+    const v = parseInt(n) % 100;
+    return s[(v - 20) % 10] || s[v] || s[0];
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+<svg width="1000" height="1000" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="NEXUS Logo">
+  <rect width="1000" height="1000" rx="0" fill="#070D1E"/>
+  <defs>
+    <linearGradient id="gradIcon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#22D3FF"/>
+      <stop offset="35%" stop-color="#0AB0FF"/>
+      <stop offset="100%" stop-color="#0057FF"/>
+    </linearGradient>
+    <linearGradient id="gradText" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2AD4FF"/>
+      <stop offset="100%" stop-color="#0A6CFF"/>
+    </linearGradient>
+  </defs>
+  <!-- Icon: stylized N / Nexus mark -->
+  <path d="M 285 170 L 355 205 L 500 285 L 635 192 L 745 142 L 830 188 L 830 575 L 745 625 L 665 675 L 665 330 L 585 378 L 500 430 L 410 475 L 410 815 L 315 865 L 285 815 Z"
+        fill="url(#gradIcon)" stroke="none" stroke-linejoin="round"/>
+  <!-- NEXUS text -->
+  <g font-family="Inter, 'Segoe UI', sans-serif" font-weight="800" fill="url(#gradText)">
+    <!-- N -->
+    <text x="130" y="975" font-size="165" letter-spacing="2">N</text>
+    <!-- E as three bars -->
+    <g>
+      <rect x="285" y="855" width="118" height="26" rx="3" fill="url(#gradText)"/>
+      <rect x="285" y="905" width="118" height="26" rx="3" fill="url(#gradText)"/>
+      <rect x="285" y="955" width="118" height="26" rx="3" fill="url(#gradText)"/>
+    </g>
+    <!-- X -->
+    <text x="435" y="975" font-size="165" letter-spacing="2">X</text>
+    <!-- U -->
+    <text x="595" y="975" font-size="165" letter-spacing="2">U</text>
+    <!-- S -->
+    <text x="760" y="975" font-size="165" letter-spacing="2">S</text>
+  </g>
+</svg>

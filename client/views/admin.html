@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Admin Dashboard | DIU Nexus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/home.css">
+    <style>
+        body { padding-top: 64px; background: var(--bg); }
+        .admin-wrap { max-width: 1100px; margin: 0 auto; padding: 24px 16px 60px; }
+        .admin-header { display:flex; align-items:center; gap:14px; margin-bottom:28px; }
+        .admin-header i { font-size:2rem; color:#e41e3f; }
+        .admin-header h1 { font-size:1.6rem; font-weight:800; }
+        .admin-header p { font-size:0.85rem; color:var(--text-secondary); margin-top:2px; }
+
+        .admin-tabs { display:flex; gap:8px; margin-bottom:24px; flex-wrap:wrap; }
+        .admin-tab {
+            padding:10px 20px; border-radius:10px; border:none;
+            background:var(--surface); color:var(--text-secondary);
+            font-family:inherit; font-size:0.88rem; font-weight:600;
+            cursor:pointer; transition:all 0.15s; border:1.5px solid var(--border);
+        }
+        .admin-tab.active { background:#e41e3f; color:white; border-color:#e41e3f; }
+        .admin-tab:hover:not(.active) { background:var(--bg); }
+
+        .admin-panel { display:none; }
+        .admin-panel.active { display:block; }
+
+        .stat-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; margin-bottom:28px; }
+        .stat-card {
+            background:var(--surface); border-radius:14px; padding:20px;
+            box-shadow:0 2px 8px rgba(0,0,0,0.06); text-align:center;
+        }
+        .stat-card .stat-num { font-size:2rem; font-weight:800; color:#0866ff; }
+        .stat-card .stat-label { font-size:0.82rem; color:var(--text-secondary); margin-top:4px; }
+
+        .admin-card {
+            background:var(--surface); border-radius:14px; padding:20px;
+            box-shadow:0 2px 8px rgba(0,0,0,0.06); margin-bottom:20px;
+        }
+        .admin-card h3 { font-weight:800; font-size:1rem; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+
+        .data-table { width:100%; border-collapse:collapse; font-size:0.88rem; }
+        .data-table th { text-align:left; padding:10px 12px; border-bottom:2px solid var(--border); font-weight:700; color:var(--text-secondary); font-size:0.78rem; text-transform:uppercase; }
+        .data-table td { padding:10px 12px; border-bottom:1px solid var(--border); vertical-align:middle; }
+        .data-table tr:hover td { background:var(--bg); }
+
+        .role-badge { padding:3px 10px; border-radius:20px; font-size:0.72rem; font-weight:700; }
+        .role-student { background:#e7f0ff; color:#0866ff; }
+        .role-alumni { background:#fdf4ff; color:#7c3aed; }
+        .role-faculty { background:#d1fae5; color:#059669; }
+        .role-admin { background:#fee2e2; color:#e41e3f; }
+
+        .action-btn {
+            padding:5px 12px; border-radius:6px; border:none; font-family:inherit;
+            font-size:0.78rem; font-weight:600; cursor:pointer; transition:all 0.15s;
+        }
+        .btn-primary { background:#0866ff; color:white; }
+        .btn-danger { background:#fee2e2; color:#e41e3f; }
+        .btn-success { background:#d1fae5; color:#059669; }
+        .btn-warning { background:#fff7ed; color:#f97316; }
+        .action-btn:hover { opacity:0.85; }
+
+        .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+        .form-row.full { grid-template-columns:1fr; }
+        .form-input {
+            padding:10px 14px; border:1.5px solid var(--border); border-radius:8px;
+            font-family:inherit; font-size:0.88rem; background:var(--surface);
+            color:var(--text); outline:none; width:100%;
+        }
+        .form-input:focus { border-color:#0866ff; }
+        .form-label { display:block; font-size:0.78rem; font-weight:600; color:var(--text-secondary); margin-bottom:4px; }
+
+        .announcement-box {
+            background:#fff7ed; border:1.5px solid #fed7aa; border-radius:12px; padding:16px;
+        }
+
+        .empty-state { text-align:center; padding:40px; color:var(--text-secondary); }
+        .spinner { text-align:center; padding:30px; color:var(--text-secondary); }
+    
+        /* Fix: Pill till missing + button blocked — ensure pills and following buttons are clickable */
+        .filter-bar, .category-tabs, .cats, .filter-tabs, .cat-tabs, .filter-pill, .cat-tab, .cat, .blood-type-grid, .search-bar {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 1;
+        }
+        .filter-chip, .cat-tab, .cat, .blood-btn, .btn-join, .btn-view, .btn-post, .btn-submit, .btn-sell, .contact-btn, .post-action, .member-row button, .file-row a {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 2;
+        }
+        /* Ensure no sticky pill blocks content */
+        .category-tabs, .filter-bar, .cats {
+            overflow-x: auto;
+            overflow-y: visible;
+            max-height: none;
+        }
+
+    </style>
+</head>
+<body>
+<script src="../js/config.js"></script>
+<script src="../js/shared.js"></script>
+
+<div class="admin-wrap">
+    <div style="background:linear-gradient(90deg,#1a0000,#4a0000);color:#ffcccc;text-align:center;padding:6px 12px;border-radius:8px;margin-bottom:14px;font-size:0.78rem;font-weight:800;letter-spacing:0.8px;border:1px solid rgba(255,0,0,0.3);">👑 ADMIN GOD MODE — Student/Faculty/Alumni cannot see this. You can delete/warn/ban any post, reels, comment, housing, marketplace, blood, story across DIU Service & Student Corner.</div>
+    <div class="admin-header" style="background:linear-gradient(135deg,#1a0000 0%, #2a0000 100%);color:white;padding:16px;border-radius:12px;border:1px solid rgba(228,30,63,0.3);">
+        <i class="fas fa-shield-alt" style="color:#ff6b6b;"></i>
+        <div>
+            <h1 style="color:white;">Admin Dashboard <span style="background:#e41e3f;color:white;font-size:0.65rem;padding:3px 8px;border-radius:10px;vertical-align:middle;margin-left:8px;">GOD</span></h1>
+            <p style="color:#ffaaaa;">DIU Nexus Platform Management — God controls all content</p>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="admin-tabs">
+        <button class="admin-tab active" onclick="switchTab('overview')"><i class="fas fa-chart-bar"></i> Overview</button>
+        <button class="admin-tab" onclick="switchTab('users')"><i class="fas fa-users"></i> Users</button>
+        <button class="admin-tab" onclick="switchTab('admins')"><i class="fas fa-shield-alt"></i> Admins</button>
+        <button class="admin-tab" onclick="switchTab('bus')"><i class="fas fa-bus"></i> Bus Schedule</button>
+        <button class="admin-tab" onclick="switchTab('events')"><i class="fas fa-calendar"></i> Events</button>
+        <button class="admin-tab" onclick="switchTab('announce')"><i class="fas fa-bullhorn"></i> Announce</button>
+        <!-- Security & Accountability Tabs -->
+        <button class="admin-tab" onclick="switchTab('reports')" id="tab-reports"><i class="fas fa-flag"></i> Reports <span id="reportBadge" style="background:#e41e3f;color:#fff;border-radius:12px;padding:1px 7px;font-size:0.75rem;margin-left:3px;display:none"></span></button>
+        <button class="admin-tab" onclick="switchTab('moderate')"><i class="fas fa-gavel"></i> Moderate A-Z</button>
+        <button class="admin-tab" onclick="switchTab('audit')"><i class="fas fa-scroll"></i> Audit Log</button>
+        <button class="admin-tab" onclick="switchTab('identity')"><i class="fas fa-id-card"></i> Identity Lookup</button>
+        <button class="admin-tab" onclick="switchTab('banned')"><i class="fas fa-ban"></i> Suspended</button>
+        <button class="admin-tab" onclick="switchTab('version')"><i class="fas fa-code-branch"></i> Version</button>
+    </div>
+
+    <!-- OVERVIEW -->
+    <div class="admin-panel active" id="panel-overview">
+        <div class="stat-grid" id="statsGrid">
+            <div class="spinner"><i class="fas fa-spinner fa-spin fa-2x"></i></div>
+        </div>
+        <div class="admin-card">
+            <h3><i class="fas fa-newspaper" style="color:#0866ff"></i> Recent Posts</h3>
+            <div id="recentPosts"><div class="spinner"><i class="fas fa-spinner fa-spin"></i></div></div>
+        </div>
+    </div>
+
+    <!-- USERS -->
+    <div class="admin-panel" id="panel-users">
+        <div class="admin-card">
+            <h3><i class="fas fa-users" style="color:#0866ff"></i> All Users</h3>
+            <div style="margin-bottom:12px;display:flex;gap:8px;">
+                <input class="form-input" style="max-width:280px;" placeholder="🔍 Search users..." oninput="filterUsers(this.value)">
+                <select class="form-input" style="max-width:160px;" onchange="filterByRole(this.value)">
+                    <option value="">All Roles</option>
+                    <option>Student</option><option>Alumni</option><option>Faculty</option><option>Admin</option>
+                </select>
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="data-table" id="usersTable">
+                    <thead><tr><th>User ID</th><th>Student / Faculty Name</th><th>Official DIU Email</th><th>Role</th><th>Dept & Batch</th><th>Registered</th><th>Actions</th></tr></thead>
+                    <tbody id="usersBody"><tr><td colspan="7"><div class="spinner"><i class="fas fa-spinner fa-spin"></i></div></td></tr></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- BUS SCHEDULE -->
+    <div class="admin-panel" id="panel-bus">
+        <div class="admin-card">
+            <h3><i class="fas fa-plus-circle" style="color:#059669"></i> Add Bus Route</h3>
+            <div class="form-row">
+                <div><label class="form-label">Route Name *</label><input class="form-input" id="busRoute" placeholder="e.g., Dhanmondi to DIU"></div>
+                <div><label class="form-label">Bus Number</label><input class="form-input" id="busNumber" placeholder="e.g., DIU-01"></div>
+            </div>
+            <div class="form-row">
+                <div><label class="form-label">Departure Time *</label><input class="form-input" id="busDep" type="time"></div>
+                <div><label class="form-label">Arrival Time</label><input class="form-input" id="busArr" type="time"></div>
+            </div>
+            <div class="form-row">
+                <div><label class="form-label">Days</label>
+                    <select class="form-input" id="busDays">
+                        <option>Sun-Thu</option><option>Sat-Thu</option><option>Sat-Sun</option><option>Daily</option>
+                    </select>
+                </div>
+                <div><label class="form-label">Stops (comma separated)</label><input class="form-input" id="busStops" placeholder="Dhanmondi, Rampura, DIU Gate"></div>
+            </div>
+            <button onclick="addBusRoute()" class="action-btn btn-primary" style="padding:10px 24px;font-size:0.9rem;"><i class="fas fa-plus"></i> Add Route</button>
+        </div>
+        <div class="admin-card">
+            <h3><i class="fas fa-bus" style="color:#059669"></i> Current Bus Routes</h3>
+            <div id="busList"><div class="spinner"><i class="fas fa-spinner fa-spin"></i></div></div>
+        </div>
+    </div>
+
+    <!-- EVENTS -->
+    <div class="admin-panel" id="panel-events">
+        <div class="admin-card">
+            <h3><i class="fas fa-plus-circle" style="color:#7c3aed"></i> Create Event</h3>
+            <div class="form-row">
+                <div><label class="form-label">Event Title *</label><input class="form-input" id="evTitle" placeholder="Event name"></div>
+                <div><label class="form-label">Category</label>
+                    <select class="form-input" id="evCategory">
+                        <option>Academic</option><option>Cultural</option><option>Sports</option><option>Career</option><option>Social</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div><label class="form-label">Date *</label><input class="form-input" id="evDate" type="date"></div>
+                <div><label class="form-label">Time</label><input class="form-input" id="evTime" type="time"></div>
+            </div>
+            <div class="form-row">
+                <div><label class="form-label">Location</label><input class="form-input" id="evLocation" placeholder="DIU Auditorium"></div>
+                <div><label class="form-label">Organizer</label><input class="form-input" id="evOrganizer" placeholder="CSE Department"></div>
+            </div>
+            <div class="form-row full">
+                <div><label class="form-label">Description</label><textarea class="form-input" id="evDesc" rows="3" placeholder="Event details..."></textarea></div>
+            </div>
+            <label style="display:flex;align-items:center;gap:8px;margin-bottom:12px;cursor:pointer;">
+                <input type="checkbox" id="evFeatured" style="width:16px;height:16px;"> <span class="form-label" style="margin:0;">Featured Event (show on home)</span>
+            </label>
+            <button onclick="createEvent()" class="action-btn btn-primary" style="padding:10px 24px;font-size:0.9rem;"><i class="fas fa-calendar-plus"></i> Create Event</button>
+        </div>
+        <div class="admin-card">
+            <h3><i class="fas fa-calendar-alt" style="color:#7c3aed"></i> All Events</h3>
+            <div id="eventsList"><div class="spinner"><i class="fas fa-spinner fa-spin"></i></div></div>
+        </div>
+    </div>
+
+    <!-- ANNOUNCE -->
+    <div class="admin-panel" id="panel-announce">
+        <div class="admin-card">
+            <h3><i class="fas fa-bullhorn" style="color:#f97316"></i> Send Announcement</h3>
+            <div class="announcement-box">
+                <p style="font-size:0.85rem;color:#92400e;margin-bottom:12px;"><i class="fas fa-info-circle"></i> This will send a notification to ALL users on DIU Nexus.</p>
+                <div class="form-row full"><div><label class="form-label">Title</label><input class="form-input" id="announceTitle" placeholder="e.g., System Maintenance Notice"></div></div>
+                <div class="form-row full"><div><label class="form-label">Message *</label><textarea class="form-input" id="announceMsg" rows="4" placeholder="Write your announcement..."></textarea></div></div>
+                <div class="form-row">
+                    <div><label class="form-label">Target Role</label>
+                        <select class="form-input" id="announceRole">
+                            <option value="all">All Users</option>
+                            <option value="Student">Students Only</option>
+                            <option value="Alumni">Alumni Only</option>
+                            <option value="Faculty">Faculty Only</option>
+                        </select>
+                    </div>
+                </div>
+                <button onclick="sendAnnouncement()" class="action-btn btn-warning" style="padding:10px 24px;font-size:0.9rem;"><i class="fas fa-paper-plane"></i> Send to All</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ✅ ADMIN MANAGEMENT -->
+    <div class="admin-panel" id="panel-admins">
+        <!-- Assign Admin -->
+        <div class="admin-card" style="margin-bottom:16px;border-left:4px solid #0866ff;">
+            <h3><i class="fas fa-user-shield" style="color:#0866ff"></i> Assign Admin</h3>
+            <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:16px;line-height:1.6;">
+                Enter the registered <strong>@diu.edu.bd email</strong> of the user you wish to grant Admin privileges to.<br>
+                Maximum <strong style="color:#e41e3f;">5 Admins</strong> can be assigned.
+            </p>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+                <input class="form-input" id="assignEmail" placeholder="example@diu.edu.bd" type="email"
+                    style="flex:1;min-width:220px;" onkeydown="if(event.key==='Enter')assignAdmin()">
+                <button onclick="assignAdmin()" style="background:#0866ff;color:white;border:none;border-radius:10px;padding:11px 24px;font-family:inherit;font-size:0.9rem;font-weight:700;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:8px;">
+                    <i class="fas fa-plus"></i> Assign Admin
+                </button>
+            </div>
+            <div id="assignResult" style="margin-top:10px;font-size:0.85rem;"></div>
+        </div>
+
+        <!-- Current Admins List -->
+        <div class="admin-card">
+            <h3>
+                <i class="fas fa-crown" style="color:#f59e0b"></i> Current Admins
+                <span id="adminCountBadge" style="font-size:0.78rem;background:#e7f0ff;color:#0866ff;padding:3px 12px;border-radius:20px;font-weight:700;margin-left:10px;">0/5</span>
+            </h3>
+            <p style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:14px;">Admins in this list have root authorization to manage users, moderation, and features.</p>
+            <div id="adminsList">
+                <div class="spinner"><i class="fas fa-spinner fa-spin"></i></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="toast-container" style="position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column-reverse;gap:8px;"></div>
+
+<script>
+const API = (typeof window.API !== 'undefined' ? window.API : (function(){ var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000/api'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin+'/api'; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin+'/api':'http://localhost:5000/api'; return 'http://localhost:5000/api'; } return window.location.origin+'/api'; })());
+const token = localStorage.getItem('token');
+const myUser = JSON.parse(localStorage.getItem('user') || 'null');
+if (!token || !myUser) window.location.href = '../index.html';
+if (myUser?.role !== 'Admin') { alert('Access Denied — Admin only'); window.location.href = '../home.html'; }
+if (localStorage.getItem('darkMode') === '1') document.body.setAttribute('data-theme', 'dark');
+
+async function api(path, opts={}) {
+    const h = {'Content-Type':'application/json','Authorization':`Bearer ${token}`,...(opts.headers||{})};
+    return fetch(`${API}${path}`,{...opts,headers:h});
+}
+
+let allUsers = [];
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadOverview();
+    loadUsers();
+    loadBusRoutes();
+    loadEvents();
+});
+
+function switchTab(tab) {
+    document.querySelectorAll('.admin-tab').forEach(t => {
+        // tab name is in onclick="switchTab('xxx')"
+        const isActive = t.getAttribute('onclick')?.includes(`'${tab}'`);
+        t.classList.toggle('active', isActive);
+    });
+    document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+    const panel = document.getElementById(`panel-${tab}`);
+    if(panel) panel.classList.add('active');
+    if (tab === 'admins') loadAdmins();
+    else if (tab === 'reports') loadReports('pending');
+    else if (tab === 'audit') loadAuditLogs();
+    else if (tab === 'banned') loadBanned();
+    else if (tab === 'version') loadVersion();
+    else if (tab === 'overview') loadOverview();
+}
+
+// ✅ Assign Admin by Email
+async function assignAdmin() {
+    const email = document.getElementById('assignEmail').value.trim();
+    const resultEl = document.getElementById('assignResult');
+    if (!email) { resultEl.innerHTML = '<span style="color:#e41e3f;">Please enter a valid email</span>'; return; }
+
+    // Check max 5 admin limit
+    const adminsRes = await api('/admin/admins');
+    const admins = await adminsRes.json();
+    if (admins.length >= 5) {
+        resultEl.innerHTML = '<span style="color:#e41e3f;">Maximum 5 Admins allowed. Please remove an existing admin first.</span>';
+        return;
+    }
+
+    resultEl.innerHTML = '<span style="color:#65676b;"><i class="fas fa-spinner fa-spin"></i> Processing...</span>';
+    try {
+        const res = await api('/admin/assign-admin', {
+            method: 'POST',
+            body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            resultEl.innerHTML = `<span style="color:#059669;font-weight:700;">${data.message}</span>`;
+            document.getElementById('assignEmail').value = '';
+            loadAdmins();
+        } else {
+            resultEl.innerHTML = `<span style="color:#e41e3f;">${data.message}</span>`;
+        }
+    } catch { resultEl.innerHTML = '<span style="color:#e41e3f;">Network error</span>'; }
+}
+
+// ✅ Load all admins
+async function loadAdmins() {
+    const el = document.getElementById('adminsList');
+    const myId = String(myUser?._id || myUser?.id);
+    try {
+        const res = await api('/admin/admins');
+        const admins = await res.json();
+        document.getElementById('adminCountBadge').textContent = `${admins.length}/5`;
+
+        if (!admins.length) {
+            el.innerHTML = '<p style="color:var(--text-secondary);font-size:0.85rem;">No admins found</p>';
+            return;
+        }
+        el.innerHTML = admins.map(a => `
+            <div style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;background:var(--bg);margin-bottom:8px;">
+                <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#0866ff,#0550c1);color:white;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.1rem;flex-shrink:0;">
+                    ${(a.fullName||'?')[0].toUpperCase()}
+                </div>
+                <div style="flex:1;min-width:0;">
+                    <div style="font-weight:700;font-size:0.92rem;">${esc(a.fullName)} ${String(a._id)===myId?'<span style="background:#e7f0ff;color:#0866ff;padding:1px 8px;border-radius:10px;font-size:0.72rem;">You</span>':''}</div>
+                    <div style="font-size:0.78rem;color:var(--text-secondary);">${esc(a.email)}</div>
+                    ${a.department ? `<div style="font-size:0.75rem;color:#0866ff;">${esc(a.department)}</div>` : ''}
+                </div>
+                ${String(a._id) !== myId ? `
+                <button onclick="removeAdminUser('${a._id}','${esc(a.fullName)}')"
+                    style="background:#fee2e2;color:#e41e3f;border:none;border-radius:8px;padding:7px 14px;font-family:inherit;font-size:0.8rem;font-weight:700;cursor:pointer;">
+                    <i class="fas fa-times"></i> Remove
+                </button>` : '<span style="font-size:0.75rem;color:#65676b;font-style:italic;">You</span>'}
+            </div>`).join('');
+    } catch (e) {
+        el.innerHTML = '<p style="color:#e41e3f;">Failed to load admins</p>';
+    }
+}
+
+// ✅ Remove admin
+async function removeAdminUser(id, name) {
+    if (!confirm(`${name} remove Admin role? They will become a regular Student.`)) return;
+    try {
+        const res = await api(`/admin/admins/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+        showToast(data.message);
+        loadAdmins();
+    } catch { showToast('Error removing admin'); }
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+
+async function loadOverview() {
+    try {
+        const [usersRes, postsRes] = await Promise.all([
+            api('/admin/stats'),
+            api('/admin/recent-posts')
+        ]);
+        const stats = await usersRes.json();
+        const posts = await postsRes.json();
+        document.getElementById('statsGrid').innerHTML = `
+            <div class="stat-card"><div class="stat-num">${stats.totalUsers||0}</div><div class="stat-label">Total Users</div></div>
+            <div class="stat-card"><div class="stat-num" style="color:#31a24c">${stats.totalPosts||0}</div><div class="stat-label">Total Posts</div></div>
+            <div class="stat-card"><div class="stat-num" style="color:#7c3aed">${stats.totalStudents||0}</div><div class="stat-label">Students</div></div>
+            <div class="stat-card"><div class="stat-num" style="color:#059669">${stats.totalAlumni||0}</div><div class="stat-label">Alumni</div></div>
+            <div class="stat-card"><div class="stat-num" style="color:#f97316">${stats.totalFaculty||0}</div><div class="stat-label">Faculty</div></div>
+        `;
+        if (Array.isArray(posts) && posts.length) {
+            document.getElementById('recentPosts').innerHTML = `<table class="data-table"><thead><tr><th>Author</th><th>Content</th><th>Date</th><th>Actions</th></tr></thead><tbody>
+                ${posts.map(p=>`<tr><td><strong>${esc(p.fullName||'')}</strong></td><td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(p.content||'').slice(0,80)}</td><td style="font-size:0.78rem;color:#65676b;">${new Date(p.created_at).toLocaleDateString()}</td><td><button onclick="adminDeletePost('${p.id}')" class="action-btn btn-danger"><i class="fas fa-trash"></i></button></td></tr>`).join('')}
+            </tbody></table>`;
+        } else { document.getElementById('recentPosts').innerHTML = '<div class="empty-state">No posts yet</div>'; }
+    } catch(e) {
+        document.getElementById('statsGrid').innerHTML = '<div class="empty-state">Failed to load stats. Make sure admin API routes are set up.</div>';
+    }
+}
+
+async function loadUsers() {
+    try {
+        const res = await api('/admin/users');
+        allUsers = await res.json();
+        renderUsers(allUsers);
+    } catch { document.getElementById('usersBody').innerHTML = '<tr><td colspan="6"><div class="empty-state">Failed to load users</div></td></tr>'; }
+}
+
+function renderUsers(users) {
+    if (!users || !users.length) {
+        document.getElementById('usersBody').innerHTML = '<tr><td colspan="7"><div class="empty-state">No users found</div></td></tr>';
+        return;
+    }
+    document.getElementById('usersBody').innerHTML = users.map(u => {
+        const uid = u._id || u.id;
+        const studentIdMatch = u.email ? u.email.split('@')[0] : '';
+        const displayId = (studentIdMatch && /\d/.test(studentIdMatch)) ? studentIdMatch : `#${1000 + Number(uid)}`;
+        
+        return `
+        <tr>
+            <td>
+                <span style="font-family:monospace;font-weight:800;background:var(--surface-alt);padding:4px 8px;border-radius:6px;color:#0866ff;border:1px solid var(--border);">${esc(displayId)}</span>
+            </td>
+            <td>
+                <strong style="color:var(--text);">${esc(u.fullName)}</strong>
+            </td>
+            <td>
+                <a href="mailto:${esc(u.email)}" style="font-size:0.86rem;color:#0866ff;text-decoration:none;font-weight:600;"><i class="fas fa-envelope" style="font-size:0.78rem;"></i> ${esc(u.email)}</a>
+            </td>
+            <td><span class="role-badge role-${(u.role||'student').toLowerCase()}">${u.role||'Student'}</span></td>
+            <td style="font-size:0.84rem;color:var(--text);">${esc(u.department||'-')} ${u.batch ? `<span style="opacity:0.75;font-size:0.78rem;">(${esc(u.batch)})</span>` : ''}</td>
+            <td style="font-size:0.78rem;color:var(--text-secondary);">${u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '-'}</td>
+            <td style="display:flex;gap:6px;align-items:center;">
+                <select onchange="changeRole('${uid}',this.value)" class="form-input" style="padding:4px 8px;font-size:0.78rem;width:auto;">
+                    <option ${u.role==='Student'?'selected':''}>Student</option>
+                    <option ${u.role==='Alumni'?'selected':''}>Alumni</option>
+                    <option ${u.role==='Faculty'?'selected':''}>Faculty</option>
+                    <option ${u.role==='Admin'?'selected':''}>Admin</option>
+                </select>
+                <button onclick="window.location.href='profile.html?id=${uid}'" class="action-btn btn-secondary" title="View Profile" style="padding:4px 8px;font-size:0.78rem;"><i class="fas fa-user"></i></button>
+                <button onclick="deleteUser('${uid}')" class="action-btn btn-danger" title="Delete user" style="padding:4px 8px;font-size:0.78rem;"><i class="fas fa-trash"></i></button>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function filterUsers(q) { renderUsers(allUsers.filter(u => u.fullName?.toLowerCase().includes(q.toLowerCase()) || u.email?.toLowerCase().includes(q.toLowerCase()))); }
+function filterByRole(role) { renderUsers(!role ? allUsers : allUsers.filter(u => u.role === role)); }
+
+async function changeRole(userId, role) {
+    try {
+        const res = await api(`/admin/users/${userId}/role`, { method:'PUT', body: JSON.stringify({role}) });
+        if (res.ok) { showToast(`✅ Role updated to ${role}`); }
+        else { showToast('Failed to update role', 'error'); }
+    } catch { showToast('Error', 'error'); }
+}
+
+async function deleteUser(userId) {
+    if (!confirm('Delete this user? This cannot be undone.')) return;
+    const res = await api(`/admin/users/${userId}`, { method:'DELETE' });
+    if (res.ok) { showToast('User deleted'); loadUsers(); }
+    else showToast('Failed', 'error');
+}
+
+async function adminDeletePost(postId) {
+    if (!confirm('Delete this post?')) return;
+    await api(`/posts/${postId}`, { method:'DELETE' });
+    showToast('Post deleted'); loadOverview();
+}
+
+async function loadBusRoutes() {
+    try {
+        const res = await api('/bus/routes');
+        const routes = await res.json();
+        if (!routes.length) { document.getElementById('busList').innerHTML = '<div class="empty-state">No bus routes yet</div>'; return; }
+        document.getElementById('busList').innerHTML = `<table class="data-table"><thead><tr><th>Route</th><th>Bus No.</th><th>Departure</th><th>Arrival</th><th>Days</th><th>Actions</th></tr></thead><tbody>
+            ${routes.map(r=>`<tr><td><strong>${esc(r.route||r.routeName||'')}</strong><div style="font-size:0.75rem;color:#65676b;">${esc(r.stops||'')}</div></td><td>${esc(r.busNumber||'-')}</td><td>${esc(r.departureTime||r.departure||'-')}</td><td>${esc(r.arrivalTime||r.arrival||'-')}</td><td>${esc(r.days||'-')}</td><td><button onclick="deleteRoute('${r.id||r._id}')" class="action-btn btn-danger"><i class="fas fa-trash"></i></button></td></tr>`).join('')}
+        </tbody></table>`;
+    } catch { document.getElementById('busList').innerHTML = '<div class="empty-state">Failed to load routes</div>'; }
+}
+
+async function addBusRoute() {
+    const route = document.getElementById('busRoute').value.trim();
+    const busNumber = document.getElementById('busNumber').value.trim();
+    const departure = document.getElementById('busDep').value;
+    const arrival = document.getElementById('busArr').value;
+    const days = document.getElementById('busDays').value;
+    const stops = document.getElementById('busStops').value.trim();
+    if (!route || !departure) { showToast('Route name and departure time required', 'error'); return; }
+    try {
+        const res = await api('/bus/routes', { method:'POST', body: JSON.stringify({route, busNumber, departureTime:departure, arrivalTime:arrival, days, stops}) });
+        if (res.ok) { showToast('✅ Route added!'); loadBusRoutes(); ['busRoute','busNumber','busDep','busArr','busStops'].forEach(id => document.getElementById(id).value=''); }
+        else { const d=await res.json(); showToast(d.message||'Failed','error'); }
+    } catch { showToast('Error','error'); }
+}
+
+async function deleteRoute(id) {
+    if (!confirm('Delete this bus route?')) return;
+    const res = await api(`/bus/routes/${id}`, { method:'DELETE' });
+    if (res.ok) { showToast('Route deleted'); loadBusRoutes(); }
+}
+
+async function loadEvents() {
+    try {
+        const res = await api('/events');
+        const events = await res.json();
+        if (!events.length) { document.getElementById('eventsList').innerHTML = '<div class="empty-state">No events yet</div>'; return; }
+        document.getElementById('eventsList').innerHTML = `<table class="data-table"><thead><tr><th>Title</th><th>Date</th><th>Location</th><th>Category</th><th>Featured</th><th>Actions</th></tr></thead><tbody>
+            ${events.map(e=>`<tr><td><strong>${esc(e.title||'')}</strong></td><td>${esc(e.date||'')}</td><td>${esc(e.location||'-')}</td><td>${esc(e.category||'-')}</td><td>${e.isFeatured?'<i class="fas fa-star" style="color:#f59e0b"></i>':'-'}</td><td style="display:flex;gap:6px;"><button onclick="toggleFeatured('${e.id||e._id}',${!e.isFeatured})" class="action-btn btn-warning" title="Toggle featured"><i class="fas fa-star"></i></button><button onclick="deleteEvent('${e.id||e._id}')" class="action-btn btn-danger"><i class="fas fa-trash"></i></button></td></tr>`).join('')}
+        </tbody></table>`;
+    } catch { document.getElementById('eventsList').innerHTML = '<div class="empty-state">Failed to load events</div>'; }
+}
+
+async function createEvent() {
+    const title = document.getElementById('evTitle').value.trim();
+    const date = document.getElementById('evDate').value;
+    if (!title || !date) { showToast('Title and date required','error'); return; }
+    const body = {
+        title, date,
+        time: document.getElementById('evTime').value,
+        location: document.getElementById('evLocation').value,
+        organizer: document.getElementById('evOrganizer').value,
+        description: document.getElementById('evDesc').value,
+        category: document.getElementById('evCategory').value,
+        isFeatured: document.getElementById('evFeatured').checked
+    };
+    const res = await api('/events', { method:'POST', body: JSON.stringify(body) });
+    if (res.ok) { showToast('✅ Event created!'); loadEvents(); ['evTitle','evDate','evTime','evLocation','evOrganizer','evDesc'].forEach(id=>document.getElementById(id).value=''); }
+    else { const d=await res.json(); showToast(d.message||'Failed','error'); }
+}
+
+async function toggleFeatured(id, val) {
+    await api(`/events/${id}/feature`, { method:'PUT', body: JSON.stringify({isFeatured:val}) });
+    showToast(val ? '⭐ Marked as Featured' : 'Removed from Featured'); loadEvents();
+}
+
+async function deleteEvent(id) {
+    if (!confirm('Delete event?')) return;
+    const res = await api(`/events/${id}`, { method:'DELETE' });
+    if (res.ok) { showToast('Event deleted'); loadEvents(); }
+}
+
+async function sendAnnouncement() {
+    const title = document.getElementById('announceTitle').value.trim();
+    const message = document.getElementById('announceMsg').value.trim();
+    const targetRole = document.getElementById('announceRole').value;
+    if (!message) { showToast('Message required','error'); return; }
+    const res = await api('/admin/announce', { method:'POST', body: JSON.stringify({title, message, targetRole}) });
+    if (res.ok) { showToast('Announcement sent to all users!'); document.getElementById('announceMsg').value=''; document.getElementById('announceTitle').value=''; }
+    else showToast('Failed','error');
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function showToast(msg) { const t=document.createElement('div'); t.style.cssText='background:#1c1e21;color:white;padding:12px 18px;border-radius:10px;font-family:Inter,sans-serif;font-size:0.88rem;'; t.textContent=msg; document.getElementById('toast-container').appendChild(t); setTimeout(()=>t.remove(),3200); }
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     NEW PANELS: Reports, Audit Log, Identity Lookup, Banned, Version
+     ═══════════════════════════════════════════════════════════════ -->
+
+<!-- CONTENT REPORTS PANEL -->
+<div class="admin-panel" id="panel-reports">
+    <div class="admin-card">
+        <h3><i class="fas fa-flag" style="color:#e41e3f"></i> Content Reports</h3>
+        <p style="font-size:0.83rem;color:var(--text-secondary);margin-bottom:16px;">Posts or content reported by the community. Review and take action on each report.</p>
+        <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+            <button class="action-btn btn-primary" onclick="loadReports('pending')">Pending</button>
+            <button class="action-btn" style="background:var(--surface);color:var(--text)" onclick="loadReports('resolved')">Resolved</button>
+            <button class="action-btn" style="background:var(--surface);color:var(--text)" onclick="loadReports('dismissed')">Dismissed</button>
+        </div>
+        <div id="reportsList"><div class="spinner"><i class="fas fa-spinner fa-spin fa-2x"></i></div></div>
+    </div>
+</div>
+
+<!-- MODERATE A-Z PANEL — Direct delete/warn/ban any post/comment -->
+<div class="admin-panel" id="panel-moderate">
+    <div class="admin-card">
+        <h3><i class="fas fa-gavel" style="color:#e41e3f"></i> Direct Moderation — Any Post / Comment / Content A-Z</h3>
+        <p style="font-size:0.83rem;color:var(--text-secondary);margin-bottom:16px;">Admin can directly delete, warn, or ban for <strong>any</strong> content — post, comment, housing, marketplace, blood, reels, story — without waiting for a report. Enter ID and take action.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+            <div>
+                <label class="form-label">Content Type</label>
+                <select id="modType" class="form-input">
+                    <option value="post">Post</option>
+                    <option value="comment">Comment</option>
+                    <option value="housing">Housing</option>
+                    <option value="marketplace">Marketplace</option>
+                    <option value="blood_request">Blood Request</option>
+                    <option value="reels">Reels</option>
+                    <option value="story">Story</option>
+                    <option value="rideshare">Rideshare</option>
+                    <option value="tutoring">Tutoring</option>
+                    <option value="event">Event</option>
+                    <option value="group_post">Group Post</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label">Content ID *</label>
+                <input id="modContentId" class="form-input" placeholder="e.g. 12" type="number">
+            </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+            <button class="action-btn btn-danger" onclick="moderateDelete()"><i class="fas fa-trash"></i> Delete Content</button>
+            <button class="action-btn btn-warning" onclick="moderateWarn()"><i class="fas fa-exclamation-triangle"></i> Warn Author</button>
+            <button class="action-btn" style="background:#fee2e2;color:#e41e3f;" onclick="moderateBan()"><i class="fas fa-ban"></i> Ban Author</button>
+            <button class="action-btn btn-primary" onclick="moderateView()"><i class="fas fa-eye"></i> View Content</button>
+        </div>
+        <div id="moderateResult" style="font-size:0.85rem;min-height:20px;"></div>
+        <div style="margin-top:16px;padding:12px;background:var(--bg);border-radius:8px;font-size:0.82rem;color:var(--text-secondary);">
+            <strong>How to find ID:</strong> Open any post/comment → URL has <code>#post-123</code> or check <strong>Reports</strong> tab for reported content. Or go to <strong>Overview → Recent Posts</strong> and use the <i class="fas fa-trash"></i> delete directly.
+        </div>
+    </div>
+    <div class="admin-card">
+        <h3><i class="fas fa-user-shield" style="color:#e41e3f"></i> Quick User Action — Warn / Ban by User ID</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div><label class="form-label">User ID *</label><input id="modUserId" class="form-input" placeholder="e.g. 6" type="number"></div>
+            <div><label class="form-label">Reason *</label><input id="modReason" class="form-input" placeholder="e.g. Spam, harassment"></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+            <button class="action-btn btn-warning" onclick="quickWarn()"><i class="fas fa-exclamation-triangle"></i> Warn User</button>
+            <button class="action-btn btn-danger" onclick="quickBan(false)"><i class="fas fa-ban"></i> Suspend 14 days</button>
+            <button class="action-btn" style="background:#1c1e21;color:white;" onclick="quickBan(true)"><i class="fas fa-gavel"></i> Permanent Ban</button>
+            <button class="action-btn btn-primary" onclick="viewUserIdentity(document.getElementById('modUserId').value)"><i class="fas fa-id-card"></i> View Identity</button>
+        </div>
+        <div id="userModResult" style="font-size:0.85rem;margin-top:10px;"></div>
+    </div>
+</div>
+
+<!-- AUDIT LOG PANEL -->
+<div class="admin-panel" id="panel-audit">
+    <div class="admin-card">
+        <h3><i class="fas fa-scroll" style="color:#7c3aed"></i> Audit Log</h3>
+        <p style="font-size:0.83rem;color:var(--text-secondary);margin-bottom:16px;">Complete history of every user action — who did what, when, and from which IP address.</p>
+        <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+            <button class="action-btn btn-primary" onclick="loadAuditLogs()">All Activity</button>
+            <button class="action-btn" style="background:#fee2e2;color:#e41e3f" onclick="loadAuditLogs('critical')">Critical Only</button>
+            <button class="action-btn" style="background:#fff7ed;color:#f97316" onclick="loadAuditLogs('warning')">Warnings</button>
+        </div>
+        <div id="auditList"><div class="spinner"><i class="fas fa-spinner fa-spin fa-2x"></i></div></div>
+    </div>
+</div>
+
+<!-- IDENTITY LOOKUP PANEL -->
+<div class="admin-panel" id="panel-identity">
+    <div class="admin-card">
+        <h3><i class="fas fa-id-card" style="color:#059669"></i> User Identity Lookup</h3>
+        <p style="font-size:0.83rem;color:var(--text-secondary);margin-bottom:16px;">Search any user to view their complete institutional record: email, department, batch, warning history, IP login logs, and all activity.</p>
+        <div style="display:flex;gap:8px;margin-bottom:20px;">
+            <input id="identitySearch" class="form-input" placeholder="Enter User ID or search from Users tab..." style="flex:1">
+            <button class="action-btn btn-primary" onclick="lookupIdentity()"><i class="fas fa-search"></i> Lookup</button>
+        </div>
+        <div id="identityResult"></div>
+    </div>
+</div>
+
+<!-- BANNED USERS PANEL -->
+<div class="admin-panel" id="panel-banned">
+    <div class="admin-card">
+        <h3><i class="fas fa-ban" style="color:#e41e3f"></i> Suspended / Banned Accounts</h3>
+        <p style="font-size:0.83rem;color:var(--text-secondary);margin-bottom:16px;">All currently suspended or permanently banned DIU Nexus accounts.</p>
+        <div id="bannedList"><div class="spinner"><i class="fas fa-spinner fa-spin fa-2x"></i></div></div>
+    </div>
+</div>
+
+<!-- VERSION PANEL -->
+<div class="admin-panel" id="panel-version">
+    <div class="admin-card">
+        <h3><i class="fas fa-code-branch" style="color:#0866ff"></i> App Version & Update Guide</h3>
+        <div id="versionInfo"><div class="spinner"><i class="fas fa-spinner fa-spin"></i></div></div>
+    </div>
+</div>
+
+<!-- IDENTITY MODAL -->
+<div id="identityModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9999;overflow-y:auto;padding:24px;">
+    <div style="max-width:700px;margin:auto;background:var(--surface);border-radius:16px;padding:24px;position:relative;">
+        <button onclick="document.getElementById('identityModal').style.display='none'" style="position:absolute;top:14px;right:14px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--text-secondary);">&times;</button>
+        <div id="identityModalContent"></div>
+    </div>
+</div>
+
+<!-- WARN/BAN MODAL -->
+<div id="actionModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9999;display:none;align-items:center;justify-content:center;">
+    <div style="max-width:480px;width:90%;background:var(--surface);border-radius:16px;padding:24px;position:relative;">
+        <button onclick="closeActionModal()" style="position:absolute;top:14px;right:14px;background:none;border:none;font-size:1.4rem;cursor:pointer;">&times;</button>
+        <div id="actionModalContent"></div>
+    </div>
+</div>
+
+<script>
+/* ─── NEW PANEL FUNCTIONS ─────────────────────────────────────────────────── */
+
+async function loadReports(status = 'pending') {
+    document.getElementById('reportsList').innerHTML = '<div class="spinner"><i class="fas fa-spinner fa-spin fa-2x"></i></div>';
+    try {
+        const res = await api(`/admin/reports?status=${status}`);
+        const reports = await res.json();
+        if (!reports.length) {
+            document.getElementById('reportsList').innerHTML = `<div class="empty-state"><i class="fas fa-check-circle fa-2x" style="opacity:0.2;display:block;margin-bottom:8px"></i>No ${status} reports</div>`;
+            return;
+        }
+        document.getElementById('reportsList').innerHTML = reports.map(r => `
+            <div style="border:1.5px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
+                    <div>
+                        <span style="font-size:0.78rem;color:#e41e3f;font-weight:700;text-transform:uppercase;">${esc(r.reason)}</span>
+                        <div style="font-size:0.82rem;color:var(--text-secondary);margin-top:4px;">Reported by: <strong>${esc(r.reporter_full_name||'Unknown')}</strong> (${esc(r.reporter_role||'')}) · ${esc(r.reporter_email||'')}</div>
+                    </div>
+                    <span style="font-size:0.73rem;color:var(--text-secondary)">${new Date(r.created_at).toLocaleString()}</span>
+                </div>
+                <div style="margin:10px 0;padding:10px;background:var(--bg);border-radius:8px;font-size:0.85rem;">
+                    <strong>Reported ${esc(r.target_type)} #${r.target_id} by ${esc(r.author_name||'?')}</strong> (${esc(r.author_email||'')} · ${esc(r.author_department||'')} ${esc(r.author_batch||'')}):<br>
+                    <span style="color:var(--text-secondary)">${esc((r.post_content||'[No preview]').substring(0,220))}</span>
+                    <span style="display:inline-block;margin-top:4px;padding:2px 8px;background:#e7f0ff;color:#0866ff;border-radius:12px;font-size:0.7rem;font-weight:700;text-transform:uppercase;">${esc(r.target_type)}</span>
+                </div>
+                ${r.details ? `<div style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:8px">Additional details: ${esc(r.details)}</div>` : ''}
+                ${status === 'pending' ? `
+                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
+                    <button class="action-btn btn-danger" onclick="deleteReportedContent(${r.id})"><i class="fas fa-trash"></i> Delete ${esc(r.target_type)}</button>
+                    <button class="action-btn btn-warning" onclick="openWarnFromReport(${r.post_author_id},'${esc(r.reason)}',${r.target_id})"><i class="fas fa-exclamation-triangle"></i> Warn User</button>
+                    <button class="action-btn btn-danger" onclick="openBanFromReport(${r.post_author_id},'${esc(r.reason)}')"><i class="fas fa-ban"></i> Suspend User</button>
+                    <button class="action-btn btn-primary" onclick="viewUserIdentity(${r.post_author_id})"><i class="fas fa-id-card"></i> View Identity</button>
+                    <button class="action-btn" style="background:#f0fdf4;color:#059669;" onclick="resolveReport(${r.id},'resolved')"><i class="fas fa-check"></i> Resolve</button>
+                    <button class="action-btn" style="background:var(--bg);" onclick="resolveReport(${r.id},'dismissed')"><i class="fas fa-times"></i> Dismiss</button>
+                </div>` : ''}
+            </div>
+        `).join('');
+    } catch(e) {
+        document.getElementById('reportsList').innerHTML = '<div class="empty-state">Failed to load reports</div>';
+    }
+}
+
+async function resolveReport(id, action) {
+    const res = await api(`/admin/reports/${id}/resolve`, { method:'PUT', body: JSON.stringify({action}) });
+    if (res.ok) { showToast(`Report ${action}`); loadReports(); }
+    else showToast('Failed', 'error');
+}
+async function deleteReportedContent(reportId){
+    if(!confirm('Delete the reported content? This will permanently remove the item and resolve the report.')) return;
+    const res = await api(`/admin/reports/${reportId}/content`, { method:'DELETE' });
+    const data = await res.json();
+    if(res.ok){ showToast(`✅ ${data.message}`); loadReports(); loadOverview(); }
+    else showToast(data.message||'Failed to delete','error');
+}
+async function moderateDelete(){
+    const type=document.getElementById('modType').value;
+    const id=document.getElementById('modContentId').value.trim();
+    const el=document.getElementById('moderateResult');
+    if(!id){ el.innerHTML='<span style="color:#e41e3f;">Enter Content ID</span>'; return; }
+    if(!confirm(`Delete ${type} #${id}? This cannot be undone.`)) return;
+    el.innerHTML='<span style="color:#65676b;"><i class="fas fa-spinner fa-spin"></i> Deleting...</span>';
+    const res=await api(`/admin/content/${type}/${id}`, {method:'DELETE'});
+    const data=await res.json();
+    el.innerHTML = res.ok ? `<span style="color:#059669;">✅ ${data.message}</span>` : `<span style="color:#e41e3f;">${data.message||'Failed'}</span>`;
+    if(res.ok) loadOverview();
+}
+async function moderateWarn(){
+    const type=document.getElementById('modType').value;
+    const id=document.getElementById('modContentId').value.trim();
+    const el=document.getElementById('moderateResult');
+    if(!id){ el.innerHTML='<span style="color:#e41e3f;">Enter Content ID first</span>'; return; }
+    // Get author via report preview or try to fetch content then warn
+    el.innerHTML='<span style="color:#65676b;">Fetching author...</span>';
+    try{
+        // Try to get report or content to find owner
+        const res=await api(`/admin/reports?status=pending`);
+        const reports=await res.json();
+        const r=reports.find(x=> x.target_type===type && String(x.target_id)===String(id));
+        let userId = r ? r.post_author_id : null;
+        if(!userId){
+            // Fallback: try to fetch content directly via admin identity search? For now prompt
+            const uid=prompt('Enter author User ID to warn (or leave blank to just delete):');
+            if(!uid) { el.innerHTML='<span style="color:#e41e3f;">Need User ID to warn</span>'; return; }
+            userId=uid;
+        }
+        const reason=prompt('Warn reason:', `Violation in ${type} #${id}`) || `Violation in ${type} #${id}`;
+        const w=await api('/admin/warn-user', {method:'POST', body:JSON.stringify({userId, reason, severity:'warning', postId: type==='post'?id:null})});
+        const wd=await w.json();
+        el.innerHTML = w.ok ? `<span style="color:#059669;">✅ ${wd.message}</span>` : `<span style="color:#e41e3f;">${wd.message}</span>`;
+    }catch(e){ el.innerHTML='<span style="color:#e41e3f;">Failed</span>'; }
+}
+async function moderateBan(){
+    const type=document.getElementById('modType').value;
+    const id=document.getElementById('modContentId').value.trim();
+    if(!id){ document.getElementById('moderateResult').innerHTML='<span style="color:#e41e3f;">Enter Content ID</span>'; return; }
+    const reason=prompt(`Ban reason for ${type} #${id}:`, `Severe violation in ${type} #${id}`) || `Violation in ${type} #${id}`;
+    // Need userId — try to find via reports
+    try{
+        const res=await api(`/admin/reports?status=pending`);
+        const reports=await res.json();
+        const r=reports.find(x=> x.target_type===type && String(x.target_id)===String(id));
+        let userId = r ? r.post_author_id : prompt('Enter User ID to ban:');
+        if(!userId) return;
+        const b=await api('/admin/ban-user', {method:'POST', body:JSON.stringify({userId, reason, durationDays:14, isPermanent:false})});
+        const bd=await b.json();
+        document.getElementById('moderateResult').innerHTML = b.ok ? `<span style="color:#059669;">✅ ${bd.message}</span>` : `<span style="color:#e41e3f;">${bd.message}</span>`;
+    }catch(e){ document.getElementById('moderateResult').innerHTML='<span style="color:#e41e3f;">Failed</span>';}
+}
+async function moderateView(){
+    const type=document.getElementById('modType').value;
+    const id=document.getElementById('modContentId').value.trim();
+    if(!id) return;
+    // Try to open content
+    if(type==='post') window.open(`../home.html#post-${id}`, '_blank');
+    else if(type==='housing') window.open(`home-portal.html`, '_blank');
+    else if(type==='marketplace') window.open(`marketplace.html`, '_blank');
+    else if(type==='story') window.open(`../home.html`, '_blank');
+    else window.open(`../home.html`, '_blank');
+}
+async function quickWarn(){
+    const userId=document.getElementById('modUserId').value.trim();
+    const reason=document.getElementById('modReason').value.trim();
+    const el=document.getElementById('userModResult');
+    if(!userId || !reason){ el.innerHTML='<span style="color:#e41e3f;">User ID and Reason required</span>'; return; }
+    const res=await api('/admin/warn-user', {method:'POST', body:JSON.stringify({userId, reason, severity:'warning'})});
+    const data=await res.json();
+    el.innerHTML = res.ok ? `<span style="color:#059669;">✅ ${data.message}</span>` : `<span style="color:#e41e3f;">${data.message}</span>`;
+}
+async function quickBan(isPermanent){
+    const userId=document.getElementById('modUserId').value.trim();
+    const reason=document.getElementById('modReason').value.trim();
+    const el=document.getElementById('userModResult');
+    if(!userId || !reason){ el.innerHTML='<span style="color:#e41e3f;">User ID and Reason required</span>'; return; }
+    if(!confirm(`${isPermanent?'Permanent ban':'Suspend 14 days'} user #${userId}?`)) return;
+    const res=await api('/admin/ban-user', {method:'POST', body:JSON.stringify({userId, reason, durationDays: isPermanent?null:14, isPermanent})});
+    const data=await res.json();
+    el.innerHTML = res.ok ? `<span style="color:#059669;">✅ ${data.message}</span>` : `<span style="color:#e41e3f;">${data.message}</span>`;
+}
+
+async function loadAuditLogs(severity = null) {
+    document.getElementById('auditList').innerHTML = '<div class="spinner"><i class="fas fa-spinner fa-spin fa-2x"></i></div>';
+    try {
+        const url = severity ? `/admin/audit-logs?severity=${severity}&limit=100` : '/admin/audit-logs?limit=100';
+        const res = await api(url);
+        const data = await res.json();
+        const logs = data.logs || [];
+        if (!logs.length) {
+            document.getElementById('auditList').innerHTML = '<div class="empty-state">No audit logs found</div>';
+            return;
+        }
+        const severityColor = { info: '#059669', warning: '#f97316', critical: '#e41e3f' };
+        document.getElementById('auditList').innerHTML = `
+            <table class="data-table">
+                <thead><tr><th>Time</th><th>User</th><th>Role</th><th>Action</th><th>IP Address</th><th>Severity</th></tr></thead>
+                <tbody>
+                ${logs.map(l => `
+                    <tr>
+                        <td style="white-space:nowrap;font-size:0.75rem">${new Date(l.created_at).toLocaleString()}</td>
+                        <td>
+                            <div style="font-weight:600;font-size:0.83rem">${esc(l.fullName||'Unknown')}</div>
+                            <div style="font-size:0.73rem;color:var(--text-secondary)">${esc(l.user_email||'')}</div>
+                        </td>
+                        <td><span class="role-badge role-${(l.user_role||'').toLowerCase()}">${esc(l.user_role||'?')}</span></td>
+                        <td style="font-size:0.82rem;font-family:monospace">${esc(l.action)}<br><span style="font-size:0.72rem;color:var(--text-secondary)">${esc(l.details||'')}</span></td>
+                        <td style="font-size:0.78rem;font-family:monospace">${esc(l.ip_address||'—')}</td>
+                        <td><span style="color:${severityColor[l.severity]||'#65676b'};font-weight:700;font-size:0.75rem;text-transform:uppercase">${esc(l.severity||'info')}</span></td>
+                    </tr>
+                `).join('')}
+                </tbody>
+            </table>`;
+    } catch(e) {
+        document.getElementById('auditList').innerHTML = '<div class="empty-state">Failed to load audit logs</div>';
+    }
+}
+
+async function lookupIdentity() {
+    const uid = document.getElementById('identitySearch').value.trim();
+    if (!uid || isNaN(uid)) { showToast('Please enter a valid numeric User ID', 'error'); return; }
+    await viewUserIdentity(uid);
+}
+
+async function viewUserIdentity(userId) {
+    document.getElementById('identityResult').innerHTML = '<div class="spinner"><i class="fas fa-spinner fa-spin fa-2x"></i></div>';
+    // Switch to identity tab if not already
+    switchTab('identity');
+    try {
+        const res = await api(`/admin/user-identity/${userId}`);
+        if (!res.ok) { document.getElementById('identityResult').innerHTML = '<div class="empty-state">User not found</div>'; return; }
+        const d = await res.json();
+        const u = d.user;
+        const banInfo = d.ban ? `<div style="background:#fee2e2;border-radius:8px;padding:10px;margin-top:8px;font-size:0.82rem"><i class="fas fa-ban" style="color:#e41e3f"></i> <strong>Account Suspended</strong> — ${esc(d.ban.reason)} ${d.ban.is_permanent ? '(Permanent)' : '(Until: ' + new Date(d.ban.expires_at).toLocaleDateString() + ')'}</div>` : '';
+
+        document.getElementById('identityResult').innerHTML = `
+        <div style="border:2px solid ${d.ban ? '#e41e3f' : 'var(--border)'};border-radius:14px;padding:20px;">
+            <!-- Header -->
+            <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
+                <img src="${u.profilePicture||'../assets/default-avatar.png'}" style="width:60px;height:60px;border-radius:50%;object-fit:cover" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 60 60%22><circle cx=%2230%22 cy=%2230%22 r=%2230%22 fill=%22%230866ff%22/><text x=%2230%22 y=%2236%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2224%22>${esc(u.fullName?.charAt(0)||'?')}</text></svg>'">
+                <div>
+                    <div style="font-size:1.1rem;font-weight:800">${esc(u.fullName)}</div>
+                    <div style="font-size:0.83rem;color:var(--text-secondary)">${esc(u.email)}</div>
+                    <span class="role-badge role-${(u.role||'').toLowerCase()}">${esc(u.role)}</span>
+                    ${u.isVerified ? '<span style="color:#059669;font-size:0.75rem;font-weight:700;margin-left:6px"><i class="fas fa-check-circle"></i> Verified</span>' : ''}
+                </div>
+            </div>
+            ${banInfo}
+
+            <!-- Institutional Info -->
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:16px;">
+                <div style="background:var(--bg);border-radius:8px;padding:10px;text-align:center">
+                    <div style="font-size:1.4rem;font-weight:800;color:#0866ff">${d.stats.postCount}</div>
+                    <div style="font-size:0.75rem;color:var(--text-secondary)">Total Posts</div>
+                </div>
+                <div style="background:var(--bg);border-radius:8px;padding:10px;text-align:center">
+                    <div style="font-size:1.4rem;font-weight:800;color:#059669">${d.stats.friendCount}</div>
+                    <div style="font-size:0.75rem;color:var(--text-secondary)">Friends</div>
+                </div>
+                <div style="background:${d.stats.warningCount > 0 ? '#fff7ed' : 'var(--bg)'};border-radius:8px;padding:10px;text-align:center">
+                    <div style="font-size:1.4rem;font-weight:800;color:${d.stats.warningCount > 0 ? '#f97316' : 'var(--text)'}">${d.stats.warningCount}</div>
+                    <div style="font-size:0.75rem;color:var(--text-secondary)">Warnings</div>
+                </div>
+                <div style="background:${d.stats.reportedCount > 0 ? '#fee2e2' : 'var(--bg)'};border-radius:8px;padding:10px;text-align:center">
+                    <div style="font-size:1.4rem;font-weight:800;color:${d.stats.reportedCount > 0 ? '#e41e3f' : 'var(--text)'}">${d.stats.reportedCount}</div>
+                    <div style="font-size:0.75rem;color:var(--text-secondary)">Times Reported</div>
+                </div>
+            </div>
+
+            <!-- Details -->
+            <table class="data-table" style="margin-bottom:14px">
+                <tr><td style="color:var(--text-secondary);font-size:0.8rem">Department</td><td>${esc(u.department||'—')}</td></tr>
+                <tr><td style="color:var(--text-secondary);font-size:0.8rem">Batch</td><td>${esc(u.batch||'—')}</td></tr>
+                <tr><td style="color:var(--text-secondary);font-size:0.8rem">Gender</td><td>${esc(u.gender||'—')}</td></tr>
+                <tr><td style="color:var(--text-secondary);font-size:0.8rem">Registered</td><td>${new Date(u.createdAt).toLocaleString()}</td></tr>
+                <tr><td style="color:var(--text-secondary);font-size:0.8rem">User ID</td><td>#${u._id}</td></tr>
+            </table>
+
+            <!-- Login IPs -->
+            ${d.loginIPs.length ? `
+            <div style="margin-bottom:12px">
+                <div style="font-weight:700;font-size:0.85rem;margin-bottom:6px"><i class="fas fa-network-wired"></i> Known Login IP Addresses</div>
+                <div style="display:flex;flex-wrap:wrap;gap:6px">
+                ${d.loginIPs.map(ip => `<code style="background:var(--bg);padding:4px 10px;border-radius:6px;font-size:0.78rem">${esc(ip.ip_address)} <span style="color:var(--text-secondary)">${new Date(ip.last_seen).toLocaleDateString()}</span></code>`).join('')}
+                </div>
+            </div>` : ''}
+
+            <!-- Warnings -->
+            ${d.warnings.length ? `
+            <div style="margin-bottom:12px">
+                <div style="font-weight:700;font-size:0.85rem;margin-bottom:6px;color:#f97316"><i class="fas fa-exclamation-triangle"></i> Warning History</div>
+                ${d.warnings.map(w => `<div style="background:#fff7ed;border-radius:8px;padding:8px 12px;margin-bottom:6px;font-size:0.82rem"><span style="color:#f97316;font-weight:700">${esc(w.severity)}</span> — ${esc(w.reason)} <span style="color:var(--text-secondary)">${new Date(w.created_at).toLocaleString()}</span></div>`).join('')}
+            </div>` : ''}
+
+            <!-- Admin Actions -->
+            <div style="display:flex;gap:8px;flex-wrap:wrap;padding-top:12px;border-top:1px solid var(--border);margin-top:8px">
+                <button class="action-btn btn-warning" onclick="openWarnModal(${u._id})"><i class="fas fa-exclamation-triangle"></i> Issue Warning</button>
+                ${d.ban ? `<button class="action-btn btn-success" onclick="unbanUser(${u._id})"><i class="fas fa-check"></i> Lift Suspension</button>` : `<button class="action-btn btn-danger" onclick="openBanModal(${u._id})"><i class="fas fa-ban"></i> Suspend Account</button>`}
+                <button class="action-btn" style="background:var(--bg)" onclick="document.getElementById('identitySearch').value='${u._id}'"><i class="fas fa-hashtag"></i> ID: #${u._id}</button>
+            </div>
+        </div>`;
+    } catch(e) {
+        document.getElementById('identityResult').innerHTML = '<div class="empty-state">Error loading identity</div>';
+    }
+}
+
+async function loadBanned() {
+    document.getElementById('bannedList').innerHTML = '<div class="spinner"><i class="fas fa-spinner fa-spin fa-2x"></i></div>';
+    try {
+        const res = await api('/admin/banned-users');
+        const banned = await res.json();
+        if (!banned.length) { document.getElementById('bannedList').innerHTML = '<div class="empty-state"><i class="fas fa-check-circle fa-2x" style="opacity:0.2;display:block;margin-bottom:8px"></i>No suspended accounts</div>'; return; }
+        document.getElementById('bannedList').innerHTML = `
+            <table class="data-table">
+                <thead><tr><th>User</th><th>Dept / Batch</th><th>Reason</th><th>Type</th><th>Expires</th><th>Banned By</th><th>Actions</th></tr></thead>
+                <tbody>
+                ${banned.map(b => `
+                    <tr>
+                        <td><div style="font-weight:600">${esc(b.fullName)}</div><div style="font-size:0.73rem;color:var(--text-secondary)">${esc(b.email)}</div></td>
+                        <td>${esc(b.department||'—')} / ${esc(b.batch||'—')}</td>
+                        <td style="font-size:0.82rem">${esc(b.reason)}</td>
+                        <td><span style="color:${b.is_permanent?'#e41e3f':'#f97316'};font-weight:700;font-size:0.75rem">${b.is_permanent ? 'Permanent' : 'Temporary'}</span></td>
+                        <td style="font-size:0.78rem">${b.expires_at ? new Date(b.expires_at).toLocaleDateString() : '—'}</td>
+                        <td style="font-size:0.78rem">${esc(b.banned_by_name||'Admin')}</td>
+                        <td style="display:flex;gap:4px">
+                            <button class="action-btn btn-success" onclick="unbanUser(${b.user_id})"><i class="fas fa-check"></i> Unban</button>
+                            <button class="action-btn btn-primary" onclick="viewUserIdentity(${b.user_id})"><i class="fas fa-id-card"></i></button>
+                        </td>
+                    </tr>
+                `).join('')}
+                </tbody>
+            </table>`;
+    } catch(e) { document.getElementById('bannedList').innerHTML = '<div class="empty-state">Failed to load</div>'; }
+}
+
+async function unbanUser(userId) {
+    if (!confirm('Lift the suspension for this user?')) return;
+    const res = await api(`/admin/ban-user/${userId}`, { method:'DELETE' });
+    if (res.ok) { showToast('Suspension lifted'); loadBanned(); }
+    else showToast('Failed', 'error');
+}
+
+async function loadVersion() {
+    try {
+        const res = await api('/admin/version');
+        const v = await res.json();
+        document.getElementById('versionInfo').innerHTML = `
+            <div style="margin-bottom:20px">
+                <div style="font-size:2rem;font-weight:800;color:#0866ff">v${esc(v.version)}</div>
+                <div style="font-size:0.85rem;color:var(--text-secondary)">Released: ${esc(v.buildDate)} | Platform: ${esc(v.platform)}</div>
+            </div>
+            <div style="margin-bottom:20px">
+                <div style="font-weight:700;margin-bottom:10px"><i class="fas fa-list-ul"></i> Changelog</div>
+                ${v.changelog.map(c => `<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:0.85rem;color:var(--text-secondary)"><i class="fas fa-check" style="color:#059669;margin-right:6px"></i>${esc(c)}</div>`).join('')}
+            </div>
+            <div style="background:#e7f0ff;border-radius:10px;padding:16px;font-size:0.85rem;">
+                <div style="font-weight:700;margin-bottom:8px"><i class="fas fa-rocket" style="color:#0866ff"></i> How to update after publishing</div>
+                <div style="margin-bottom:6px"><strong>Web:</strong> <code>git pull && pm2 restart all</code> — Live in seconds, zero downtime</div>
+                <div style="margin-bottom:6px"><strong>Android PWA:</strong> Service Worker auto-updates on the user's next app open</div>
+                <div><strong>PC (Electron):</strong> <code>npm run dist</code> → Upload new .exe → Users get notified automatically via electron-updater</div>
+            </div>`;
+    } catch(e) { document.getElementById('versionInfo').innerHTML = '<div class="empty-state">Failed to load version info</div>'; }
+}
+
+function openWarnModal(userId) {
+    document.getElementById('actionModal').style.display = 'flex';
+    document.getElementById('actionModalContent').innerHTML = `
+        <h3 style="margin-bottom:16px"><i class="fas fa-exclamation-triangle" style="color:#f97316"></i> Issue Official Warning</h3>
+        <div class="form-row full"><label class="form-label">Severity</label>
+            <select id="warnSeverity" class="form-input">
+                <option value="notice">Notice (Mild)</option>
+                <option value="warning" selected>Warning</option>
+                <option value="final_warning">Final Warning</option>
+            </select></div>
+        <div class="form-row full"><label class="form-label">Reason *</label>
+            <textarea id="warnReason" class="form-input" rows="3" placeholder="Describe the violation clearly..."></textarea></div>
+        <div style="display:flex;gap:8px;margin-top:14px">
+            <button class="action-btn btn-warning" style="flex:1" onclick="submitWarn(${userId})"><i class="fas fa-paper-plane"></i> Send Warning</button>
+            <button class="action-btn" style="flex:1;background:var(--bg)" onclick="closeActionModal()">Cancel</button>
+        </div>`;
+}
+
+function openWarnFromReport(userId, reason, postId) {
+    openWarnModal(userId);
+    setTimeout(() => { const el = document.getElementById('warnReason'); if (el) el.value = reason; }, 50);
+}
+
+async function submitWarn(userId) {
+    const reason = document.getElementById('warnReason').value.trim();
+    const severity = document.getElementById('warnSeverity').value;
+    if (!reason) { showToast('Reason is required', 'error'); return; }
+    const res = await api('/admin/warn-user', { method:'POST', body: JSON.stringify({ userId, reason, severity }) });
+    if (res.ok) { showToast('Warning issued successfully'); closeActionModal(); }
+    else { const d = await res.json(); showToast(d.message || 'Failed', 'error'); }
+}
+
+function openBanModal(userId) {
+    document.getElementById('actionModal').style.display = 'flex';
+    document.getElementById('actionModalContent').innerHTML = `
+        <h3 style="margin-bottom:16px"><i class="fas fa-ban" style="color:#e41e3f"></i> Suspend / Ban Account</h3>
+        <div class="form-row full"><label class="form-label">Suspension Type</label>
+            <select id="banType" class="form-input" onchange="toggleBanDuration(this.value)">
+                <option value="temporary">Temporary Suspension</option>
+                <option value="permanent">Permanent Ban</option>
+            </select></div>
+        <div class="form-row full" id="banDurationRow"><label class="form-label">Duration (Days) *</label>
+            <input type="number" id="banDays" class="form-input" min="1" max="365" value="7" placeholder="e.g. 7"></div>
+        <div class="form-row full"><label class="form-label">Reason *</label>
+            <textarea id="banReason" class="form-input" rows="3" placeholder="State the reason for this suspension clearly..."></textarea></div>
+        <div style="display:flex;gap:8px;margin-top:14px">
+            <button class="action-btn btn-danger" style="flex:1" onclick="submitBan(${userId})"><i class="fas fa-ban"></i> Confirm Suspension</button>
+            <button class="action-btn" style="flex:1;background:var(--bg)" onclick="closeActionModal()">Cancel</button>
+        </div>`;
+}
+
+function openBanFromReport(userId, reason) {
+    openBanModal(userId);
+    setTimeout(() => { const el = document.getElementById('banReason'); if (el) el.value = reason; }, 50);
+}
+
+function toggleBanDuration(val) {
+    const row = document.getElementById('banDurationRow');
+    if (row) row.style.display = val === 'permanent' ? 'none' : 'block';
+}
+
+async function submitBan(userId) {
+    const reason = document.getElementById('banReason').value.trim();
+    const banType = document.getElementById('banType').value;
+    const durationDays = parseInt(document.getElementById('banDays')?.value || 7);
+    const isPermanent = banType === 'permanent';
+    if (!reason) { showToast('Reason is required', 'error'); return; }
+    const res = await api('/admin/ban-user', { method:'POST', body: JSON.stringify({ userId, reason, durationDays, isPermanent }) });
+    if (res.ok) { showToast('Account suspended successfully'); closeActionModal(); loadBanned(); }
+    else { const d = await res.json(); showToast(d.message || 'Failed', 'error'); }
+}
+
+function closeActionModal() {
+    document.getElementById('actionModal').style.display = 'none';
+}
+
+// ─── Override switchTab to load new panels ──────────────────────────────────
+const _origSwitchTab = window.switchTab;
+window.switchTab = function(tab) {
+    if (_origSwitchTab) _origSwitchTab(tab);
+    if (tab === 'reports') loadReports();
+    if (tab === 'audit') loadAuditLogs();
+    if (tab === 'banned') loadBanned();
+    if (tab === 'version') loadVersion();
+};
+
+// ─── Load pending report count on startup ────────────────────────────────────
+(async () => {
+    try {
+        const res = await api('/admin/stats');
+        if (res.ok) {
+            const stats = await res.json();
+            if (stats.pendingReports > 0) {
+                const badge = document.getElementById('reportBadge');
+                if (badge) { badge.textContent = stats.pendingReports; badge.style.display = 'inline'; }
+            }
+        }
+    } catch(_) {}
+})();
+</script>
+</body>
+</html>
+

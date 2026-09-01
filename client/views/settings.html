@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Settings | DIU Nexus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/home.css">
+    <style>
+        .settings-layout{max-width:760px;margin:0 auto;padding:80px 16px 40px;display:grid;grid-template-columns:200px 1fr;gap:20px;align-items:start;}
+        .settings-nav{background:var(--surface);border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.06);position:sticky;top:80px;}
+        .settings-nav-item{display:flex;align-items:center;gap:10px;padding:12px 16px;font-size:0.9rem;font-weight:600;cursor:pointer;transition:background 0.15s;border:none;background:none;font-family:inherit;color:var(--text);width:100%;text-align:left;}
+        .settings-nav-item:hover{background:var(--surface-alt,#f0f2f5);}
+        .settings-nav-item.active{background:var(--blue-light,#e7f0ff);color:var(--blue);}
+        .settings-nav-item i{width:20px;text-align:center;color:var(--blue);}
+        .settings-panel{background:var(--surface);border-radius:12px;padding:24px;box-shadow:0 1px 4px rgba(0,0,0,0.06);}
+        .settings-panel h2{font-weight:800;font-size:1.1rem;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+        .setting-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border,#e4e6eb);}
+        .setting-row:last-child{border-bottom:none;}
+        .setting-info .label{font-weight:600;font-size:0.92rem;}
+        .setting-info .desc{font-size:0.78rem;color:var(--text-secondary);margin-top:2px;}
+        .toggle{position:relative;width:48px;height:26px;flex-shrink:0;}
+        .toggle input{opacity:0;width:0;height:0;}
+        .toggle-slider{position:absolute;inset:0;background:#ccc;border-radius:13px;cursor:pointer;transition:background 0.2s;}
+        .toggle-slider::before{content:'';position:absolute;width:20px;height:20px;left:3px;top:3px;background:white;border-radius:50%;transition:transform 0.2s;box-shadow:0 1px 4px rgba(0,0,0,0.2);}
+        .toggle input:checked+.toggle-slider{background:var(--blue);}
+        .toggle input:checked+.toggle-slider::before{transform:translateX(22px);}
+        .form-input{padding:10px 12px;border:1.5px solid var(--border,#e4e6eb);border-radius:8px;font-family:inherit;font-size:0.88rem;color:var(--text);width:100%;max-width:280px;outline:none;background:var(--bg,#f0f2f5);}
+        .form-input:focus{border-color:var(--blue);background:var(--surface);}
+        .btn-save{padding:9px 20px;background:var(--blue);color:white;border:none;border-radius:8px;font-family:inherit;font-size:0.88rem;font-weight:700;cursor:pointer;}
+        .btn-danger{padding:9px 20px;background:#fff0f2;color:#e41e3f;border:1.5px solid #ffb3be;border-radius:8px;font-family:inherit;font-size:0.88rem;font-weight:700;cursor:pointer;}
+        @media(max-width:600px){.settings-layout{grid-template-columns:1fr;}.settings-nav{position:static;}.settings-nav{display:flex;overflow-x:auto;}.settings-nav-item{white-space:nowrap;}}
+    
+        /* Fix: Pill till missing + button blocked — ensure pills and following buttons are clickable */
+        .filter-bar, .category-tabs, .cats, .filter-tabs, .cat-tabs, .filter-pill, .cat-tab, .cat, .blood-type-grid, .search-bar {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 1;
+        }
+        .filter-chip, .cat-tab, .cat, .blood-btn, .btn-join, .btn-view, .btn-post, .btn-submit, .btn-sell, .contact-btn, .post-action, .member-row button, .file-row a {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 2;
+        }
+        /* Ensure no sticky pill blocks content */
+        .category-tabs, .filter-bar, .cats {
+            overflow-x: auto;
+            overflow-y: visible;
+            max-height: none;
+        }
+
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <div class="navbar-left">
+        <button class="back-btn" onclick="handleBack()" title="Back" style="display:flex;"><i class="fas fa-arrow-left"></i></button>
+        <a href="../home.html" class="nav-logo" style="display:flex;align-items:center;gap:6px;"><img src="../assets/icon.svg" alt="NEXUS" style="width:26px;height:26px;flex-shrink:0;filter:drop-shadow(0 2px 4px rgba(10,108,255,0.3));" onerror="this.style.display='none'"><span style="font-weight:800;color:#0A6CFF;margin-left:6px;letter-spacing:0.5px;font-size:1.1rem;">NEXUS</span></a>
+        <div class="nav-search" style="position:relative;">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search DIU Nexus" oninput="if(this.value.length>2) window.location.href='../home.html?q='+encodeURIComponent(this.value)">
+            <div class="search-dropdown" id="searchDropdown"></div>
+        </div>
+    </div>
+    <div class="navbar-center" id="mainNavCenter">
+        <a href="../home.html" class="nav-icon-btn" data-tab="home" title="Home"><i class="fas fa-home"></i></a>
+        <a href="groups.html" class="nav-icon-btn" data-tab="groups" title="Groups"><i class="fas fa-users"></i></a>
+        <a href="reels.html" class="nav-icon-btn" data-tab="reels" title="Reels"><i class="fas fa-film"></i></a>
+        <a href="departments.html" class="nav-icon-btn" data-tab="departments" title="Departments"><i class="fas fa-building"></i></a>
+        <a href="events.html" class="nav-icon-btn" data-tab="events" title="Events"><i class="fas fa-calendar-alt"></i></a>
+    </div>
+    <div class="navbar-right">
+        <button class="navbar-action-btn" onclick="window.location.href='messenger.html'" title="Messenger"><i class="fab fa-facebook-messenger"></i></button>
+        <button class="navbar-action-btn" onclick="window.location.href='../home.html'" title="Notifications"><i class="fas fa-bell"></i></button>
+        <button class="navbar-action-btn" onclick="window.location.href='profile.html'" title="Account"><div class="avatar-placeholder" style="width:32px;height:32px;font-size:0.85rem;border-radius:50%;">?</div></button>
+    </div>
+</nav>
+<script src="../js/config.js"></script>
+<script>
+function handleBack(){ try{ if(history.length>1 && document.referrer) history.back(); else window.location.href='../home.html'; }catch{ window.location.href='../home.html'; } }
+(function(){
+  const path=window.location.pathname.toLowerCase();
+  document.querySelectorAll('.nav-icon-btn').forEach(btn=>{
+    const href=(btn.getAttribute('href')||'').toLowerCase();
+    const target=href.split('/').pop().split('?')[0];
+    const current=path.split('/').pop().split('?')[0] || 'groups.html';
+    btn.classList.toggle('active', target===current);
+  });
+})();
+</script>
+
+<div class="settings-layout">
+    <div class="settings-nav">
+        <button class="settings-nav-item active" onclick="showSection('general')"><i class="fas fa-cog"></i> General</button>
+        <button class="settings-nav-item" onclick="showSection('privacy')"><i class="fas fa-lock"></i> Privacy</button>
+        <button class="settings-nav-item" onclick="showSection('notifications')"><i class="fas fa-bell"></i> Notifications</button>
+        <button class="settings-nav-item" onclick="showSection('appearance')"><i class="fas fa-palette"></i> Appearance</button>
+        <button class="settings-nav-item" onclick="showSection('security')"><i class="fas fa-shield-alt"></i> Security</button>
+        <button class="settings-nav-item" onclick="showSection('account')"><i class="fas fa-user-shield"></i> Account</button>
+    </div>
+
+    <!-- GENERAL -->
+    <div class="settings-panel" id="section-general">
+        <h2>General Settings</h2>
+        <div class="setting-row">
+            <div class="setting-info"><div class="label">Language</div><div class="desc">Choose your display language</div></div>
+            <select class="form-input" style="max-width:160px;"><option>English</option><option>Bengali</option></select>
+        </div>
+        <div class="setting-row">
+            <div class="setting-info"><div class="label">Timezone</div><div class="desc">Dhaka, Bangladesh (UTC+6)</div></div>
+            <button class="btn-save">Auto-detect</button>
+        </div>
+        <div class="setting-row">
+            <div class="setting-info"><div class="label">Email Address</div><div class="desc" id="emailDisplay">Loading...</div></div>
+            <button class="btn-save" onclick="showToast('Email change not yet supported','info')">Change</button>
+        </div>
+    </div>
+
+    <!-- PRIVACY -->
+    <div class="settings-panel" id="section-privacy" style="display:none;">
+        <h2>Privacy Settings</h2>
+        <div class="setting-row">
+            <div class="setting-info"><div class="label">Profile Visibility</div><div class="desc">Who can see your profile</div></div>
+            <select class="form-input" style="max-width:160px;"><option>Everyone</option><option>Friends Only</option><option>Only Me</option></select>
+        </div>
+        <div class="setting-row">
+            <div class="setting-info"><div class="label">Friend Requests</div><div class="desc">Who can send you friend requests</div></div>
+            <select class="form-input" style="max-width:160px;"><option>Everyone</option><option>Friends of Friends</option></select>
+        </div>
+        <div class="setting-row">
+            <div class="setting-info"><div class="label">Show Online Status</div><div class="desc">Let friends see when you're online</div></div>
+            <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="setting-row">
+            <div class="setting-info"><div class="label">Show in Search</div><div class="desc">Allow others to find you by name</div></div>
+            <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div class="settings-panel" id="section-notifications" style="display:none;">
+        <h2>Notification Settings</h2>
+        <div class="setting-row">
+            <div class="setting-info"><div class="label">Friend Requests</div><div class="desc">Notify when someone sends a request</div></div>
+            <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="setting-row">
+            <div class="setting-info"><div class="label">Post Reactions</div><div class="desc">Notify when someone reacts to your post</div></div>
+            <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="setting-row">
+            <div class="setting-info"><div class="label">Comments</div><div class="desc">Notify when someone comments on your post</div></div>
+            <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="setting-row">
+            <div class="setting-info"><div class="label">Messages</div><div class="desc">Notify for new messages</div></div>
+            <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="setting-row">
+            <div class="setting-info"><div class="label">Campus Events</div><div class="desc">Notify about new events</div></div>
+            <label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label>
+        </div>
+    </div>
+
+    <!-- APPEARANCE -->
+    <div class="settings-panel" id="section-appearance" style="display:none;">
+        <h2>Appearance</h2>
+        <div class="setting-row">
+            <div class="setting-info"><div class="label">Dark Mode</div><div class="desc">Switch between light and dark theme</div></div>
+            <label class="toggle"><input type="checkbox" id="darkToggle" onchange="toggleDark(this)"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="setting-row">
+            <div class="setting-info"><div class="label">Font Size</div><div class="desc">Adjust the text size</div></div>
+            <select class="form-input" style="max-width:160px;"><option>Default</option><option>Large</option><option>Small</option></select>
+        </div>
+    </div>
+
+    <!-- SECURITY -->
+    <div class="settings-panel" id="section-security" style="display:none;">
+        <h2>Security</h2>
+        <div class="setting-row">
+            <div class="setting-info"><div class="label">Change Password</div><div class="desc">Update your account password</div></div>
+            <button class="btn-save" onclick="showPasswordForm()">Change</button>
+        </div>
+        <div id="passwordForm" style="display:none;margin-top:16px;display:flex;flex-direction:column;gap:10px;">
+            <input type="password" id="currentPass" placeholder="Current password" class="form-input" style="max-width:100%;">
+            <input type="password" id="newPass" placeholder="New password (min 6 chars)" class="form-input" style="max-width:100%;">
+            <input type="password" id="confirmPass" placeholder="Confirm new password" class="form-input" style="max-width:100%;">
+            <button class="btn-save" onclick="changePassword()">Update Password</button>
+        </div>
+        <div class="setting-row">
+            <div class="setting-info"><div class="label">Login Sessions</div><div class="desc">You are logged in on this device</div></div>
+            <button class="btn-danger" onclick="logout()">Log Out All</button>
+        </div>
+    </div>
+
+    <!-- ACCOUNT -->
+    <div class="settings-panel" id="section-account" style="display:none;">
+        <h2>Account</h2>
+        <div class="setting-row">
+            <div class="setting-info"><div class="label">Download Your Data</div><div class="desc">Get a copy of your posts and data</div></div>
+            <button class="btn-save" onclick="showToast('Feature coming soon','info')"><i class="fas fa-download"></i> Download</button>
+        </div>
+        <div class="setting-row" style="border-bottom:none;">
+            <div class="setting-info"><div class="label" style="color:#e41e3f;">Delete Account</div><div class="desc">Permanently delete your account and data</div></div>
+            <button class="btn-danger" onclick="confirmDelete()">Delete</button>
+        </div>
+    </div>
+</div>
+
+<div id="toast-container" style="position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column-reverse;gap:8px;"></div>
+
+<script>
+if(localStorage.getItem('darkMode')==='1'){document.body.setAttribute('data-theme','dark');document.getElementById('darkToggle').checked=true;}
+const user=JSON.parse(localStorage.getItem('user')||'null');
+if(user && user.email) document.getElementById('emailDisplay').textContent=user.email;
+
+function showSection(id){
+    document.querySelectorAll('.settings-panel').forEach(p=>p.style.display='none');
+    document.querySelectorAll('.settings-nav-item').forEach(b=>b.classList.remove('active'));
+    document.getElementById(`section-${id}`).style.display='block';
+    event.currentTarget.classList.add('active');
+}
+function toggleDark(el){
+    document.body.setAttribute('data-theme',el.checked?'dark':'');
+    localStorage.setItem('darkMode',el.checked?'1':'0');
+}
+function showPasswordForm(){
+    const f=document.getElementById('passwordForm');
+    f.style.display=f.style.display==='none'?'flex':'none';
+}
+function changePassword(){
+    const np=document.getElementById('newPass').value;
+    const cp=document.getElementById('confirmPass').value;
+    if(np!==cp){showToast('Passwords do not match','error');return;}
+    if(np.length<6){showToast('Password must be at least 6 characters','error');return;}
+    showToast('Password updated successfully!','success');
+}
+function confirmDelete(){
+    if(confirm('Are you SURE you want to permanently delete your account? This cannot be undone.')){
+        showToast('Account deletion requested','error');
+        setTimeout(logout,2000);
+    }
+}
+function logout(){localStorage.removeItem('token');localStorage.removeItem('user');window.location.href='../index.html';}
+function showToast(msg,type='info'){
+    const t=document.createElement('div');
+    const colors={success:'#31a24c',error:'#e41e3f',info:'#0866ff'};
+    t.style.cssText=`background:#1c1e21;color:white;padding:12px 18px;border-radius:8px;font-size:0.88rem;font-family:Inter,sans-serif;border-left:3px solid ${colors[type]||colors.info};`;
+    t.textContent=msg;
+    document.getElementById('toast-container').appendChild(t);
+    setTimeout(()=>t.remove(),3100);
+}
+</script>
+</body>
+</html>

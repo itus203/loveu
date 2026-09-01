@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>DIU Campus Live | Go Live Studio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/home.css">
+    <style>
+        body { padding-top: 60px; background: #0f172a; color: white; font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; }
+        .live-studio-wrap {
+            max-width: 1100px; margin: 0 auto; height: calc(100vh - 80px);
+            display: grid; grid-template-columns: 1fr 340px; gap: 16px; padding: 12px;
+        }
+        @media(max-width: 800px) {
+            .live-studio-wrap { grid-template-columns: 1fr; height: auto; overflow-y: auto; }
+        }
+
+        /* Broadcast Screen */
+        .broadcast-screen {
+            background: #000; border-radius: 16px; position: relative;
+            overflow: hidden; display: flex; align-items: center; justify-content: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        #liveVideo { width: 100%; height: 100%; object-fit: cover; }
+        
+        .live-pill {
+            position: absolute; top: 16px; left: 16px;
+            background: #e41e3f; color: white; font-weight: 800;
+            font-size: 0.8rem; padding: 5px 12px; border-radius: 20px;
+            display: flex; align-items: center; gap: 6px; z-index: 10;
+            box-shadow: 0 2px 10px rgba(228, 30, 63, 0.5);
+        }
+        .live-dot { width: 8px; height: 8px; border-radius: 50%; background: white; animation: pulse-ring 1s infinite; }
+        @keyframes pulse-ring { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.3; transform: scale(1.3); } }
+
+        .viewer-pill {
+            position: absolute; top: 16px; left: 110px;
+            background: rgba(0,0,0,0.6); color: white; font-weight: 700;
+            font-size: 0.8rem; padding: 5px 12px; border-radius: 20px;
+            display: flex; align-items: center; gap: 6px; z-index: 10;
+            backdrop-filter: blur(8px);
+        }
+
+        .studio-controls {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 14px; z-index: 10; background: rgba(0,0,0,0.65);
+            padding: 8px 16px; border-radius: 30px; backdrop-filter: blur(10px);
+        }
+        .ctrl-btn {
+            width: 44px; height: 44px; border-radius: 50%;
+            background: rgba(255,255,255,0.15); border: none;
+            color: white; font-size: 1.1rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: background 0.15s, transform 0.15s;
+        }
+        .ctrl-btn:hover { background: rgba(255,255,255,0.25); transform: scale(1.08); }
+        .ctrl-btn.danger { background: #e41e3f; }
+
+        /* Live Chat Sidebar */
+        .live-sidebar {
+            background: #1e293b; border-radius: 16px; display: flex;
+            flex-direction: column; overflow: hidden; border: 1px solid rgba(255,255,255,0.08);
+        }
+        .live-sidebar-hdr {
+            padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.08);
+            font-weight: 800; font-size: 1rem; display: flex; align-items: center; justify-content: space-between;
+        }
+        .live-chat-msgs {
+            flex: 1; overflow-y: auto; padding: 12px; display: flex;
+            flex-direction: column; gap: 8px;
+        }
+        .live-msg-bubble {
+            background: rgba(255,255,255,0.06); padding: 8px 12px;
+            border-radius: 12px; font-size: 0.86rem; line-height: 1.4;
+        }
+        .live-msg-user { font-weight: 700; color: #38bdf8; margin-bottom: 2px; font-size: 0.78rem; }
+        
+        .live-chat-input-row {
+            padding: 10px; border-top: 1px solid rgba(255,255,255,0.08);
+            display: flex; gap: 8px; background: #0f172a;
+        }
+        .l-input {
+            flex: 1; background: #1e293b; border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 20px; padding: 8px 14px; color: white;
+            font-family: inherit; font-size: 0.88rem; outline: none;
+        }
+        .l-btn {
+            background: #0866ff; color: white; border: none;
+            border-radius: 50%; width: 36px; height: 36px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+
+        /* Floating Reactions */
+        .react-floater {
+            position: absolute; bottom: 80px; right: 24px;
+            font-size: 2rem; pointer-events: none;
+            animation: floatUp 2s ease-out forwards;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(0.6); opacity: 1; }
+            100% { transform: translateY(-220px) scale(1.4); opacity: 0; }
+        }
+        
+        .quick-react-bar {
+            display: flex; gap: 6px; padding: 6px 12px;
+            background: #1e293b; border-top: 1px solid rgba(255,255,255,0.08);
+        }
+        .qreact-btn {
+            background: none; border: none; font-size: 1.3rem;
+            cursor: pointer; transition: transform 0.15s;
+        }
+        .qreact-btn:hover { transform: scale(1.3); }
+    
+        /* Fix: Pill till missing + button blocked — ensure pills and following buttons are clickable */
+        .filter-bar, .category-tabs, .cats, .filter-tabs, .cat-tabs, .filter-pill, .cat-tab, .cat, .blood-type-grid, .search-bar {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 1;
+        }
+        .filter-chip, .cat-tab, .cat, .blood-btn, .btn-join, .btn-view, .btn-post, .btn-submit, .btn-sell, .contact-btn, .post-action, .member-row button, .file-row a {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 2;
+        }
+        /* Ensure no sticky pill blocks content */
+        .category-tabs, .filter-bar, .cats {
+            overflow-x: auto;
+            overflow-y: visible;
+            max-height: none;
+        }
+
+    </style>
+</head>
+<body>
+<script src="../js/config.js"></script>
+<script src="../js/shared.js"></script>
+
+<div class="live-studio-wrap">
+    <!-- Main Broadcast Screen -->
+    <div class="broadcast-screen" id="broadcastBox">
+        <div class="live-pill"><div class="live-dot"></div> LIVE</div>
+        <div class="viewer-pill"><i class="fas fa-eye"></i> <span id="viewerCount">1</span></div>
+        
+        <video id="liveVideo" autoplay playsinline muted></video>
+
+        <div id="noCamMsg" style="display:none;position:absolute;color:white;text-align:center;">
+            <i class="fas fa-video-slash" style="font-size:3rem;opacity:0.6;margin-bottom:12px;"></i>
+            <h3>Camera is Turned Off</h3>
+        </div>
+
+        <div id="floaterZone" style="position:absolute;inset:0;pointer-events:none;"></div>
+
+        <!-- Studio Controls -->
+        <div class="studio-controls">
+            <button class="ctrl-btn" id="liveMicBtn" onclick="toggleLiveMic()" title="Mute/Unmute Mic"><i class="fas fa-microphone"></i></button>
+            <button class="ctrl-btn" id="liveCamBtn" onclick="toggleLiveCam()" title="Camera On/Off"><i class="fas fa-video"></i></button>
+            <button class="ctrl-btn" onclick="shareLiveScreen()" title="Screen Share"><i class="fas fa-desktop"></i></button>
+            <button class="ctrl-btn danger" onclick="endLiveStream()" title="End Live Stream"><i class="fas fa-phone-slash"></i></button>
+        </div>
+    </div>
+
+    <!-- Live Comments & Viewers Chat -->
+    <div class="live-sidebar">
+        <div class="live-sidebar-hdr">
+            <span><i class="fas fa-comments" style="color:#38bdf8;"></i> Live Interaction</span>
+            <span style="font-size:0.75rem;opacity:0.7;">Public Stream</span>
+        </div>
+
+        <div class="live-chat-msgs" id="liveChatMsgs">
+            <div class="live-msg-bubble">
+                <div class="live-msg-user">DIU Nexus System</div>
+                <div>Welcome to DIU Campus Live Stream! Share knowledge, conduct club workshops or discuss campus events in real-time.</div>
+            </div>
+        </div>
+
+        <div class="quick-react-bar">
+            <button class="qreact-btn" onclick="sendReaction('❤️')">❤️</button>
+            <button class="qreact-btn" onclick="sendReaction('🔥')">🔥</button>
+            <button class="qreact-btn" onclick="sendReaction('👍')">👍</button>
+            <button class="qreact-btn" onclick="sendReaction('👏')">👏</button>
+            <button class="qreact-btn" onclick="sendReaction('🎉')">🎉</button>
+            <button class="qreact-btn" onclick="sendReaction('😮')">😮</button>
+        </div>
+
+        <div class="live-chat-input-row">
+            <input class="l-input" id="liveCommentInp" placeholder="Say something live..." onkeydown="if(event.key==='Enter')sendLiveComment()">
+            <button class="l-btn" onclick="sendLiveComment()"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+const myUser = JSON.parse(localStorage.getItem('user') || 'null');
+const token = localStorage.getItem('token');
+if (!token) window.location.href = '../index.html';
+
+const streamId = 'stream_' + Date.now();
+let socket = io(((window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())));
+let liveMediaStream = null;
+
+// Initialize Live Broadcast Camera & Mic
+async function initLiveBroadcast() {
+    try {
+        liveMediaStream = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+            video: { width: { ideal: 1280 }, height: { ideal: 720 } }
+        });
+        document.getElementById('liveVideo').srcObject = liveMediaStream;
+    } catch (err) {
+        console.warn('Camera permission note:', err.message);
+        document.getElementById('noCamMsg').style.display = 'block';
+    }
+
+    socket.emit('live:start', {
+        streamId,
+        title: `${myUser?.fullName || 'DIU Student'} is Live!`,
+        user: { id: myUser?._id, fullName: myUser?.fullName }
+    });
+}
+
+socket.on('live:viewer_update', (data) => {
+    if (data.viewerCount !== undefined) {
+        document.getElementById('viewerCount').textContent = data.viewerCount;
+    }
+});
+
+socket.on('live:new_comment', (data) => {
+    const box = document.getElementById('liveChatMsgs');
+    const msg = document.createElement('div');
+    msg.className = 'live-msg-bubble';
+    msg.innerHTML = `<div class="live-msg-user">${esc(data.userName)}</div><div>${esc(data.comment)}</div>`;
+    box.appendChild(msg);
+    box.scrollTop = box.scrollHeight;
+});
+
+socket.on('live:new_react', (data) => {
+    spawnReactionFloater(data.reaction);
+});
+
+function sendLiveComment() {
+    const inp = document.getElementById('liveCommentInp');
+    const text = inp.value.trim();
+    if (!text) return;
+    socket.emit('live:comment', {
+        streamId,
+        userName: myUser?.fullName || 'DIU Member',
+        comment: text
+    });
+    inp.value = '';
+}
+
+function sendReaction(emoji) {
+    socket.emit('live:react', { streamId, reaction: emoji });
+    spawnReactionFloater(emoji);
+}
+
+function spawnReactionFloater(emoji) {
+    const zone = document.getElementById('floaterZone');
+    const el = document.createElement('div');
+    el.className = 'react-floater';
+    el.textContent = emoji;
+    el.style.left = (Math.random() * 60 + 20) + '%';
+    zone.appendChild(el);
+    setTimeout(() => el.remove(), 2000);
+}
+
+function toggleLiveMic() {
+    if (!liveMediaStream) return;
+    const track = liveMediaStream.getAudioTracks()[0];
+    if (track) {
+        track.enabled = !track.enabled;
+        document.getElementById('liveMicBtn').innerHTML = `<i class="fas fa-microphone${track.enabled ? '' : '-slash'}"></i>`;
+    }
+}
+
+function toggleLiveCam() {
+    if (!liveMediaStream) return;
+    const track = liveMediaStream.getVideoTracks()[0];
+    if (track) {
+        track.enabled = !track.enabled;
+        document.getElementById('liveVideo').style.display = track.enabled ? 'block' : 'none';
+        document.getElementById('noCamMsg').style.display = track.enabled ? 'none' : 'block';
+        document.getElementById('liveCamBtn').innerHTML = `<i class="fas fa-video${track.enabled ? '' : '-slash'}"></i>`;
+    }
+}
+
+async function shareLiveScreen() {
+    try {
+        const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+        document.getElementById('liveVideo').srcObject = screenStream;
+        screenStream.getVideoTracks()[0].onended = () => {
+            document.getElementById('liveVideo').srcObject = liveMediaStream;
+        };
+    } catch (e) {}
+}
+
+function endLiveStream() {
+    if (confirm('End your live stream broadcast?')) {
+        if (liveMediaStream) liveMediaStream.getTracks().forEach(t => t.stop());
+        socket.emit('live:end', { streamId });
+        window.location.href = '../home.html';
+    }
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+initLiveBroadcast();
+</script>
+</body>
+</html>

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Events | DIU Nexus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/home.css">
+    <style>
+        .events-hero { background:linear-gradient(135deg,#0866ff,#0550c1); padding:48px 24px; text-align:center; color:white; }
+        .events-hero h1 { font-size:2rem; font-weight:800; }
+        .events-hero p { opacity:0.85; margin-top:8px; }
+        .events-container { max-width:900px; margin:0 auto; padding:24px 16px; }
+        .events-toolbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; gap:12px; flex-wrap:wrap; }
+        .btn-create { background:var(--blue); color:white; border:none; border-radius:10px; padding:10px 20px; font-family:inherit; font-size:0.9rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; }
+        .btn-create:hover { background:var(--blue-dark,#0550c1); }
+        .events-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; }
+        .event-card { background:var(--surface,#fff); border-radius:14px; overflow:hidden; box-shadow:0 2px 12px rgba(0,0,0,0.07); transition:transform 0.2s,box-shadow 0.2s; }
+        .event-card:hover { transform:translateY(-3px); box-shadow:0 8px 24px rgba(0,0,0,0.12); }
+        .event-cover { height:160px; background:linear-gradient(135deg,#0866ff,#0550c1); position:relative; overflow:hidden; }
+        .event-cover img { width:100%;height:100%;object-fit:cover; }
+        .event-date-badge { position:absolute; top:12px; left:12px; background:rgba(255,255,255,0.95); border-radius:10px; padding:6px 12px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.15); }
+        .event-date-badge .day { font-size:1.4rem; font-weight:800; color:var(--blue,#0866ff); line-height:1; }
+        .event-date-badge .month { font-size:0.72rem; font-weight:600; color:#65676b; text-transform:uppercase; }
+        .event-body { padding:14px; }
+        .event-title { font-weight:700; font-size:1rem; margin-bottom:6px; }
+        .event-meta { font-size:0.8rem; color:#65676b; display:flex; flex-direction:column; gap:4px; margin-bottom:10px; }
+        .event-meta span { display:flex; align-items:center; gap:6px; }
+        .event-actions { display:flex; gap:8px; }
+        .btn-going { flex:1; padding:8px; border:none; border-radius:8px; font-family:inherit; font-size:0.82rem; font-weight:700; cursor:pointer; background:var(--blue,#0866ff); color:white; transition:background 0.15s; }
+        .btn-going:hover { background:#0550c1; }
+        .btn-going.active { background:#31a24c; }
+        .btn-interested { flex:1; padding:8px; border:1.5px solid var(--border,#e4e6eb); border-radius:8px; font-family:inherit; font-size:0.82rem; font-weight:700; cursor:pointer; background:transparent; color:var(--text,#1c1e21); transition:all 0.15s; }
+        .btn-interested:hover { background:var(--surface-alt,#f0f2f5); }
+        .rsvp-count { font-size:0.75rem; color:#65676b; margin-top:6px; }
+    
+        /* Fix: Pill till missing + button blocked — ensure pills and following buttons are clickable */
+        .filter-bar, .category-tabs, .cats, .filter-tabs, .cat-tabs, .filter-pill, .cat-tab, .cat, .blood-type-grid, .search-bar {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 1;
+        }
+        .filter-chip, .cat-tab, .cat, .blood-btn, .btn-join, .btn-view, .btn-post, .btn-submit, .btn-sell, .contact-btn, .post-action, .member-row button, .file-row a {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 2;
+        }
+        /* Ensure no sticky pill blocks content */
+        .category-tabs, .filter-bar, .cats {
+            overflow-x: auto;
+            overflow-y: visible;
+            max-height: none;
+        }
+
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <div class="navbar-left">
+        <button class="back-btn" onclick="handleBack()" title="Back" style="display:flex;"><i class="fas fa-arrow-left"></i></button>
+        <a href="../home.html" class="nav-logo" style="display:flex;align-items:center;gap:6px;"><img src="../assets/icon.svg" alt="NEXUS" style="width:26px;height:26px;flex-shrink:0;filter:drop-shadow(0 2px 4px rgba(10,108,255,0.3));" onerror="this.style.display='none'"><span style="font-weight:800;color:#0A6CFF;margin-left:6px;letter-spacing:0.5px;font-size:1.1rem;">NEXUS</span></a>
+        <div class="nav-search" style="position:relative;">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search DIU Nexus" oninput="if(this.value.length>2) window.location.href='../home.html?q='+encodeURIComponent(this.value)">
+            <div class="search-dropdown" id="searchDropdown"></div>
+        </div>
+    </div>
+    <div class="navbar-center" id="mainNavCenter">
+        <a href="../home.html" class="nav-icon-btn" data-tab="home" title="Home"><i class="fas fa-home"></i></a>
+        <a href="groups.html" class="nav-icon-btn" data-tab="groups" title="Groups"><i class="fas fa-users"></i></a>
+        <a href="reels.html" class="nav-icon-btn" data-tab="reels" title="Reels"><i class="fas fa-film"></i></a>
+        <a href="departments.html" class="nav-icon-btn" data-tab="departments" title="Departments"><i class="fas fa-building"></i></a>
+        <a href="events.html" class="nav-icon-btn" data-tab="events" title="Events"><i class="fas fa-calendar-alt"></i></a>
+    </div>
+    <div class="navbar-right">
+        <button class="navbar-action-btn" onclick="window.location.href='messenger.html'" title="Messenger"><i class="fab fa-facebook-messenger"></i></button>
+        <button class="navbar-action-btn" onclick="window.location.href='../home.html'" title="Notifications"><i class="fas fa-bell"></i></button>
+        <button class="navbar-action-btn" onclick="window.location.href='profile.html'" title="Account"><div class="avatar-placeholder" style="width:32px;height:32px;font-size:0.85rem;border-radius:50%;">?</div></button>
+    </div>
+</nav>
+<script src="../js/config.js"></script>
+<script>
+function handleBack(){ try{ if(history.length>1 && document.referrer) history.back(); else window.location.href='../home.html'; }catch{ window.location.href='../home.html'; } }
+(function(){
+  const path=window.location.pathname.toLowerCase();
+  document.querySelectorAll('.nav-icon-btn').forEach(btn=>{
+    const href=(btn.getAttribute('href')||'').toLowerCase();
+    const target=href.split('/').pop().split('?')[0];
+    const current=path.split('/').pop().split('?')[0] || 'groups.html';
+    btn.classList.toggle('active', target===current);
+  });
+})();
+</script>
+<div class="events-hero"><h1><i class="fas fa-calendar-alt"></i> Campus Events</h1><p>Stay updated with events, workshops, and programs at DIU</p></div>
+<!-- Event Category Pills — like FB filters -->
+<div style="max-width:900px;margin:0 auto;padding:12px 16px 0;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;" id="eventPills">
+    <button class="cat-tab active" data-cat="all" onclick="filterEventsPill('all', this)" style="padding:7px 16px;border-radius:20px;border:1px solid #0866ff;background:#0866ff;color:white;font-weight:700;font-size:0.82rem;cursor:pointer;white-space:nowrap;flex-shrink:0;">All</button>
+    <button class="cat-tab" data-cat="Academic" onclick="filterEventsPill('Academic', this)" style="padding:7px 16px;border-radius:20px;border:1px solid var(--border,#e4e6eb);background:var(--surface,#fff);font-weight:600;font-size:0.82rem;cursor:pointer;white-space:nowrap;flex-shrink:0;">Academic</button>
+    <button class="cat-tab" data-cat="Cultural" onclick="filterEventsPill('Cultural', this)" style="padding:7px 16px;border-radius:20px;border:1px solid var(--border,#e4e6eb);background:var(--surface,#fff);font-weight:600;font-size:0.82rem;cursor:pointer;white-space:nowrap;flex-shrink:0;">Cultural</button>
+    <button class="cat-tab" data-cat="Sports" onclick="filterEventsPill('Sports', this)" style="padding:7px 16px;border-radius:20px;border:1px solid var(--border,#e4e6eb);background:var(--surface,#fff);font-weight:600;font-size:0.82rem;cursor:pointer;white-space:nowrap;flex-shrink:0;">Sports</button>
+    <button class="cat-tab" data-cat="Career" onclick="filterEventsPill('Career', this)" style="padding:7px 16px;border-radius:20px;border:1px solid var(--border,#e4e6eb);background:var(--surface,#fff);font-weight:600;font-size:0.82rem;cursor:pointer;white-space:nowrap;flex-shrink:0;">Career</button>
+    <button class="cat-tab" data-cat="Workshop" onclick="filterEventsPill('Workshop', this)" style="padding:7px 16px;border-radius:20px;border:1px solid var(--border,#e4e6eb);background:var(--surface,#fff);font-weight:600;font-size:0.82rem;cursor:pointer;white-space:nowrap;flex-shrink:0;">Workshop</button>
+</div>
+<div class="events-container">
+    <div class="events-toolbar">
+        <div style="font-weight:700;font-size:1.1rem;">Upcoming Events</div>
+        <button class="btn-create" onclick="document.getElementById('createEventModal').classList.add('show')"><i class="fas fa-plus"></i> Create Event</button>
+    </div>
+    <div class="events-grid" id="eventsGrid"><div style="grid-column:1/-1;text-align:center;padding:40px;color:#65676b;"><i class="fas fa-spinner fa-spin"></i> Loading events...</div></div>
+</div>
+
+<!-- Create Event Modal -->
+<div class="modal-overlay" id="createEventModal">
+    <div class="modal" style="width:480px;">
+        <div class="modal-header">
+            <span class="modal-title">Create Event</span>
+            <button class="modal-close" onclick="document.getElementById('createEventModal').classList.remove('show')"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <div style="display:flex;flex-direction:column;gap:12px;">
+                <input type="text" id="evTitle" placeholder="Event title *" class="post-textarea" style="border:1.5px solid var(--border,#e4e6eb);border-radius:8px;padding:10px;font-family:inherit;font-size:0.9rem;">
+                <textarea id="evDesc" placeholder="Description" rows="3" style="border:1.5px solid var(--border,#e4e6eb);border-radius:8px;padding:10px;font-family:inherit;font-size:0.88rem;resize:vertical;"></textarea>
+                <input type="text" id="evVenue" placeholder="Venue (e.g. DIU Auditorium)" style="border:1.5px solid var(--border,#e4e6eb);border-radius:8px;padding:10px;font-family:inherit;font-size:0.88rem;">
+                <input type="datetime-local" id="evDate" style="border:1.5px solid var(--border,#e4e6eb);border-radius:8px;padding:10px;font-family:inherit;font-size:0.88rem;">
+                <select id="evDept" style="border:1.5px solid var(--border,#e4e6eb);border-radius:8px;padding:10px;font-family:inherit;font-size:0.88rem;">
+                    <option value="">All Departments</option>
+                    <option>CSE</option><option>EEE</option><option>BBA</option><option>English</option>
+                    <option>Law</option><option>Pharmacy</option><option>Architecture</option>
+                </select>
+                <button onclick="createEvent()" style="padding:12px;background:var(--blue,#0866ff);color:white;border:none;border-radius:8px;font-family:inherit;font-size:0.95rem;font-weight:700;cursor:pointer;">Create Event</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="toast-container" style="position:fixed;bottom:24px;right:24px;z-index:9999;"></div>
+
+<script>
+const API = (typeof window.API !== 'undefined' ? window.API : (function(){ var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000/api'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin+'/api'; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin+'/api':'http://localhost:5000/api'; return 'http://localhost:5000/api'; } return window.location.origin+'/api'; })());
+const token = localStorage.getItem('token');
+if (!token) window.location.href = '../index.html';
+if (localStorage.getItem('darkMode') === '1') document.body.setAttribute('data-theme', 'dark');
+
+async function apiFetch(path, opts = {}) {
+    const h = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, ...(opts.headers || {}) };
+    return fetch(`${API}${path}`, { ...opts, headers: h });
+}
+
+async function loadEvents() {
+    try {
+        const res = await apiFetch('/events');
+        const events = await res.json();
+        const grid = document.getElementById('eventsGrid');
+        if (!events.length) { grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:#65676b;"><i class="fas fa-calendar" style="font-size:3rem;opacity:0.3;display:block;margin-bottom:12px;"></i>No events yet. Be the first to create one!</div>'; return; }
+        grid.innerHTML = events.map(ev => {
+            const d = new Date(ev.event_date);
+            const day = d.getDate(); const month = d.toLocaleString('default',{month:'short'});
+            return `<div class="event-card">
+                <div class="event-cover">${ev.cover_image ? `<img src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${ev.cover_image}">` : ''}
+                    <div class="event-date-badge"><div class="day">${day}</div><div class="month">${month}</div></div></div>
+                <div class="event-body">
+                    <div class="event-title">${ev.title}</div>
+                    <div class="event-meta">
+                        <span><i class="fas fa-clock" style="color:var(--blue,#0866ff)"></i>${d.toLocaleString('en-US',{weekday:'short',hour:'numeric',minute:'2-digit'})}</span>
+                        ${ev.venue ? `<span><i class="fas fa-map-marker-alt" style="color:#e41e3f"></i>${ev.venue}</span>` : ''}
+                        ${ev.department ? `<span><i class="fas fa-building" style="color:#f7b928"></i>${ev.department}</span>` : ''}
+                        <span><i class="fas fa-user" style="color:#65676b"></i>By ${ev.creatorName || 'DIU'}</span>
+                    </div>
+                    <div class="event-actions">
+                        <button class="btn-going ${ev.myRsvp==='going'?'active':''}" onclick="rsvp('${ev.id}','going',this)">${ev.myRsvp==='going'?'✓ Going':'Going'}</button>
+                        <button class="btn-interested ${ev.myRsvp==='interested'?'active':''}" onclick="rsvp('${ev.id}','interested',this)"><i class="fas fa-star"></i> Interested</button>
+                    </div>
+                    <div class="rsvp-count">${ev.goingCount || 0} going · ${ev.interestedCount || 0} interested</div>
+                </div></div>`;
+        }).join('');
+    } catch (e) { document.getElementById('eventsGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#e41e3f;">Failed to load events</div>'; }
+}
+
+async function rsvp(id, status, btn) {
+    try { await apiFetch(`/events/${id}/rsvp`, { method: 'POST', body: JSON.stringify({ status }) }); loadEvents(); showToast('RSVP updated!', 'success'); }
+    catch { showToast('Failed', 'error'); }
+}
+
+async function createEvent() {
+    const title = document.getElementById('evTitle').value.trim();
+    const event_date = document.getElementById('evDate').value;
+    if (!title || !event_date) { showToast('Title and date are required', 'error'); return; }
+    try {
+        const res = await apiFetch('/events', { method: 'POST', body: JSON.stringify({ title, description: document.getElementById('evDesc').value, venue: document.getElementById('evVenue').value, event_date, department: document.getElementById('evDept').value }) });
+        if (!res.ok) throw new Error();
+        document.getElementById('createEventModal').classList.remove('show');
+        showToast('Event created!', 'success'); loadEvents();
+    } catch { showToast('Failed to create event', 'error'); }
+}
+
+let _allEvents = [];
+async function loadEventsWithCache(){
+    try{
+        const res = await apiFetch('/events');
+        _allEvents = await res.json();
+        renderEvents(_allEvents);
+    }catch(e){ document.getElementById('eventsGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#e41e3f;">Failed to load events</div>'; }
+}
+function renderEvents(list){
+    const grid = document.getElementById('eventsGrid');
+    if (!list.length) { grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:#65676b;"><i class="fas fa-calendar" style="font-size:3rem;opacity:0.3;display:block;margin-bottom:12px;"></i>No events in this category. Be the first to create one!</div>'; return; }
+    grid.innerHTML = list.map(ev => {
+        const d = new Date(ev.event_date);
+        const day = d.getDate(); const month = d.toLocaleString('default',{month:'short'});
+        return `<div class="event-card">
+            <div class="event-cover">${ev.cover_image ? `<img src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${ev.cover_image}">` : ''}
+                <div class="event-date-badge"><div class="day">${day}</div><div class="month">${month}</div></div></div>
+            <div class="event-body">
+                <div class="event-title">${ev.title}</div>
+                <div class="event-meta">
+                    <span><i class="fas fa-clock" style="color:var(--blue,#0866ff)"></i>${d.toLocaleString('en-US',{weekday:'short',hour:'numeric',minute:'2-digit'})}</span>
+                    ${ev.venue ? `<span><i class="fas fa-map-marker-alt" style="color:#e41e3f"></i>${ev.venue}</span>` : ''}
+                    ${ev.department ? `<span><i class="fas fa-building" style="color:#f7b928"></i>${ev.department}</span>` : ''}
+                </div>
+                <div class="event-actions">
+                    <button class="btn-going ${ev.myRsvp==='going'?'active':''}" onclick="rsvp('${ev.id}','going',this)">${ev.myRsvp==='going'?'✓ Going':'Going'}</button>
+                    <button class="btn-interested ${ev.myRsvp==='interested'?'active':''}" onclick="rsvp('${ev.id}','interested',this)"><i class="fas fa-star"></i> Interested</button>
+                </div>
+                <div class="rsvp-count">${ev.goingCount || 0} going · ${ev.interestedCount || 0} interested</div>
+            </div></div>`;
+    }).join('');
+}
+function filterEventsPill(cat, btn){
+    document.querySelectorAll('#eventPills .cat-tab').forEach(b=>{
+        b.style.background='var(--surface,#fff)'; b.style.color='var(--text,#1c1e21)'; b.style.borderColor='var(--border,#e4e6eb)';
+    });
+    btn.style.background='#0866ff'; btn.style.color='white'; btn.style.borderColor='#0866ff';
+    if(cat==='all'){ renderEvents(_allEvents); return; }
+    const filtered = _allEvents.filter(ev => (ev.title||'').toLowerCase().includes(cat.toLowerCase()) || (ev.venue||'').toLowerCase().includes(cat.toLowerCase()) || (ev.department||'').toLowerCase().includes(cat.toLowerCase()));
+    renderEvents(filtered);
+}
+// Override original loadEvents to use cache
+async function loadEvents(){ await loadEventsWithCache(); }
+
+function showToast(msg, type='info') { const t = document.createElement('div'); t.className = 'toast'; t.style.cssText = 'background:#1c1e21;color:white;padding:12px 18px;border-radius:8px;font-size:0.88rem;animation:toast-in 0.3s ease;font-family:Inter,sans-serif;'; t.textContent = msg; document.getElementById('toast-container').appendChild(t); setTimeout(()=>t.remove(),3100); }
+
+loadEvents();
+</script>
+</body>
+</html>

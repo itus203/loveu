@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>DIU Peer Tutoring & Senior Mentorship Hub | DIU Nexus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/home.css">
+    <style>
+        body { padding-top: 64px; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); }
+        .mentor-wrap { max-width: 1060px; margin: 0 auto; padding: 24px 16px 80px; }
+        
+        .page-hero {
+            background: linear-gradient(135deg, #d97706, #b45309);
+            border-radius: 16px;
+            padding: 28px 24px;
+            color: white;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            box-shadow: 0 4px 20px rgba(217, 119, 6, 0.25);
+        }
+        .page-hero-left { display: flex; align-items: center; gap: 16px; }
+        .page-hero i { font-size: 2.8rem; opacity: 0.95; }
+        .page-hero h1 { font-size: 1.55rem; font-weight: 800; margin: 0; }
+        .page-hero p { opacity: 0.9; margin: 4px 0 0; font-size: 0.88rem; }
+
+        .add-tutor-btn {
+            background: white; color: #b45309; border: none;
+            padding: 10px 18px; border-radius: 20px; font-weight: 800;
+            font-size: 0.88rem; cursor: pointer; display: flex;
+            align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: all 0.15s ease; white-space: nowrap;
+        }
+        .add-tutor-btn:hover { transform: scale(1.04); background: #fef3c7; }
+
+        /* Filter Tabs */
+        .filter-bar {
+            display: flex; gap: 8px; overflow-x: auto;
+            margin-bottom: 20px; padding-bottom: 4px; scrollbar-width: none;
+        }
+        .filter-bar::-webkit-scrollbar { display: none; }
+        .f-tab {
+            padding: 8px 16px; border-radius: 24px;
+            background: var(--surface); border: 1px solid var(--border);
+            color: var(--text-secondary); font-size: 0.84rem; font-weight: 700;
+            cursor: pointer; transition: all 0.15s; white-space: nowrap;
+        }
+        .f-tab:hover { border-color: #d97706; color: #d97706; }
+        .f-tab.active { background: #d97706; color: white; border-color: #d97706; }
+
+        /* Mentor Grid */
+        .mentor-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 16px; }
+        .mentor-card {
+            background: var(--surface);
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .mentor-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+        .mentor-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .mentor-av {
+            width: 50px; height: 50px; border-radius: 50%;
+            background: linear-gradient(135deg, #d97706, #b45309);
+            color: white; display: flex; align-items: center; justify-content: center;
+            font-size: 1.15rem; font-weight: 800; flex-shrink: 0;
+            overflow: hidden;
+        }
+        .mentor-name { font-size: 1.05rem; font-weight: 800; color: var(--text); }
+        .mentor-dept { font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px; }
+        
+        .sub-tag {
+            display: inline-block; padding: 4px 10px; border-radius: 20px;
+            background: #fef3c7; color: #92400e; font-size: 0.74rem; font-weight: 700;
+            margin: 0 4px 4px 0;
+        }
+        [data-theme="dark"] .sub-tag { background: rgba(245, 158, 11, 0.18); color: #fbbf24; }
+
+        .mbtn {
+            width: 100%; padding: 10px; border-radius: 8px; border: none;
+            font-family: inherit; font-size: 0.86rem; font-weight: 700;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+            background: #d97706; color: white; margin-top: 14px; text-decoration: none;
+            transition: background 0.15s;
+        }
+        .mbtn:hover { background: #b45309; }
+
+        /* Modal */
+        .modal-bg {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px); z-index: 9999; display: none;
+            align-items: center; justify-content: center; padding: 16px;
+        }
+        .modal-box {
+            background: var(--surface); border-radius: 16px; width: 100%;
+            max-width: 520px; border: 1px solid var(--border); overflow: hidden;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.25);
+        }
+        .modal-hdr {
+            padding: 16px 20px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            font-weight: 800; font-size: 1.1rem;
+        }
+        .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+        .form-label { font-size: 0.78rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 4px; display: block; }
+        .form-input {
+            width: 100%; padding: 10px 12px; border: 1.5px solid var(--border);
+            border-radius: 8px; background: var(--bg); color: var(--text);
+            font-family: inherit; font-size: 0.88rem; outline: none;
+        }
+        .form-input:focus { border-color: #d97706; }
+    
+        /* Fix: Pill till missing + button blocked — ensure pills and following buttons are clickable */
+        .filter-bar, .category-tabs, .cats, .filter-tabs, .cat-tabs, .filter-pill, .cat-tab, .cat, .blood-type-grid, .search-bar {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 1;
+        }
+        .filter-chip, .cat-tab, .cat, .blood-btn, .btn-join, .btn-view, .btn-post, .btn-submit, .btn-sell, .contact-btn, .post-action, .member-row button, .file-row a {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 2;
+        }
+        /* Ensure no sticky pill blocks content */
+        .category-tabs, .filter-bar, .cats {
+            overflow-x: auto;
+            overflow-y: visible;
+            max-height: none;
+        }
+
+    </style>
+</head>
+<body>
+<script src="../js/config.js"></script>
+<script src="../js/shared.js"></script>
+
+<div class="mentor-wrap">
+    <div class="page-hero">
+        <div class="page-hero-left">
+            <i class="fas fa-chalkboard-teacher"></i>
+            <div>
+                <h1>🤝 DIU Peer Tutoring & Senior Mentorship</h1>
+                <p>Connect with high-achieving seniors, alumni, and verified tutors for exam prep & coding assistance</p>
+            </div>
+        </div>
+        <button class="add-tutor-btn" onclick="openAddTutorModal()">
+            <i class="fas fa-user-plus"></i> + Add Tutor / Mentor
+        </button>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="filter-bar">
+        <button class="f-tab active" onclick="filterMentors('all', this)">All Mentors</button>
+        <button class="f-tab" onclick="filterMentors('CSE', this)">CSE & Algorithms</button>
+        <button class="f-tab" onclick="filterMentors('SWE', this)">Software Eng & Web</button>
+        <button class="f-tab" onclick="filterMentors('EEE', this)">EEE & Circuits</button>
+        <button class="f-tab" onclick="filterMentors('BBA', this)">BBA & Accounting</button>
+        <button class="f-tab" onclick="filterMentors('Pharmacy', this)">Pharmacy & Bio</button>
+        <button class="f-tab" onclick="filterMentors('English', this)">English & IELTS</button>
+        <button class="f-tab" onclick="filterMentors('Career', this)">💼 Career & Alumni</button>
+    </div>
+
+    <!-- Mentors Cards Grid -->
+    <div class="mentor-grid" id="mentorGrid">
+        <!-- Rendered by JS -->
+    </div>
+</div>
+
+<!-- Add Mentor Modal -->
+<div class="modal-bg" id="addTutorModal">
+    <div class="modal-box">
+        <div class="modal-hdr">
+            <span><i class="fas fa-user-graduate" style="color:#d97706;"></i> Add Peer Tutor / Mentor Profile</span>
+            <button onclick="closeAddTutorModal()" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--text);">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div>
+                <label class="form-label">Full Name *</label>
+                <input class="form-input" id="tutorName" placeholder="e.g. Salman Khan">
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div>
+                    <label class="form-label">Department *</label>
+                    <select class="form-input" id="tutorDept">
+                        <option value="CSE">CSE</option>
+                        <option value="SWE">SWE</option>
+                        <option value="EEE">EEE</option>
+                        <option value="BBA">BBA</option>
+                        <option value="Pharmacy">Pharmacy</option>
+                        <option value="English">English</option>
+                        <option value="Textile">Textile</option>
+                        <option value="Civil">Civil</option>
+                        <option value="Career">Alumni / Career</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Year / Role *</label>
+                    <input class="form-input" id="tutorYear" placeholder="e.g. 4th Year / Alum">
+                </div>
+            </div>
+            <div>
+                <label class="form-label">Key Subjects / Specializations (comma separated) *</label>
+                <input class="form-input" id="tutorTags" placeholder="e.g. Algorithms, Data Structures, C++">
+            </div>
+            <div>
+                <label class="form-label">Mentorship Description / Bio *</label>
+                <textarea class="form-input" id="tutorBio" rows="3" placeholder="Explain what topics you can help with, study sessions, or weekend guidance..."></textarea>
+            </div>
+            <button class="mbtn" onclick="saveTutorProfile()">
+                <i class="fas fa-check-circle"></i> Publish Mentor Profile
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+const API = (typeof window.API !== 'undefined' ? window.API : (function(){ var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000/api'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin+'/api'; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin+'/api':'http://localhost:5000/api'; return 'http://localhost:5000/api'; } return window.location.origin+'/api'; })());
+if (localStorage.getItem('darkMode') === '1') document.body.setAttribute('data-theme','dark');
+
+let allMentors = [];
+let activeFilter = 'all';
+
+async function loadMentors() {
+    try {
+        const res = await fetch(`${API}/tutoring`, {
+            headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('token') || '') }
+        });
+        if (!res.ok) throw new Error('Failed to load mentors');
+        allMentors = await res.json();
+        renderMentors();
+    } catch (e) {
+        showToast('Error loading mentors: ' + e.message);
+    }
+}
+
+function renderMentors() {
+    const grid = document.getElementById('mentorGrid');
+    const filtered = activeFilter === 'all'
+        ? allMentors
+        : allMentors.filter(m => (m.department || '').toLowerCase().includes(activeFilter.toLowerCase()));
+
+    if (!filtered.length) {
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-secondary);font-weight:700;">No mentors found in this category. Click "+ Add Tutor / Mentor" to add one!</div>';
+        return;
+    }
+
+    const myUser = JSON.parse(localStorage.getItem('user')||'null');
+    const isAdmin = myUser && myUser.role==='Admin';
+    grid.innerHTML = filtered.map((m, i) => {
+        const name = m.fullName || 'DIU Student';
+        const dept = m.department || 'General';
+        const year = m.batch || m.availability || '';
+        const bio = m.description || '';
+        const tags = (m.subject || '').split(',').map(t => t.trim()).filter(Boolean);
+        const ownerId = m.user_id || m._id;
+        const isOwner = myUser && String(ownerId)===String(myUser._id||myUser.id);
+        return `
+        <div class="mentor-card" style="position:relative;">
+            <div>
+                <div class="mentor-header">
+                    <div class="mentor-av" style="cursor:pointer;" onclick="window.location.href='profile.html?id=${ownerId}'">${getInitials(name)}</div>
+                    <div style="flex:1;">
+                        <div class="mentor-name" style="cursor:pointer;" onclick="window.location.href='profile.html?id=${ownerId}'">${esc(name)} ${isOwner?'<span style="font-size:0.65rem;background:#e7f0ff;color:#2563eb;padding:2px 6px;border-radius:10px;">You</span>':''}</div>
+                        <div class="mentor-dept">Dept of ${esc(dept)} · ${esc(year)}</div>
+                    </div>
+                    <div style="display:flex;gap:6px;">
+                        ${isOwner||isAdmin?`<button onclick="editTutoring(${m.id}, '${esc(m.subject).replace(/'/g,"\\'")}', '${esc(m.description||'').replace(/'/g,"\\'")}')" style="background:#e7f0ff;color:#2563eb;border:none;padding:6px 10px;border-radius:8px;font-size:0.75rem;font-weight:700;cursor:pointer;"><i class="fas fa-pen"></i></button><button onclick="deleteTutoring(${m.id})" style="background:#fee2e2;color:#dc2626;border:none;padding:6px 10px;border-radius:8px;font-size:0.75rem;font-weight:700;cursor:pointer;"><i class="fas fa-trash"></i></button>`:''}
+                        ${!isOwner&&!isAdmin?`<button onclick="reportContent('tutoring', ${m.id})" style="background:#fff7ed;color:#ea580c;border:1px solid #fed7aa;padding:6px 10px;border-radius:8px;font-size:0.7rem;font-weight:700;cursor:pointer;"><i class="fas fa-flag"></i> Report</button>`:''}
+                    </div>
+                </div>
+                <div style="font-size:0.86rem;color:var(--text);margin-bottom:12px;line-height:1.45;">
+                    ${esc(bio)}
+                </div>
+                <div>
+                    ${tags.map(t => `<span class="sub-tag">${esc(t)}</span>`).join('')}
+                </div>
+            </div>
+            <a href="messenger.html?userId=${ownerId}" class="mbtn">
+                <i class="fas fa-comment-dots"></i> Connect on Messenger
+            </a>
+        </div>
+    `}).join('');
+}
+
+function filterMentors(dept, btn) {
+    activeFilter = dept;
+    document.querySelectorAll('.f-tab').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    renderMentors();
+}
+
+function openAddTutorModal() {
+    document.getElementById('addTutorModal').style.display = 'flex';
+}
+
+function closeAddTutorModal() {
+    document.getElementById('addTutorModal').style.display = 'none';
+}
+
+async function saveTutorProfile() {
+    const name = document.getElementById('tutorName').value.trim();
+    const dept = document.getElementById('tutorDept').value;
+    const year = document.getElementById('tutorYear').value.trim();
+    const tagsRaw = document.getElementById('tutorTags').value.trim();
+    const bio = document.getElementById('tutorBio').value.trim();
+
+    if (!name || !year || !tagsRaw || !bio) {
+        alert('Please fill out all required fields.');
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API}/tutoring`, {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + (localStorage.getItem('token') || ''),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                type: 'tutor',
+                subject: tagsRaw,
+                description: bio,
+                department: dept,
+                batch: year,
+                fee_per_hour: null,
+                mode: 'online',
+                contact: null,
+                availability: year
+            })
+        });
+        if (!res.ok) {
+            const data = await res.json();
+            throw new Error(data.message || 'Failed to save');
+        }
+        closeAddTutorModal();
+        ['tutorName','tutorYear','tutorTags','tutorBio'].forEach(id => document.getElementById(id).value = '');
+        await loadMentors();
+        showToast('Mentor profile published!');
+    } catch (e) {
+        showToast('Error saving mentor: ' + e.message);
+    }
+}
+
+function getInitials(name) {
+    if (!name) return 'DIU';
+    return name.trim().split(' ').slice(0, 2).map(n => n[0]?.toUpperCase()).join('');
+}
+
+function esc(s) {
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+async function deleteTutoring(id){
+    if(!confirm('Delete this tutoring post?')) return;
+    const token=localStorage.getItem('token');
+    try{
+        const res=await fetch(`${API}/tutoring/${id}`, {method:'DELETE', headers:{'Authorization':'Bearer '+token}});
+        const data=await res.json().catch(()=>({}));
+        if(!res.ok) throw new Error(data.message||'Failed');
+        showToast(data.message.includes('Admin')?'🗑️ Deleted by Admin':'🗑️ Deleted');
+        await loadMentors();
+    }catch(e){ showToast(e.message,'error'); }
+}
+async function editTutoring(id, oldSubject, oldDesc){
+    const subject=prompt('Edit subject/tags:', oldSubject);
+    if(subject===null) return;
+    const description=prompt('Edit description:', oldDesc);
+    if(description===null) return;
+    const token=localStorage.getItem('token');
+    try{
+        const res=await fetch(`${API}/tutoring/${id}`, {method:'PUT', headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'}, body:JSON.stringify({subject, description})});
+        const data=await res.json().catch(()=>({}));
+        if(!res.ok) throw new Error(data.message||'Failed');
+        showToast('✅ Updated');
+        await loadMentors();
+    }catch(e){ showToast(e.message,'error'); }
+}
+async function reportContent(type, id){
+    const reason=prompt('Why report this post?');
+    if(!reason) return;
+    const token=localStorage.getItem('token');
+    try{
+        const res=await fetch(`${API}/reports`, {method:'POST', headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'}, body:JSON.stringify({target_type:type, target_id:id, reason})});
+        const data=await res.json().catch(()=>({}));
+        if(!res.ok) throw new Error(data.message||'Failed');
+        showToast('✅ Reported to Admin');
+    }catch{ showToast('Failed to report','error'); }
+}
+
+function showToast(msg) { const t=document.createElement('div'); t.style.cssText='background:#1c1e21;color:white;padding:12px 18px;border-radius:10px;font-family:Inter,sans-serif;font-size:0.88rem;'; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),2800); }
+
+loadMentors();
+</script>
+</body>
+</html>

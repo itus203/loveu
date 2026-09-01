@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messenger | DIU Nexus</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --blue: #0866ff; --bg: #f0f2f5; --surface: #fff;
+            --border: #e4e6eb; --text: #1c1e21;
+            --text-secondary: #65676b; --green: #31a24c;
+            --font: 'Inter', sans-serif;
+            --navbar-h: 56px;
+        }
+        [data-theme="dark"] {
+            --bg: #18191a; --surface: #242526;
+            --border: #3a3b3c; --text: #e4e6eb;
+            --text-secondary: #b0b3b8;
+        }
+        body { font-family: var(--font); background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        .messenger-wrap { display: flex; height: calc(100vh - var(--navbar-h)); margin-top: var(--navbar-h); overflow: hidden; }
+
+        /* ===== CHAT LIST ===== */
+        .chat-list {
+            width: 360px; border-right: 1px solid var(--border);
+            background: var(--surface); display: flex; flex-direction: column; flex-shrink: 0;
+            transition: transform 0.25s;
+        }
+        .chat-list-header { padding: 14px 16px 10px; }
+        .chat-list-header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+        .chat-list-header h2 { font-size: 1.3rem; font-weight: 800; }
+        .new-chat-btn {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: #e7f0ff; border: none;
+            color: var(--blue); font-size: 1rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: background 0.15s;
+        }
+        .new-chat-btn:hover { background: #d0e3ff; }
+        .search-bar {
+            background: var(--bg); border-radius: 20px;
+            display: flex; align-items: center; padding: 8px 14px; gap: 8px;
+            border: 1.5px solid transparent; transition: border-color 0.2s;
+        }
+        .search-bar:focus-within { border-color: var(--blue); background: var(--surface); }
+        .search-bar input { border: none; background: transparent; outline: none; font-family: inherit; font-size: 0.88rem; color: var(--text); width: 100%; }
+        .search-bar i { color: var(--text-secondary); font-size: 0.9rem; }
+        .chat-list-body { flex: 1; overflow-y: auto; }
+        .chat-list-body::-webkit-scrollbar { width: 4px; }
+        .chat-list-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+        /* Chat item */
+        .chat-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 14px; cursor: pointer;
+            transition: background 0.15s; position: relative;
+        }
+        .chat-item:hover { background: var(--bg); }
+        .chat-item.active { background: #e7f0ff; }
+        .chat-avatar { position: relative; flex-shrink: 0; }
+        .chat-avatar .av { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; }
+        .chat-avatar .ap {
+            width: 52px; height: 52px; border-radius: 50%;
+            background: linear-gradient(135deg, #0866ff, #0550c1);
+            color: white; font-size: 1.2rem; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .online-ring {
+            position: absolute; bottom: 2px; right: 2px;
+            width: 14px; height: 14px; background: var(--green);
+            border-radius: 50%; border: 2.5px solid var(--surface);
+        }
+        .chat-info { flex: 1; min-width: 0; }
+        .chat-name { font-weight: 700; font-size: 0.92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .chat-preview { display: flex; align-items: center; gap: 4px; margin-top: 2px; }
+        .chat-last-msg { font-size: 0.78rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
+        .chat-last-msg.unread { font-weight: 700; color: var(--text); }
+        .chat-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+        .chat-time { font-size: 0.7rem; color: var(--text-secondary); }
+        .unread-badge {
+            background: var(--blue); color: white;
+            border-radius: 10px; font-size: 0.7rem; font-weight: 700;
+            padding: 2px 7px; min-width: 18px; text-align: center;
+        }
+
+        /* ===== CHAT AREA ===== */
+        .chat-area { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--bg); }
+        .chat-empty {
+            flex: 1; display: flex; align-items: center; justify-content: center;
+            flex-direction: column; gap: 14px; color: var(--text-secondary);
+        }
+        .chat-empty i { font-size: 4rem; opacity: 0.2; }
+        .chat-empty h3 { font-size: 1.1rem; font-weight: 800; color: var(--text); }
+        .chat-empty p { font-size: 0.85rem; }
+
+        /* Chat header */
+        .chat-header {
+            background: var(--surface); border-bottom: 1px solid var(--border);
+            padding: 10px 16px; display: flex; align-items: center; gap: 12px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04); flex-shrink: 0;
+        }
+        .back-btn { display: none; background: none; border: none; font-size: 1.1rem; color: var(--text); cursor: pointer; padding: 4px 8px; }
+        .chat-header-info { flex: 1; }
+        .chat-header-name { font-weight: 800; font-size: 0.95rem; }
+        .chat-header-status { font-size: 0.75rem; color: var(--green); margin-top: 1px; }
+        .chat-header-status.offline { color: var(--text-secondary); }
+        .chat-header-actions { display: flex; gap: 4px; }
+        .hdr-btn {
+            width: 36px; height: 36px; border-radius: 50%; border: none;
+            background: var(--bg); color: var(--text); font-size: 0.95rem;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: background 0.15s;
+        }
+        .hdr-btn:hover { background: var(--border); }
+
+        /* Messages */
+        .messages-area {
+            flex: 1; overflow-y: auto; padding: 16px 12px;
+            display: flex; flex-direction: column; gap: 2px;
+        }
+        .messages-area::-webkit-scrollbar { width: 4px; }
+        .messages-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+        /* Message groups — FIXED: Messenger-style wrapping, no more lomba-lombi */
+        .msg-group { display: flex; flex-direction: column; margin-bottom: 6px; width: 100%; max-width: 100%; }
+        .msg-group.mine { align-items: flex-end; }
+        .msg-group.theirs { align-items: flex-start; }
+        .msg-group-row { display: flex; align-items: flex-end; gap: 8px; width: 100%; max-width: 100%; }
+        .msg-group.mine .msg-group-row { flex-direction: row-reverse; justify-content: flex-start; }
+        .msg-group.theirs .msg-group-row { justify-content: flex-start; }
+
+        .msg-bubble {
+            max-width: 78%; width: fit-content; min-width: 48px;
+            padding: 10px 14px; border-radius: 18px;
+            font-size: 0.9rem; line-height: 1.45;
+            word-break: break-word; overflow-wrap: break-word; white-space: pre-wrap;
+            animation: popin 0.18s ease;
+            flex: 0 1 auto;
+        }
+        @keyframes popin { from { opacity:0; transform:scale(0.9) translateY(4px); } to { opacity:1; transform:none; } }
+        .msg-bubble.mine {
+            background: linear-gradient(135deg, #0866ff, #0052cc); color: white;
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 2px 8px rgba(8, 102, 255, 0.22);
+        }
+        .msg-bubble.theirs {
+            background: var(--surface); color: var(--text);
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+        }
+        .msg-bubble.img-msg { padding: 4px; overflow: hidden; }
+        .msg-bubble.img-msg img { width: 220px; max-width: 100%; border-radius: 14px; display: block; cursor: pointer; }
+        .msg-tail-space { width: 28px; flex-shrink: 0; }
+        .msg-small-av {
+            width: 28px; height: 28px; border-radius: 50%;
+            object-fit: cover; flex-shrink: 0;
+        }
+        .msg-small-ap {
+            width: 28px; height: 28px; border-radius: 50%;
+            background: linear-gradient(135deg, #0866ff, #0550c1);
+            color: white; font-size: 0.65rem; font-weight: 700;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .msg-meta { font-size: 0.67rem; opacity: 0.65; margin: 2px 4px; }
+        .msg-group.mine .msg-meta { text-align: right; }
+        .seen-tick { font-size: 0.68rem; color: #90b8ff; margin-top: 2px; text-align: right; }
+
+        /* Date divider */
+        .date-divider {
+            display: flex; align-items: center; gap: 10px;
+            margin: 12px 0; color: var(--text-secondary); font-size: 0.75rem;
+        }
+        .date-divider::before, .date-divider::after {
+            content: ''; flex: 1; height: 1px; background: var(--border);
+        }
+
+        /* Typing */
+        .typing-indicator {
+            display: none; align-items: center; gap: 4px;
+            background: var(--surface); padding: 10px 14px;
+            border-radius: 18px; border-bottom-left-radius: 4px;
+            align-self: flex-start; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            margin-top: 4px;
+        }
+        .typing-dot {
+            width: 7px; height: 7px; background: var(--text-secondary);
+            border-radius: 50%; animation: tdot 1s infinite;
+        }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes tdot { 0%,60%,100% { transform: translateY(0); opacity:0.4; } 30% { transform: translateY(-5px); opacity:1; } }
+
+        /* Input area */
+        .chat-input-area {
+            background: var(--surface); border-top: 1px solid var(--border);
+            padding: 10px 12px; display: flex; align-items: flex-end; gap: 8px; flex-shrink: 0;
+        }
+        .input-actions { display: flex; gap: 2px; }
+        .input-action-btn {
+            width: 36px; height: 36px; border-radius: 50%; border: none;
+            background: none; color: var(--blue); font-size: 1.05rem;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: background 0.15s;
+        }
+        .input-action-btn:hover { background: var(--bg); }
+        .chat-input-wrap { flex: 1; position: relative; }
+        .chat-input {
+            width: 100%; background: var(--bg); border: 1.5px solid transparent;
+            border-radius: 20px; padding: 9px 44px 9px 16px;
+            font-family: inherit; font-size: 0.9rem; outline: none;
+            color: var(--text); resize: none; max-height: 210px;
+            line-height: 1.45; transition: border-color 0.2s;
+            overflow-y: auto;
+        }
+        .chat-input:focus { border-color: var(--blue); background: var(--surface); }
+        .emoji-trigger {
+            position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+            background: none; border: none; font-size: 1.1rem; cursor: pointer;
+            color: var(--text-secondary); line-height: 1;
+        }
+        .send-btn {
+            width: 38px; height: 38px; border-radius: 50%; background: var(--blue);
+            color: white; border: none; font-size: 0.95rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: transform 0.15s, background 0.15s; flex-shrink: 0;
+        }
+        .send-btn:hover { transform: scale(1.1); background: #0550c1; }
+        .send-btn:disabled { background: var(--border); cursor: not-allowed; transform: none; }
+
+        /* Emoji picker */
+        .emoji-picker {
+            position: absolute; bottom: 56px; right: 8px;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 14px; padding: 10px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+            display: none; flex-wrap: wrap; width: 280px;
+            max-height: 200px; overflow-y: auto; gap: 4px; z-index: 100;
+        }
+        .emoji-picker.open { display: flex; }
+        .emoji-btn {
+            background: none; border: none; font-size: 1.35rem;
+            cursor: pointer; padding: 4px 6px; border-radius: 8px;
+            transition: background 0.1s;
+        }
+        .emoji-btn:hover { background: var(--bg); }
+
+        /* New chat modal */
+        .modal-bg {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+            z-index: 2000; align-items: center; justify-content: center;
+        }
+        .modal-bg.open { display: flex; }
+        .modal-box {
+            background: var(--surface); border-radius: 16px; padding: 0;
+            width: 420px; max-width: 95vw; overflow: hidden;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+        }
+        .modal-box-hdr {
+            padding: 16px 20px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .modal-box-hdr h3 { font-weight: 800; font-size: 1rem; }
+        .modal-close-btn {
+            width: 32px; height: 32px; border-radius: 50%; background: var(--bg);
+            border: none; cursor: pointer; font-size: 0.9rem; color: var(--text);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .modal-search {
+            display: flex; align-items: center; gap: 8px;
+            padding: 12px 16px; border-bottom: 1px solid var(--border);
+        }
+        .modal-search input {
+            flex: 1; border: none; background: none; outline: none;
+            font-family: inherit; font-size: 0.9rem; color: var(--text);
+        }
+        .people-list { max-height: 360px; overflow-y: auto; padding: 8px 0; }
+        .person-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 16px; cursor: pointer; transition: background 0.15s;
+        }
+        .person-item:hover { background: var(--bg); }
+        .person-ap {
+            width: 44px; height: 44px; border-radius: 50%;
+            background: linear-gradient(135deg, #0866ff, #0550c1);
+            color: white; font-size: 1rem; font-weight: 700;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .person-ap img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; }
+        .person-name { font-weight: 700; font-size: 0.9rem; }
+        .person-dept { font-size: 0.78rem; color: var(--text-secondary); }
+
+        /* Lightbox */
+        .lightbox {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.9); z-index: 9000;
+            align-items: center; justify-content: center;
+        }
+        .lightbox.open { display: flex; }
+        .lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 8px; }
+        .lightbox-close {
+            position: absolute; top: 16px; right: 20px;
+            background: none; border: none; color: white;
+            font-size: 1.8rem; cursor: pointer;
+        }
+
+        #toast-container { position: fixed; bottom: 24px; right: 24px; display: flex; flex-direction: column-reverse; gap: 8px; z-index: 9999; }
+        .toast { background: #1c1e21; color: white; padding: 12px 18px; border-radius: 8px; font-size: 0.88rem; }
+
+        @media (max-width: 700px) {
+            .chat-list { position: absolute; top: var(--navbar-h); bottom: 0; left: 0; z-index: 10; width: 100%; }
+            .chat-list.hidden-mobile { transform: translateX(-100%); }
+            .back-btn { display: flex !important; }
+        }
+    
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Custom Context Menu */
+        .context-menu {
+            display: none;
+            position: fixed;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            padding: 8px 0;
+            min-width: 180px;
+            z-index: 100000;
+            flex-direction: column;
+        }
+        .context-item {
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: var(--text);
+            transition: background 0.15s;
+        }
+        .context-item:hover { background: var(--bg); }
+        .context-item i { width: 16px; text-align: center; color: var(--text-secondary); }
+        .context-item.danger { color: #e41e3f; }
+        .context-item.danger i { color: #e41e3f; }
+        .context-divider { height: 1px; background: var(--border); margin: 6px 0; }
+        
+        /* Message Selection/Highlight */
+        .msg-bubble { position: relative; transition: filter 0.2s; }
+        .msg-bubble.highlighted { filter: brightness(0.85); outline: 2px solid var(--blue); }
+
+    
+        /* Fix: Pill till missing + button blocked — ensure pills and following buttons are clickable */
+        .filter-bar, .category-tabs, .cats, .filter-tabs, .cat-tabs, .filter-pill, .cat-tab, .cat, .blood-type-grid, .search-bar {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 1;
+        }
+        .filter-chip, .cat-tab, .cat, .blood-btn, .btn-join, .btn-view, .btn-post, .btn-submit, .btn-sell, .contact-btn, .post-action, .member-row button, .file-row a {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 2;
+        }
+        /* Ensure no sticky pill blocks content */
+        .category-tabs, .filter-bar, .cats {
+            overflow-x: auto;
+            overflow-y: visible;
+            max-height: none;
+        }
+
+    </style>
+<style>
+        .tab-btn { flex:1; padding:6px; background:var(--surface); border:1px solid var(--border); color:var(--text); border-radius:18px; cursor:pointer; font-weight:600; font-size:0.85rem; }
+        .tab-btn.active { background:var(--blue-light); color:var(--blue); border-color:var(--blue); }
+        
+        .creation-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:99999; align-items:center; justify-content:center; }
+        .creation-box { background:var(--bg-color); width:90%; max-width:400px; border-radius:12px; padding:20px; color:var(--text); box-shadow:0 10px 30px rgba(0,0,0,0.5); }
+        .creation-box input { width:100%; padding:10px; margin:10px 0; border:1px solid var(--border); border-radius:8px; background:var(--surface); color:var(--text); }
+        .creation-box button { width:100%; padding:10px; background:var(--blue); color:white; border:none; border-radius:8px; font-weight:600; cursor:pointer; }
+
+        /* Custom Context Menu */
+        .context-menu {
+            display: none;
+            position: fixed;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            padding: 8px 0;
+            min-width: 180px;
+            z-index: 100000;
+            flex-direction: column;
+        }
+        .context-item {
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: var(--text);
+            transition: background 0.15s;
+        }
+        .context-item:hover { background: var(--bg); }
+        .context-item i { width: 16px; text-align: center; color: var(--text-secondary); }
+        .context-item.danger { color: #e41e3f; }
+        .context-item.danger i { color: #e41e3f; }
+        .context-divider { height: 1px; background: var(--border); margin: 6px 0; }
+        
+        /* Message Selection/Highlight */
+        .msg-bubble { position: relative; transition: filter 0.2s; }
+        .msg-bubble.highlighted { filter: brightness(0.85); outline: 2px solid var(--blue); }
+
+        /* ─── Messenger A-Z New Styles ─────────────────────────────────────── */
+        .chat-filter-bar { display:flex; gap:6px; padding:6px 12px; overflow-x:auto; scrollbar-width:none; }
+        .chat-filter-bar::-webkit-scrollbar{display:none}
+        .filter-chip{ padding:6px 12px; border-radius:18px; border:1px solid var(--border); background:var(--surface); font-size:0.78rem; font-weight:600; cursor:pointer; white-space:nowrap; transition:all 0.15s; }
+        .filter-chip.active{ background:var(--blue); color:white; border-color:var(--blue); }
+        .filter-chip:hover{ background:var(--bg); }
+        .filter-chip.active:hover{ background:#0550c1; }
+        .pinned-banner{ display:none; align-items:center; gap:10px; background:#fff8e1; border-bottom:1px solid #ffecb3; padding:8px 12px; font-size:0.82rem; }
+        [data-theme="dark"] .pinned-banner{ background:#332d00; border-color:#665500; }
+        .pinned-banner.show{ display:flex; }
+        .pinned-banner .pin-thumb{ font-size:1.1rem; }
+        .reply-bar,.edit-bar{ display:none; align-items:center; gap:10px; background:var(--bg); border-top:1px solid var(--border); padding:8px 12px; font-size:0.82rem; }
+        .reply-bar.show,.edit-bar.show{ display:flex; }
+        .reply-bar .reply-thumb{ width:3px; height:36px; background:var(--blue); border-radius:2px; flex-shrink:0; }
+        .reply-bar .reply-content{ flex:1; min-width:0; }
+        .reply-bar .reply-name{ font-weight:700; color:var(--blue); font-size:0.78rem; }
+        .reply-bar .reply-text{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; opacity:0.75; }
+        .chat-search-bar{ display:none; align-items:center; gap:8px; background:var(--surface); border-bottom:1px solid var(--border); padding:8px 12px; }
+        .chat-search-bar.show{ display:flex; }
+        .chat-search-bar input{ flex:1; border:1px solid var(--border); border-radius:18px; padding:6px 12px; font-size:0.85rem; background:var(--bg); color:var(--text); outline:none; }
+        .reaction-bar{ display:flex; gap:4px; background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:4px 6px; box-shadow:0 4px 12px rgba(0,0,0,0.12); position:absolute; top:-38px; z-index:5; }
+        .reaction-bar button{ background:none; border:none; font-size:1.15rem; cursor:pointer; padding:2px 4px; border-radius:50%; transition:transform 0.15s; }
+        .reaction-bar button:hover{ transform:scale(1.25); background:var(--bg); }
+        .msg-reactions{ display:flex; gap:2px; margin-top:4px; flex-wrap:wrap; }
+        .msg-reactions .react-pill{ background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:2px 6px; font-size:0.75rem; display:flex; align-items:center; gap:3px; box-shadow:0 1px 3px rgba(0,0,0,0.06); cursor:pointer; }
+        .msg-reactions .react-pill.mine{ background:#e7f0ff; border-color:var(--blue); }
+        .link-preview-card{ display:flex; gap:10px; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:10px; margin-top:6px; max-width:300px; cursor:pointer; transition:background 0.15s; }
+        .link-preview-card:hover{ background:var(--bg); }
+        .link-preview-card img{ width:50px; height:50px; object-fit:cover; border-radius:8px; flex-shrink:0; }
+        .link-preview-card .lp-title{ font-weight:700; font-size:0.82rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .link-preview-card .lp-desc{ font-size:0.72rem; opacity:0.7; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+        .link-preview-card .lp-domain{ font-size:0.68rem; color:var(--blue); }
+        .forwarded-label{ font-size:0.68rem; opacity:0.6; font-style:italic; margin-bottom:2px; display:flex; align-items:center; gap:4px; }
+        .edited-label{ font-size:0.65rem; opacity:0.55; font-style:italic; margin-left:4px; }
+        .msg-status{ font-size:0.62rem; opacity:0.7; margin-top:2px; display:flex; gap:3px; align-items:center; justify-content:flex-end; }
+        .msg-status .tick{ font-size:0.7rem; }
+        .msg-status .tick.seen{ color:var(--blue); }
+        .voice-progress{ display:flex; align-items:center; gap:8px; }
+        .voice-wave{ display:flex; gap:2px; align-items:center; height:20px; }
+        .voice-wave span{ width:3px; background:currentColor; border-radius:2px; display:inline-block; }
+        .chat-item .pin-icon{ color:var(--blue); font-size:0.7rem; margin-left:4px; }
+        .chat-item .mute-icon{ color:var(--text-secondary); font-size:0.65rem; margin-left:4px; }
+        .chat-item.muted{ opacity:0.7; }
+        .chat-item.archived{ opacity:0.6; }
+        .chat-item.blocked{ opacity:0.45; pointer-events:none; }
+        .info-drawer{ position:absolute; top:0; right:0; width:340px; height:100%; background:var(--surface); border-left:1px solid var(--border); z-index:20; transform:translateX(100%); transition:transform 0.25s; display:flex; flex-direction:column; overflow:hidden; }
+        .info-drawer.open{ transform:translateX(0); }
+        .drawer-tabs{ display:flex; gap:6px; padding:10px; border-bottom:1px solid var(--border); }
+        .drawer-tab{ flex:1; padding:6px; border-radius:8px; border:1px solid var(--border); background:var(--bg); font-size:0.78rem; font-weight:600; cursor:pointer; text-align:center; }
+        .drawer-tab.active{ background:var(--blue); color:white; border-color:var(--blue); }
+        .forward-modal-body{ max-height:50vh; overflow-y:auto; padding:8px 0; }
+        .forward-select-item{ display:flex; align-items:center; gap:10px; padding:8px 16px; cursor:pointer; }
+        .forward-select-item:hover{ background:var(--bg); }
+        .forward-select-item.selected{ background:#e7f0ff; }
+        .select-checkbox{ width:18px; height:18px; border:2px solid var(--border); border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:0.7rem; }
+        .forward-select-item.selected .select-checkbox{ background:var(--blue); border-color:var(--blue); color:white; }
+        @media(max-width:700px){ .info-drawer{ width:100%; } }
+
+    </style>
+</head>
+<body>
+<script src="../js/config.js"></script>
+<script src="../js/shared.js"></script>
+
+<div class="messenger-wrap" id="messengerWrap">
+    <!-- ===== CHAT LIST ===== -->
+    <div class="chat-list" id="chatList">
+        <div class="chat-list-header">
+            <div class="chat-list-header-top" style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                <h2 style="margin:0;">Nexus</h2>
+                <div style="display:flex; gap:8px;">
+                    <button class="new-chat-btn" onclick="openMyFiles()" title="My Files" style="background:var(--surface); color:var(--text); border:1px solid var(--border);">
+                        <i class="fas fa-folder-open"></i>
+                    </button>
+                    <button class="new-chat-btn" onclick="openNewChatModal()" title="New Chat / Group / Channel" style="background:var(--blue); color:white; border:none;">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+            <div style="display:flex; gap:10px; margin-bottom:10px;">
+                <button class="tab-btn active" onclick="switchTab('chats', this)">Chats</button>
+                <button class="tab-btn" onclick="switchTab('channels', this)">Channels</button>
+            </div>
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search Messenger" oninput="filterConversations(this.value)" id="convSearch">
+            </div>
+            <div class="chat-filter-bar" id="chatFilterBar" style="margin-top:8px;">
+                <button class="filter-chip active" data-filter="all" onclick="setChatFilter('all', this)">All</button>
+                <button class="filter-chip" data-filter="unread" onclick="setChatFilter('unread', this)">Unread</button>
+                <button class="filter-chip" data-filter="groups" onclick="setChatFilter('groups', this)">Groups</button>
+                <button class="filter-chip" data-filter="archived" onclick="setChatFilter('archived', this)">Archived</button>
+                <button class="filter-chip" data-filter="requests" onclick="loadMessageRequests()"><i class="fas fa-user-clock"></i> Requests</button>
+            </div>
+        </div>
+        <div class="chat-list-body" id="chatListBody">
+            <div style="padding:24px;text-align:center;color:#65676b;font-size:0.85rem;">
+                <i class="fas fa-spinner fa-spin"></i> Loading...
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== CHAT AREA ===== -->
+    <div class="chat-area" id="chatArea">
+        <div class="chat-empty" id="chatEmpty">
+            <i class="fab fa-facebook-messenger" style="font-size:5rem;"></i>
+            <h3>Your Messages</h3>
+            <p>Send private messages to your friends</p>
+            <button onclick="openNewChatModal()" style="background:var(--blue);color:white;border:none;border-radius:10px;padding:10px 22px;font-family:inherit;font-size:0.88rem;font-weight:700;cursor:pointer;margin-top:6px;">
+                <i class="fas fa-edit"></i> New Message
+            </button>
+        </div>
+
+        <div id="chatWindow" style="display:none;flex-direction:column;height:100%;position:relative;">
+            <!-- Header -->
+            <div class="chat-header">
+                <button class="back-btn" onclick="showChatList()"><i class="fas fa-arrow-left"></i></button>
+                <div class="chat-avatar" id="chatHdrAvatar">
+                    <div class="ap" id="chatHdrAp">?</div>
+                </div>
+                <div class="chat-header-info">
+                    <div class="chat-header-name" id="chatHdrName">Name</div>
+                    <div class="chat-header-status" id="chatHdrStatus">Active now</div>
+                </div>
+                <div class="chat-header-actions">
+                    <button class="hdr-btn" title="Search in conversation" onclick="toggleChatSearch()">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <button class="hdr-btn" title="Chat Info / Media" onclick="toggleInfoDrawer()">
+                        <i class="fas fa-info-circle"></i>
+                    </button>
+                    <button class="hdr-btn" title="View Profile" onclick="goToProfile()">
+                        <i class="fas fa-user"></i>
+                    </button>
+                    <button class="hdr-btn" title="Voice Call" onclick="startCall(false)">
+                        <i class="fas fa-phone"></i>
+                    </button>
+                    <button class="hdr-btn" title="Video Call" onclick="startCall(true)">
+                        <i class="fas fa-video"></i>
+                    </button>
+                    <button class="hdr-btn" title="More" onclick="toggleChatMenu(event)">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Pinned Banner -->
+            <div class="pinned-banner" id="pinnedBanner" onclick="scrollToPinned()">
+                <span class="pin-thumb">📌</span>
+                <div style="flex:1; min-width:0;">
+                    <div style="font-weight:700; font-size:0.78rem;">Pinned Message</div>
+                    <div id="pinnedText" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; opacity:0.75; font-size:0.78rem;">—</div>
+                </div>
+                <button onclick="event.stopPropagation(); unpinCurrent()" style="background:none; border:none; cursor:pointer; opacity:0.6;"><i class="fas fa-times"></i></button>
+            </div>
+
+            <!-- Chat Search -->
+            <div class="chat-search-bar" id="chatSearchBar">
+                <i class="fas fa-search" style="opacity:0.6;"></i>
+                <input type="text" id="chatSearchInput" placeholder="Search in conversation..." oninput="searchInChat(this.value)" onkeydown="if(event.key==='Escape') toggleChatSearch()">
+                <button onclick="toggleChatSearch()" style="background:none; border:none; cursor:pointer; opacity:0.6;"><i class="fas fa-times"></i></button>
+            </div>
+
+            <!-- Messages -->
+            <div class="messages-area" id="messagesArea">
+                <div class="typing-indicator" id="typingIndicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            </div>
+
+            <!-- Emoji picker -->
+            <div class="emoji-picker" id="emojiPicker">
+                <!-- populated by JS -->
+            </div>
+
+            <!-- Reply / Edit Preview Bars -->
+            <div class="reply-bar" id="replyBar">
+                <div class="reply-thumb"></div>
+                <div class="reply-content">
+                    <div class="reply-name" id="replyName">Replying to —</div>
+                    <div class="reply-text" id="replyText">—</div>
+                </div>
+                <button onclick="cancelReply()" style="background:none; border:none; cursor:pointer; opacity:0.6;"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="edit-bar" id="editBar">
+                <div style="flex:1; display:flex; align-items:center; gap:6px; color:var(--blue); font-weight:700; font-size:0.78rem;"><i class="fas fa-pen"></i> Editing message</div>
+                <span id="editPreview" style="flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; opacity:0.7; font-size:0.78rem;"></span>
+                <button onclick="cancelEdit()" style="background:none; border:none; cursor:pointer; opacity:0.6;"><i class="fas fa-times"></i></button>
+            </div>
+
+            <!-- Input -->
+            <div class="chat-input-area">
+                <div class="input-actions">
+                    <button class="input-action-btn" title="AI Assistant" onclick="openAiModal()" style="color:var(--blue);font-weight:bold;">
+                        <i class="fas fa-sparkles"></i>
+                    </button>
+                    <button class="input-action-btn" title="Send image/file" onclick="document.getElementById('fileInput').click()">
+                        <i class="fas fa-paperclip"></i>
+                    </button>
+                    <!-- Accepts images AND documents -->
+                    <input type="file" id="fileInput"
+                        accept="image/*,.pdf,.pptx,.ppt,.docx,.doc,.xlsx,.xls,.txt,.zip"
+                        style="display:none" onchange="sendFileAttachment(this)">
+                    <button class="input-action-btn" title="Send photo" onclick="document.getElementById('imgOnlyInput').click()">
+                        <i class="fas fa-image"></i>
+                    </button>
+                    <input type="file" id="imgOnlyInput" accept="image/*" style="display:none" onchange="sendFileAttachment(this)">
+                    <button class="input-action-btn" title="Record Voice" id="micBtn" onmousedown="startRecording()" onmouseup="stopRecording()" onmouseleave="stopRecording()"><i class="fas fa-microphone"></i></button>
+                      <button class="input-action-btn" title="Emoji" onclick="toggleEmojiPicker()">
+                        <i class="far fa-smile"></i>
+                    </button>
+                </div>
+                <div class="chat-input-wrap">
+                    <textarea class="chat-input" id="chatInput" placeholder="Aa" rows="1"
+                        onkeydown="handleInputKey(event)"
+                        oninput="onInputChange()"></textarea>
+                    <button class="emoji-trigger" onclick="toggleEmojiPicker()" id="emojiTrigger">😊</button>
+                </div>
+                <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- New Chat Modal -->
+<div class="modal-bg" id="newChatModal">
+    <div class="modal-box">
+        <div class="modal-box-hdr">
+            <h3>New Message</h3>
+            <button class="modal-close-btn" onclick="closeNewChatModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-search">
+            <i class="fas fa-search" style="color:#65676b;"></i>
+            <input type="text" id="peopleSearch" placeholder="Search people..." oninput="filterPeople(this.value)">
+        </div>
+        <div class="people-list" id="peopleList">
+            <div style="padding:20px;text-align:center;color:#65676b;"><i class="fas fa-spinner fa-spin"></i></div>
+        </div>
+    </div>
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <button class="lightbox-close" onclick="closeLightbox()">×</button>
+    <img id="lightboxImg" src="" alt="">
+</div>
+
+<!-- ==========================================
+     📞 INCOMING CALL MODAL
+========================================== -->
+<div id="incomingCallModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:99999;align-items:center;justify-content:center;flex-direction:column;color:white;text-align:center;">
+    <div style="width:90px;height:90px;border-radius:50%;background:#0866ff;color:white;font-size:2rem;font-weight:800;display:flex;align-items:center;justify-content:center;margin-bottom:16px;box-shadow:0 0 0 16px rgba(8,102,255,0.3);overflow:hidden;" id="incAvatar">
+        ?
+    </div>
+    <h2 id="incCallerName" style="font-size:1.5rem;font-weight:800;margin-bottom:6px;">Caller Name</h2>
+    <p id="incCallType" style="opacity:0.8;font-size:0.95rem;margin-bottom:32px;">Incoming Call...</p>
+    <div style="display:flex;gap:28px;">
+        <button onclick="rejectIncomingCall()" style="width:64px;height:64px;border-radius:50%;background:#e41e3f;border:none;color:white;font-size:1.5rem;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(228,30,63,0.4);" title="Decline">
+            <i class="fas fa-phone-slash"></i>
+        </button>
+        <button onclick="acceptIncomingCall()" style="width:64px;height:64px;border-radius:50%;background:#31a24c;border:none;color:white;font-size:1.5rem;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(49,162,76,0.4);" title="Accept">
+            <i class="fas fa-phone"></i>
+        </button>
+    </div>
+</div>
+
+<!-- ==========================================
+     🎥 ACTIVE WEBRTC CALL SCREEN MODAL
+========================================== -->
+<div id="activeCallModal" style="display:none;position:fixed;inset:0;background:#0f172a;z-index:99998;flex-direction:column;">
+    <div style="position:absolute;top:20px;left:20px;z-index:10;color:white;display:flex;align-items:center;gap:12px;background:rgba(0,0,0,0.5);padding:8px 18px;border-radius:30px;backdrop-filter:blur(8px);">
+        <span id="callStatusText" style="font-weight:700;font-size:0.9rem;display:flex;align-items:center;gap:6px;">
+            <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#31a24c;"></span> Connected
+        </span>
+        <span id="callDuration" style="font-size:0.85rem;opacity:0.85;">00:00</span>
+    </div>
+    
+    <!-- Video Elements -->
+    <div style="flex:1;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#000;">
+        <video id="remoteVideo" autoplay playsinline style="width:100%;height:100%;object-fit:cover;"></video>
+        
+        <!-- Audio display / avatar placeholder if video is off -->
+        <div id="audioCallDisplay" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;color:white;background:linear-gradient(135deg,#0f172a,#1e293b);">
+            <div id="activeCallAvatar" style="width:110px;height:110px;border-radius:50%;background:linear-gradient(135deg,#0866ff,#0052cc);color:white;font-size:2.8rem;font-weight:800;display:flex;align-items:center;justify-content:center;margin-bottom:16px;box-shadow:0 8px 32px rgba(8,102,255,0.4);overflow:hidden;">
+                ?
+            </div>
+            <h3 id="activeCallName" style="font-size:1.4rem;font-weight:800;margin-bottom:4px;">User</h3>
+            <p id="activeCallSubtitle" style="font-size:0.9rem;opacity:0.75;">DIU WebRTC End-to-End Encrypted Call</p>
+        </div>
+
+        <!-- Picture-in-Picture Local Video -->
+        <div style="position:absolute;top:20px;right:20px;width:150px;height:200px;border-radius:14px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.6);border:2px solid rgba(255,255,255,0.2);background:#1e293b;z-index:20;" id="localVideoWrap">
+            <video id="localVideo" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover;"></video>
+        </div>
+    </div>
+
+    <!-- Controls Bar -->
+    <div style="height:90px;background:rgba(15,23,42,0.95);display:flex;align-items:center;justify-content:center;gap:20px;border-top:1px solid rgba(255,255,255,0.1);z-index:30;">
+        <button id="toggleMicBtn" onclick="toggleMuteMic()" style="width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,0.15);border:none;color:white;font-size:1.1rem;cursor:pointer;transition:all 0.2s;" title="Mute/Unmute Mic">
+            <i class="fas fa-microphone" id="micIcon"></i>
+        </button>
+        <button id="toggleCamBtn" onclick="toggleVideoCamera()" style="width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,0.15);border:none;color:white;font-size:1.1rem;cursor:pointer;transition:all 0.2s;" title="Camera On/Off">
+            <i class="fas fa-video" id="camIcon"></i>
+        </button>
+        <button id="shareScreenBtn" onclick="toggleScreenShare()" style="width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,0.15);border:none;color:white;font-size:1.1rem;cursor:pointer;transition:all 0.2s;" title="Share Screen">
+            <i class="fas fa-desktop"></i>
+        </button>
+        <button onclick="endCall()" style="width:56px;height:56px;border-radius:50%;background:#e41e3f;border:none;color:white;font-size:1.3rem;cursor:pointer;box-shadow:0 4px 20px rgba(228,30,63,0.5);display:flex;align-items:center;justify-content:center;" title="End Call">
+            <i class="fas fa-phone-slash"></i>
+        </button>
+    </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script src="../js/messenger.js"></script>
+
+<!-- GROUP MAKER MODAL -->
+<div class="creation-modal" id="createGroupModal">
+    <div class="creation-box">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+            <h3 style="margin:0;">Create Super Group</h3>
+            <i class="fas fa-times" style="cursor:pointer;" onclick="closeCreationModals()"></i>
+        </div>
+        <input type="text" id="groupName" placeholder="Group Name">
+        <input type="text" id="groupDesc" placeholder="Description (Optional)">
+        <button onclick="submitCreateGroup()">Create Group</button>
+    </div>
+</div>
+
+<!-- CHANNEL MAKER MODAL -->
+<div class="creation-modal" id="createChannelModal">
+    <div class="creation-box">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+            <h3 style="margin:0;">Create Channel</h3>
+            <i class="fas fa-times" style="cursor:pointer;" onclick="closeCreationModals()"></i>
+        </div>
+        <input type="text" id="channelName" placeholder="Channel Name">
+        <input type="text" id="channelDesc" placeholder="Description">
+        <button onclick="submitCreateChannel()">Create Channel</button>
+    </div>
+</div>
+
+<!-- MY FILES MODAL -->
+<div class="creation-modal" id="myFilesModal">
+    <div class="creation-box" style="max-width:600px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+            <h3 style="margin:0;"><i class="fas fa-cloud"></i> My Cloud Files</h3>
+            <i class="fas fa-times" style="cursor:pointer;" onclick="closeCreationModals()"></i>
+        </div>
+        <input type="file" id="cloudUpload" style="display:none;" onchange="uploadToCloud(this)">
+        <button onclick="document.getElementById('cloudUpload').click()" style="margin-bottom:15px;"><i class="fas fa-upload"></i> Upload File</button>
+        <div id="myFilesList" style="max-height:400px; overflow-y:auto; display:flex; flex-direction:column; gap:10px;">
+            <!-- Files injected here -->
+        </div>
+    </div>
+</div>
+
+
+<!-- AI ASSISTANT MODAL -->
+<div class="creation-modal" id="aiModal">
+    <div class="creation-box">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+            <h3 style="margin:0;"><i class="fas fa-sparkles" style="color:var(--blue);"></i> AI Assistant</h3>
+            <i class="fas fa-times" style="cursor:pointer;" onclick="document.getElementById('aiModal').style.display='none'"></i>
+        </div>
+        <p style="font-size:0.85rem; opacity:0.8;">Select a message or type text below to process with AI.</p>
+        <textarea id="aiInputText" rows="4" style="width:100%; border-radius:8px; padding:10px; border:1px solid var(--border); background:var(--surface); color:var(--text); margin-bottom:10px;"></textarea>
+        <div style="display:flex; gap:10px; margin-bottom:10px;">
+            <button onclick="processAi('professional')" style="flex:1; background:var(--surface); color:var(--text); border:1px solid var(--border); padding:8px;"><i class="fas fa-briefcase"></i> Make Pro</button>
+            <button onclick="processAi('translate')" style="flex:1; background:var(--surface); color:var(--text); border:1px solid var(--border); padding:8px;"><i class="fas fa-language"></i> Translate</button>
+            <button onclick="processAi('summarize')" style="flex:1; background:var(--surface); color:var(--text); border:1px solid var(--border); padding:8px;"><i class="fas fa-compress-alt"></i> Summarize</button>
+        </div>
+        <div id="aiOutput" style="background:var(--bg-color); padding:10px; border-radius:8px; border:1px dashed var(--blue); min-height:60px; font-size:0.85rem; display:none;"></div>
+        <button onclick="applyAiResult()" id="aiApplyBtn" style="display:none; margin-top:10px;">Apply to Chat</button>
+    </div>
+</div>
+
+
+<!-- CUSTOM MESSAGE CONTEXT MENU -->
+<div id="msgContextMenu" class="context-menu">
+    <div class="context-item" onclick="ctxReply()"><i class="fas fa-reply"></i> Reply</div>
+    <div class="context-item" onclick="ctxForward()"><i class="fas fa-share"></i> Forward</div>
+    <div class="context-item" onclick="ctxCopy()"><i class="fas fa-copy"></i> Copy Text</div>
+    <div class="context-item" onclick="ctxEdit()" id="ctxEditBtn"><i class="fas fa-pen"></i> Edit</div>
+    <div class="context-item" onclick="ctxReactQuick('❤️')"><i class="fas fa-heart" style="color:#e41e3f;"></i> Love</div>
+    <div class="context-item" onclick="ctxPin()"><i class="fas fa-thumbtack"></i> Pin Message</div>
+    <div class="context-divider"></div>
+    <div class="context-item danger" onclick="ctxDeleteForMe()"><i class="fas fa-trash"></i> Delete for me</div>
+    <div class="context-item danger" onclick="ctxDelete()"><i class="fas fa-trash-alt"></i> Unsend for everyone</div>
+    <div class="context-item" onclick="ctxSelect()"><i class="fas fa-check-square"></i> Select</div>
+</div>
+
+<!-- CHAT HEADER MENU -->
+<div id="chatMenu" class="context-menu" style="min-width:200px;">
+    <div class="context-item" onclick="toggleMuteChat()"><i class="fas fa-volume-mute"></i> <span id="muteMenuText">Mute</span></div>
+    <div class="context-item" onclick="toggleArchiveChat()"><i class="fas fa-archive"></i> <span id="archiveMenuText">Archive</span></div>
+    <div class="context-item" onclick="togglePinChat()"><i class="fas fa-thumbtack"></i> <span id="pinChatText">Pin chat</span></div>
+    <div class="context-item" onclick="openBlockConfirm()"><i class="fas fa-ban"></i> Block user</div>
+    <div class="context-item" onclick="clearChatHistory()"><i class="fas fa-broom"></i> Clear history (for me)</div>
+    <div class="context-divider"></div>
+    <div class="context-item danger" onclick="deleteConversation()"><i class="fas fa-trash-alt"></i> Delete conversation</div>
+</div>
+
+<!-- FORWARD MODAL -->
+<div class="creation-modal" id="forwardModal" style="z-index:99999;">
+    <div class="creation-box" style="max-width:480px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <h3 style="margin:0;"><i class="fas fa-share"></i> Forward message</h3>
+            <i class="fas fa-times" style="cursor:pointer;" onclick="closeForwardModal()"></i>
+        </div>
+        <input type="text" id="forwardSearch" placeholder="Search people or groups..." oninput="filterForwardList(this.value)" style="width:100%; padding:8px 12px; border:1px solid var(--border); border-radius:8px; margin-bottom:10px; background:var(--bg); color:var(--text);">
+        <div id="forwardList" class="forward-modal-body"></div>
+        <div style="display:flex; gap:10px; margin-top:12px;">
+            <button onclick="closeForwardModal()" style="flex:1; background:var(--bg); border:1px solid var(--border); color:var(--text);">Cancel</button>
+            <button onclick="confirmForward()" style="flex:1; background:var(--blue); color:white;">Forward (<span id="forwardCount">0</span>)</button>
+        </div>
+        <div style="font-size:0.7rem; opacity:0.6; margin-top:6px; text-align:center;">Select up to 5 chats</div>
+    </div>
+</div>
+
+<!-- CHAT INFO DRAWER -->
+<div class="info-drawer" id="infoDrawer">
+    <div style="padding:14px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between;">
+        <h3 style="margin:0; font-size:1rem;">Chat Info</h3>
+        <button onclick="toggleInfoDrawer()" style="background:none; border:none; font-size:1.1rem; cursor:pointer; opacity:0.6;"><i class="fas fa-times"></i></button>
+    </div>
+    <div style="padding:16px; text-align:center; border-bottom:1px solid var(--border);">
+        <div id="drawerAvatar" style="width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg,#0866ff,#0550c1); color:white; font-size:2rem; font-weight:800; display:flex; align-items:center; justify-content:center; margin:0 auto 10px; overflow:hidden;"></div>
+        <div id="drawerName" style="font-weight:800; font-size:1.05rem;">Name</div>
+        <div id="drawerStatus" style="font-size:0.78rem; color:var(--green);">Active now</div>
+        <div style="display:flex; gap:8px; justify-content:center; margin-top:12px;">
+            <button class="hdr-btn" onclick="toggleMuteChat()" title="Mute"><i class="fas fa-volume-mute"></i></button>
+            <button class="hdr-btn" onclick="goToProfile()" title="Profile"><i class="fas fa-user"></i></button>
+            <button class="hdr-btn" onclick="openBlockConfirm()" title="Block"><i class="fas fa-ban"></i></button>
+        </div>
+    </div>
+    <div class="drawer-tabs">
+        <button class="drawer-tab active" onclick="switchDrawerTab('media', this)">Media</button>
+        <button class="drawer-tab" onclick="switchDrawerTab('files', this)">Files</button>
+        <button class="drawer-tab" onclick="switchDrawerTab('links', this)">Links</button>
+        <button class="drawer-tab" onclick="switchDrawerTab('voice', this)">Voice</button>
+    </div>
+    <div id="drawerContent" style="flex:1; overflow-y:auto; padding:12px; display:flex; flex-direction:column; gap:10px;"></div>
+</div>
+
+</body>
+</html>

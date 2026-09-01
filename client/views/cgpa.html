@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPA Calculator | DIU Nexus</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        :root { --blue:#0866ff; --bg:#f0f2f5; --surface:#fff; --border:#e4e6eb; --text:#1c1e21; --text-secondary:#65676b; --green:#31a24c; --font:'Inter',sans-serif; }
+        [data-theme="dark"] { --bg:#18191a; --surface:#242526; --border:#3a3b3c; --text:#e4e6eb; --text-secondary:#b0b3b8; }
+        body { font-family:var(--font); background:var(--bg); color:var(--text); min-height:100vh; }
+        .navbar { background:var(--surface); border-bottom:1px solid var(--border); padding:12px 24px; display:flex; align-items:center; gap:16px; position:sticky; top:0; z-index:10; }
+        .navbar a { color:var(--blue); font-weight:600; font-size:0.9rem; text-decoration:none; display:flex; align-items:center; gap:6px; }
+        .navbar h1 { font-size:1.1rem; font-weight:700; }
+        .container { max-width:800px; margin:0 auto; padding:24px 16px; }
+        .header-card { background:linear-gradient(135deg,#0866ff,#0550c1); border-radius:16px; padding:32px; color:white; margin-bottom:24px; text-align:center; }
+        .header-card h2 { font-size:1.8rem; font-weight:800; margin-bottom:8px; }
+        .header-card p { opacity:0.85; }
+        .gpa-display { background:rgba(255,255,255,0.15); border-radius:12px; padding:20px 32px; margin-top:20px; display:inline-block; }
+        .gpa-number { font-size:3.5rem; font-weight:800; line-height:1; }
+        .gpa-label { font-size:0.85rem; opacity:0.8; margin-top:4px; }
+        .grade-system { background:var(--surface); border-radius:16px; padding:20px; margin-bottom:20px; border:1px solid var(--border); }
+        .grade-system h3 { font-size:0.9rem; font-weight:700; color:var(--text-secondary); margin-bottom:12px; text-transform:uppercase; letter-spacing:0.5px; }
+        .grade-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(100px,1fr)); gap:8px; }
+        .grade-chip { background:var(--bg); border-radius:8px; padding:8px; text-align:center; font-size:0.8rem; }
+        .grade-chip .letter { font-weight:700; font-size:1rem; color:var(--blue); }
+        .grade-chip .points { color:var(--text-secondary); font-size:0.72rem; }
+        .courses-section { background:var(--surface); border-radius:16px; padding:20px; border:1px solid var(--border); margin-bottom:20px; }
+        .courses-section h3 { font-weight:700; margin-bottom:16px; }
+        .course-row { display:grid; grid-template-columns:1fr 100px 120px 40px; gap:8px; align-items:center; margin-bottom:8px; }
+        .course-input { padding:10px 12px; border:1.5px solid var(--border); border-radius:8px; font-family:inherit; font-size:0.88rem; color:var(--text); background:var(--bg); outline:none; width:100%; }
+        .course-input:focus { border-color:var(--blue); background:var(--surface); }
+        .remove-btn { width:34px; height:34px; border-radius:8px; border:none; background:#fff0f2; color:#e41e3f; cursor:pointer; font-size:0.95rem; display:flex; align-items:center; justify-content:center; }
+        .btn-add { display:flex; align-items:center; gap:8px; padding:10px 16px; background:var(--bg); border:1.5px dashed var(--border); border-radius:8px; color:var(--blue); font-family:inherit; font-size:0.9rem; font-weight:600; cursor:pointer; width:100%; justify-content:center; margin-top:8px; transition:background 0.15s; }
+        .btn-add:hover { background:#e7f0ff; }
+        .action-row { display:flex; gap:12px; margin-top:16px; }
+        .btn-calc { flex:1; padding:13px; background:var(--blue); color:white; border:none; border-radius:10px; font-family:inherit; font-size:1rem; font-weight:700; cursor:pointer; transition:background 0.15s; }
+        .btn-calc:hover { background:#0550c1; }
+        .btn-reset { padding:13px 20px; background:var(--bg); border:1.5px solid var(--border); border-radius:10px; font-family:inherit; font-size:0.95rem; font-weight:600; color:var(--text); cursor:pointer; }
+        .results { background:var(--surface); border-radius:16px; padding:24px; border:1px solid var(--border); display:none; }
+        .results.show { display:block; }
+        .results h3 { font-weight:700; margin-bottom:16px; }
+        .result-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:16px; }
+        .result-item { background:var(--bg); border-radius:12px; padding:16px; text-align:center; }
+        .result-item .val { font-size:1.8rem; font-weight:800; color:var(--blue); }
+        .result-item .lbl { font-size:0.75rem; color:var(--text-secondary); margin-top:4px; }
+        .result-grade { background:var(--bg); border-radius:12px; padding:16px; display:flex; align-items:center; gap:16px; }
+        .result-grade .big { font-size:2.5rem; font-weight:800; color:var(--blue); }
+        .semester-history { background:var(--surface); border-radius:16px; padding:20px; border:1px solid var(--border); }
+        .semester-history h3 { font-weight:700; margin-bottom:12px; }
+        .semester-item { display:flex; align-items:center; justify-content:space-between; padding:10px; background:var(--bg); border-radius:8px; margin-bottom:8px; }
+        .semester-item .sem-name { font-weight:600; font-size:0.9rem; }
+        .semester-item .sem-gpa { font-weight:700; color:var(--blue); }
+    
+        /* Fix: Pill till missing + button blocked — ensure pills and following buttons are clickable */
+        .filter-bar, .category-tabs, .cats, .filter-tabs, .cat-tabs, .filter-pill, .cat-tab, .cat, .blood-type-grid, .search-bar {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 1;
+        }
+        .filter-chip, .cat-tab, .cat, .blood-btn, .btn-join, .btn-view, .btn-post, .btn-submit, .btn-sell, .contact-btn, .post-action, .member-row button, .file-row a {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 2;
+        }
+        /* Ensure no sticky pill blocks content */
+        .category-tabs, .filter-bar, .cats {
+            overflow-x: auto;
+            overflow-y: visible;
+            max-height: none;
+        }
+
+    </style>
+</head>
+<body>
+<nav class="navbar" style="position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.92);backdrop-filter:blur(16px) saturate(180%);-webkit-backdrop-filter:blur(16px) saturate(180%);border-bottom:1px solid rgba(0,0,0,0.06);padding:6px 12px;display:flex;align-items:center;gap:10px;box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+    <button onclick="history.length>1?history.back():location.href='../home.html'" style="width:36px;height:36px;border-radius:50%;border:none;background:var(--bg);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;"><i class="fas fa-arrow-left"></i></button>
+    <a href="../home.html" style="font-weight:800;color:var(--blue);text-decoration:none;white-space:nowrap;"><img src="../assets/icon.svg" alt="NEXUS" style="width:24px;height:24px;flex-shrink:0;margin-right:6px;" onerror="this.style.display='none'"><span style="color:#0A6CFF;font-weight:800;">NEXUS</span></a>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:2px;background:var(--bg);padding:3px;border-radius:12px;max-width:360px;margin:0 auto;">
+        <a href="../home.html" style="flex:1;display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:10px;color:var(--text-secondary);text-decoration:none;font-size:1.1rem;" title="Home"><i class="fas fa-home"></i></a>
+        <a href="groups.html" style="flex:1;display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:10px;color:var(--text-secondary);text-decoration:none;font-size:1.05rem;" title="Groups"><i class="fas fa-users"></i></a>
+        <a href="reels.html" style="flex:1;display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:10px;color:var(--text-secondary);text-decoration:none;font-size:1.05rem;" title="Reels"><i class="fas fa-film"></i></a>
+        <a href="departments.html" style="flex:1;display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:10px;color:var(--text-secondary);text-decoration:none;font-size:1.05rem;" title="Departments"><i class="fas fa-building"></i></a>
+        <a href="events.html" style="flex:1;display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:10px;color:var(--text-secondary);text-decoration:none;font-size:1.05rem;" title="Events"><i class="fas fa-calendar-alt"></i></a>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+        <span style="font-weight:700;font-size:0.95rem;display:flex;align-items:center;gap:6px;"><i class="fas fa-calculator" style="color:var(--blue)"></i> GPA</span>
+    </div>
+</nav>
+<div class="container">
+    <div class="header-card">
+        <h2>DIU GPA Calculator</h2>
+        <p>Calculate your GPA or CGPA using the Daffodil International University grading system</p>
+        <div class="gpa-display">
+            <div class="gpa-number" id="liveGPA">0.00</div>
+            <div class="gpa-label">Current GPA</div>
+        </div>
+    </div>
+
+    <!-- Pill Filters — Home er moto modern -->
+    <div style="display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; padding:4px 2px 12px; margin-bottom:16px; -webkit-overflow-scrolling:touch; scroll-snap-type:x mandatory;">
+        <button class="pill active" data-view="calculator" onclick="switchGpaView('calculator',this)" style="padding:7px 16px; border-radius:20px; border:1.5px solid var(--blue); background:var(--blue); color:white; font-size:0.82rem; font-weight:700; white-space:nowrap; cursor:pointer; flex-shrink:0; scroll-snap-align:start;">📊 Calculator</button>
+        <button class="pill" data-view="grading" onclick="switchGpaView('grading',this)" style="padding:7px 16px; border-radius:20px; border:1.5px solid var(--border); background:var(--surface); color:var(--text); font-size:0.82rem; font-weight:600; white-space:nowrap; cursor:pointer; flex-shrink:0; scroll-snap-align:start;">🎓 Grading System</button>
+        <button class="pill" data-view="history" onclick="switchGpaView('history',this)" style="padding:7px 16px; border-radius:20px; border:1.5px solid var(--border); background:var(--surface); color:var(--text); font-size:0.82rem; font-weight:600; white-space:nowrap; cursor:pointer; flex-shrink:0; scroll-snap-align:start;">📚 History</button>
+        <button class="pill" onclick="document.getElementById('courseRows').scrollIntoView({behavior:'smooth'})" style="padding:7px 16px; border-radius:20px; border:1.5px solid var(--border); background:var(--surface); color:var(--text); font-size:0.82rem; font-weight:600; white-space:nowrap; cursor:pointer; flex-shrink:0;">➕ Add Course</button>
+    </div>
+    <style>
+        .pill.active { background:var(--blue) !important; color:white !important; border-color:var(--blue) !important; box-shadow:0 2px 8px rgba(8,102,255,0.25); }
+        .pill:hover { border-color:var(--blue) !important; color:var(--blue) !important; background:var(--surface) !important; }
+        .pill.active:hover { background:var(--blue) !important; color:white !important; }
+    </style>
+
+    <div class="grade-system" id="gradingSection">
+        <h3>DIU Grading System</h3>
+        <div class="grade-grid">
+            <div class="grade-chip"><div class="letter">A+</div><div class="points">4.00 (90-100)</div></div>
+            <div class="grade-chip"><div class="letter">A</div><div class="points">3.75 (85-89)</div></div>
+            <div class="grade-chip"><div class="letter">A-</div><div class="points">3.50 (80-84)</div></div>
+            <div class="grade-chip"><div class="letter">B+</div><div class="points">3.25 (75-79)</div></div>
+            <div class="grade-chip"><div class="letter">B</div><div class="points">3.00 (70-74)</div></div>
+            <div class="grade-chip"><div class="letter">B-</div><div class="points">2.75 (65-69)</div></div>
+            <div class="grade-chip"><div class="letter">C+</div><div class="points">2.50 (60-64)</div></div>
+            <div class="grade-chip"><div class="letter">C</div><div class="points">2.25 (55-59)</div></div>
+            <div class="grade-chip"><div class="letter">D</div><div class="points">2.00 (50-54)</div></div>
+            <div class="grade-chip"><div class="letter">F</div><div class="points">0.00 (&lt;50)</div></div>
+        </div>
+    </div>
+
+    <div class="courses-section" id="coursesSection">
+        <h3>Courses This Semester</h3>
+        <div style="display:grid;grid-template-columns:1fr 100px 120px 40px;gap:8px;margin-bottom:8px;">
+            <div style="font-size:0.75rem;font-weight:600;color:var(--text-secondary);padding:0 4px;">COURSE NAME</div>
+            <div style="font-size:0.75rem;font-weight:600;color:var(--text-secondary);padding:0 4px;">CREDITS</div>
+            <div style="font-size:0.75rem;font-weight:600;color:var(--text-secondary);padding:0 4px;">GRADE</div>
+            <div></div>
+        </div>
+        <div id="courseRows"></div>
+        <button class="btn-add" onclick="addCourseRow()"><i class="fas fa-plus"></i> Add Course</button>
+        <div class="action-row">
+            <button class="btn-calc" onclick="calculateGPA()"><i class="fas fa-calculator"></i> Calculate GPA</button>
+            <button class="btn-reset" onclick="resetAll()"><i class="fas fa-redo"></i> Reset</button>
+        </div>
+    </div>
+
+    <div class="results" id="results">
+        <h3>Results</h3>
+        <div class="result-grid">
+            <div class="result-item"><div class="val" id="resGPA">0.00</div><div class="lbl">Semester GPA</div></div>
+            <div class="result-item"><div class="val" id="resCredits">0</div><div class="lbl">Total Credits</div></div>
+            <div class="result-item"><div class="val" id="resGradePoints">0.00</div><div class="lbl">Grade Points</div></div>
+        </div>
+        <div class="result-grade"><div class="big" id="resLetterGrade">-</div><div><div style="font-weight:700;font-size:1rem;">Overall Grade</div><div style="font-size:0.85rem;color:var(--text-secondary);" id="resStanding"></div></div></div>
+        <button style="margin-top:16px;padding:10px 20px;background:var(--blue);color:white;border:none;border-radius:8px;font-family:inherit;font-size:0.9rem;font-weight:600;cursor:pointer;" onclick="saveSemester()"><i class="fas fa-save"></i> Save This Semester</button>
+    </div>
+
+    <div class="semester-history" id="historySection" style="display:none;margin-top:20px;">
+        <h3>Semester History (CGPA Track)</h3>
+        <div id="historyList"></div>
+        <div style="padding:12px;background:var(--bg);border-radius:10px;display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+            <div style="font-weight:700;">Cumulative CGPA</div>
+            <div style="font-size:1.3rem;font-weight:800;color:var(--blue);" id="cgpaDisplay">0.00</div>
+        </div>
+        <button onclick="clearHistory()" style="margin-top:10px;padding:8px 16px;background:none;border:1.5px solid #e41e3f;border-radius:8px;color:#e41e3f;font-family:inherit;font-size:0.85rem;font-weight:600;cursor:pointer;">Clear History</button>
+    </div>
+</div>
+
+<script src="../js/config.js"></script>
+<script>
+if (localStorage.getItem('darkMode') === '1') document.body.setAttribute('data-theme', 'dark');
+
+const GRADES = { 'A+':4.00,'A':3.75,'A-':3.50,'B+':3.25,'B':3.00,'B-':2.75,'C+':2.50,'C':2.25,'D':2.00,'F':0.00 };
+const GRADE_OPTIONS = Object.keys(GRADES).map(g => `<option value="${g}">${g} (${GRADES[g]})</option>`).join('');
+let courseCount = 0;
+
+function addCourseRow(name='', credits='3', grade='') {
+    courseCount++;
+    const row = document.createElement('div');
+    row.className = 'course-row';
+    row.id = `row-${courseCount}`;
+    row.innerHTML = `
+        <input class="course-input" type="text" placeholder="e.g. Data Structures" value="${name}" oninput="liveCalc()">
+        <input class="course-input" type="number" min="1" max="6" step="0.5" value="${credits}" placeholder="3" oninput="liveCalc()">
+        <select class="course-input" onchange="liveCalc()"><option value="">Grade</option>${GRADE_OPTIONS.replace(`value="${grade}"`,`value="${grade}" selected`)}</select>
+        <button class="remove-btn" onclick="document.getElementById('row-${courseCount}').remove();liveCalc()"><i class="fas fa-times"></i></button>`;
+    document.getElementById('courseRows').appendChild(row);
+}
+
+function liveCalc() {
+    const { gpa } = computeGPA();
+    document.getElementById('liveGPA').textContent = isNaN(gpa) ? '0.00' : gpa.toFixed(2);
+}
+
+function computeGPA() {
+    const rows = document.querySelectorAll('#courseRows .course-row');
+    let totalPoints = 0, totalCredits = 0;
+    rows.forEach(row => {
+        const inputs = row.querySelectorAll('input,select');
+        const credits = parseFloat(inputs[1].value) || 0;
+        const grade = inputs[2].value;
+        if (credits > 0 && grade && GRADES[grade] !== undefined) {
+            totalPoints += GRADES[grade] * credits;
+            totalCredits += credits;
+        }
+    });
+    const gpa = totalCredits > 0 ? totalPoints / totalCredits : 0;
+    return { gpa, totalCredits, totalPoints };
+}
+
+function getLetterGrade(gpa) {
+    if (gpa >= 3.75) return { letter: 'A+', standing: 'Outstanding' };
+    if (gpa >= 3.50) return { letter: 'A', standing: 'Excellent' };
+    if (gpa >= 3.25) return { letter: 'A-', standing: 'Very Good' };
+    if (gpa >= 3.00) return { letter: 'B+', standing: 'Good' };
+    if (gpa >= 2.75) return { letter: 'B', standing: 'Average' };
+    if (gpa >= 2.50) return { letter: 'B-', standing: 'Below Average' };
+    if (gpa >= 2.00) return { letter: 'C', standing: 'Pass' };
+    return { letter: 'F', standing: 'Fail' };
+}
+
+function calculateGPA() {
+    const { gpa, totalCredits, totalPoints } = computeGPA();
+    if (totalCredits === 0) { alert('Please add at least one course with credits and grade.'); return; }
+    const { letter, standing } = getLetterGrade(gpa);
+    document.getElementById('resGPA').textContent = gpa.toFixed(2);
+    document.getElementById('resCredits').textContent = totalCredits;
+    document.getElementById('resGradePoints').textContent = totalPoints.toFixed(2);
+    document.getElementById('resLetterGrade').textContent = letter;
+    document.getElementById('resStanding').textContent = standing;
+    document.getElementById('liveGPA').textContent = gpa.toFixed(2);
+    document.getElementById('results').classList.add('show');
+}
+
+function saveSemester() {
+    const { gpa, totalCredits } = computeGPA();
+    if (totalCredits === 0) return;
+    const semName = prompt('Semester name:', 'Spring 2026') || 'Unnamed';
+    const history = JSON.parse(localStorage.getItem('gpaHistory') || '[]');
+    history.push({ name: semName, gpa: gpa.toFixed(2), credits: totalCredits });
+    localStorage.setItem('gpaHistory', JSON.stringify(history));
+    renderHistory();
+}
+
+function renderHistory() {
+    const history = JSON.parse(localStorage.getItem('gpaHistory') || '[]');
+    if (history.length === 0) { document.getElementById('historySection').style.display = 'none'; return; }
+    document.getElementById('historySection').style.display = 'block';
+    document.getElementById('historyList').innerHTML = history.map((h, i) =>
+        `<div class="semester-item"><div><div class="sem-name">${h.name}</div><div style="font-size:0.78rem;color:var(--text-secondary);">${h.credits} credits</div></div><div class="sem-gpa">${h.gpa}</div></div>`
+    ).join('');
+    const totalPoints = history.reduce((s, h) => s + parseFloat(h.gpa) * h.credits, 0);
+    const totalCredits = history.reduce((s, h) => s + h.credits, 0);
+    const cgpa = totalCredits > 0 ? totalPoints / totalCredits : 0;
+    document.getElementById('cgpaDisplay').textContent = cgpa.toFixed(2);
+}
+
+function clearHistory() { if (confirm('Clear all semester history?')) { localStorage.removeItem('gpaHistory'); renderHistory(); } }
+
+function switchGpaView(view, btn){
+    document.querySelectorAll('.pill').forEach(b=>{ b.classList.remove('active'); b.style.background='var(--surface)'; b.style.color='var(--text)'; b.style.borderColor='var(--border)'; });
+    if(btn){ btn.classList.add('active'); btn.style.background='var(--blue)'; btn.style.color='white'; btn.style.borderColor='var(--blue)'; }
+    const grading=document.getElementById('gradingSection');
+    const courses=document.querySelector('.courses-section');
+    const results=document.getElementById('results');
+    const history=document.getElementById('historySection');
+    if(view==='calculator'){
+        if(grading) grading.style.display='block';
+        if(courses) courses.style.display='block';
+        if(results) results.style.display= results.classList.contains('show') ? 'block' : 'none';
+        if(history) history.style.display= JSON.parse(localStorage.getItem('gpaHistory')||'[]').length ? 'block' : 'none';
+        window.scrollTo({top:0, behavior:'smooth'});
+    } else if(view==='grading'){
+        if(grading) grading.style.display='block';
+        if(courses) courses.style.display='none';
+        if(results) results.style.display='none';
+        if(history) history.style.display='none';
+        grading.scrollIntoView({behavior:'smooth'});
+    } else if(view==='history'){
+        if(grading) grading.style.display='none';
+        if(courses) courses.style.display='none';
+        if(results) results.style.display='none';
+        if(history) { history.style.display='block'; history.scrollIntoView({behavior:'smooth'}); renderHistory(); }
+    }
+}
+
+function resetAll() {
+    document.getElementById('courseRows').innerHTML = '';
+    courseCount = 0;
+    document.getElementById('results').classList.remove('show');
+    document.getElementById('liveGPA').textContent = '0.00';
+    addCourseRow(); addCourseRow(); addCourseRow();
+}
+
+// Init
+addCourseRow('', '3', '');
+addCourseRow('', '3', '');
+addCourseRow('', '3', '');
+renderHistory();
+</script>
+</body>
+</html>

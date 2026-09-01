@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Focus Study Room | DIU Nexus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/home.css">
+    <style>
+        body { padding-top: 64px; background: var(--bg); font-family: 'Inter', sans-serif; }
+        .study-wrap { max-width: 980px; margin: 0 auto; padding: 24px 16px 80px; }
+        
+        .study-hero {
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+            border-radius: 16px;
+            padding: 28px 24px;
+            color: white;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.25);
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .study-hero h1 { font-size: 1.6rem; font-weight: 800; margin: 0; }
+        .study-hero p { opacity: 0.9; margin: 4px 0 0; font-size: 0.9rem; }
+
+        .study-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media(max-width:768px) { .study-grid { grid-template-columns: 1fr; } }
+
+        .study-card {
+            background: var(--surface);
+            border-radius: 14px;
+            padding: 24px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+            border: 1px solid var(--border);
+        }
+        .study-card h3 { font-size: 1.1rem; font-weight: 800; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+
+        /* Pomodoro Timer */
+        .timer-display {
+            font-size: 4.5rem;
+            font-weight: 800;
+            text-align: center;
+            color: #8b5cf6;
+            letter-spacing: 2px;
+            margin: 16px 0;
+            font-variant-numeric: tabular-nums;
+        }
+        .timer-modes { display: flex; justify-content: center; gap: 8px; margin-bottom: 16px; }
+        .tmode-btn {
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1.5px solid var(--border);
+            background: var(--bg);
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .tmode-btn.active { background: #8b5cf6; color: white; border-color: #8b5cf6; }
+
+        .timer-controls { display: flex; justify-content: center; gap: 12px; }
+        .ctrl-btn {
+            padding: 10px 24px;
+            border-radius: 10px;
+            border: none;
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.15s;
+        }
+        .btn-start { background: #8b5cf6; color: white; }
+        .btn-reset { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
+
+        /* Ambient Sounds */
+        .sound-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
+        .sound-btn {
+            padding: 16px 8px;
+            border-radius: 12px;
+            border: 1.5px solid var(--border);
+            background: var(--bg);
+            color: var(--text);
+            text-align: center;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 700;
+            transition: all 0.15s;
+        }
+        .sound-btn.playing { background: #ede9fe; color: #7c3aed; border-color: #8b5cf6; }
+        .sound-btn i { font-size: 1.5rem; display: block; margin-bottom: 6px; }
+
+        /* Scratchpad */
+        .scratchpad {
+            width: 100%;
+            height: 200px;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            padding: 14px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            background: var(--bg);
+            color: var(--text);
+            resize: none;
+            outline: none;
+            line-height: 1.5;
+        }
+        .scratchpad:focus { border-color: #8b5cf6; }
+
+        /* Todo list */
+        .todo-input-row { display: flex; gap: 8px; margin-bottom: 12px; }
+        .todo-input { flex: 1; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 0.88rem; outline: none; background: var(--bg); color: var(--text); }
+        .todo-input:focus { border-color: #8b5cf6; }
+        .todo-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-radius: 8px; background: var(--bg); margin-bottom: 6px; font-size: 0.88rem; }
+        .todo-item.done span { text-decoration: line-through; opacity: 0.6; }
+        .todo-del { background: none; border: none; color: #e41e3f; cursor: pointer; }
+    
+        /* Fix: Pill till missing + button blocked — ensure pills and following buttons are clickable */
+        .filter-bar, .category-tabs, .cats, .filter-tabs, .cat-tabs, .filter-pill, .cat-tab, .cat, .blood-type-grid, .search-bar {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 1;
+        }
+        .filter-chip, .cat-tab, .cat, .blood-btn, .btn-join, .btn-view, .btn-post, .btn-submit, .btn-sell, .contact-btn, .post-action, .member-row button, .file-row a {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 2;
+        }
+        /* Ensure no sticky pill blocks content */
+        .category-tabs, .filter-bar, .cats {
+            overflow-x: auto;
+            overflow-y: visible;
+            max-height: none;
+        }
+
+    </style>
+</head>
+<body>
+<script src="../js/config.js"></script>
+<script src="../js/shared.js"></script>
+<div class="study-wrap">
+    <div class="study-hero">
+        <div>
+            <h1>🎧 DIU Focus & Study Room</h1>
+            <p>Focus with friends — Pomodoro timer, shared notes, and live study rooms with DIU students.</p>
+        </div>
+        <div style="font-size:0.85rem;background:rgba(255,255,255,0.2);padding:6px 14px;border-radius:20px;">
+            <i class="fas fa-brain"></i> Deep Focus Mode
+        </div>
+    </div>
+
+    <div class="study-grid">
+        <!-- Pomodoro Timer -->
+        <div class="study-card">
+            <h3><i class="fas fa-stopwatch" style="color:#8b5cf6;"></i> Pomodoro Timer</h3>
+            <div class="timer-modes">
+                <button class="tmode-btn active" onclick="setTimerMode(25, this)">Focus (25m)</button>
+                <button class="tmode-btn" onclick="setTimerMode(5, this)">Short Break (5m)</button>
+                <button class="tmode-btn" onclick="setTimerMode(15, this)">Long Break (15m)</button>
+            </div>
+            <div class="timer-display" id="timerDisplay">25:00</div>
+            <div class="timer-controls">
+                <button class="ctrl-btn btn-start" id="startBtn" onclick="toggleTimer()"><i class="fas fa-play"></i> Start</button>
+                <button class="ctrl-btn btn-reset" onclick="resetTimer()"><i class="fas fa-redo"></i> Reset</button>
+            </div>
+
+            <hr style="margin:20px 0; border:none; border-top:1px solid var(--border);">
+            
+            <h4 style="font-size:0.9rem;font-weight:700;margin-bottom:8px;color:var(--text);"><i class="fas fa-volume-up" style="color:#8b5cf6;"></i> Focus Ambient Sound</h4>
+            <div class="sound-grid">
+                <button class="sound-btn" id="snd-rain" onclick="toggleSound('rain', this)">
+                    <i class="fas fa-cloud-rain" style="color:#0284c7;"></i> Rain
+                </button>
+                <button class="sound-btn" id="snd-cafe" onclick="toggleSound('cafe', this)">
+                    <i class="fas fa-coffee" style="color:#d97706;"></i> Cafe
+                </button>
+                <button class="sound-btn" id="snd-waves" onclick="toggleSound('waves', this)">
+                    <i class="fas fa-water" style="color:#059669;"></i> Waves
+                </button>
+            </div>
+        </div>
+
+        <!-- Task & Quick Scratchpad -->
+        <div class="study-card">
+            <h3><i class="fas fa-tasks" style="color:#8b5cf6;"></i> Today's Study Goals</h3>
+            <div class="todo-input-row">
+                <input class="todo-input" id="todoInput" placeholder="e.g., Complete CSE323 Assignment..." onkeydown="if(event.key==='Enter')addTodo()">
+                <button onclick="addTodo()" style="background:#8b5cf6;color:white;border:none;border-radius:8px;padding:0 16px;font-weight:700;cursor:pointer;">Add</button>
+            </div>
+            <div id="todoList" style="max-height:130px;overflow-y:auto;margin-bottom:16px;"></div>
+
+            <h4 style="font-size:0.9rem;font-weight:700;margin-bottom:8px;color:var(--text);"><i class="fas fa-edit" style="color:#8b5cf6;"></i> Quick Notes & Formulas</h4>
+            <textarea class="scratchpad" id="scratchpad" placeholder="DIU Nexus" oninput="saveNotes(this.value)"></textarea>
+        </div>
+    </div>
+</div>
+
+<script>
+let timeLeft = 25 * 60;
+let timerId = null;
+let isRunning = false;
+let currentModeMinutes = 25;
+
+function updateTimerDisplay() {
+    const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+    const s = (timeLeft % 60).toString().padStart(2, '0');
+    document.getElementById('timerDisplay').textContent = `${m}:${s}`;
+}
+
+function setTimerMode(mins, btn) {
+    clearInterval(timerId);
+    isRunning = false;
+    document.getElementById('startBtn').innerHTML = '<i class="fas fa-play"></i> Start';
+    currentModeMinutes = mins;
+    timeLeft = mins * 60;
+    document.querySelectorAll('.tmode-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    updateTimerDisplay();
+}
+
+function toggleTimer() {
+    if (isRunning) {
+        clearInterval(timerId);
+        isRunning = false;
+        document.getElementById('startBtn').innerHTML = '<i class="fas fa-play"></i> Resume';
+    } else {
+        isRunning = true;
+        document.getElementById('startBtn').innerHTML = '<i class="fas fa-pause"></i> Pause';
+        timerId = setInterval(() => {
+            if (timeLeft > 0) {
+                timeLeft--;
+                updateTimerDisplay();
+            } else {
+                clearInterval(timerId);
+                isRunning = false;
+                document.getElementById('startBtn').innerHTML = '<i class="fas fa-play"></i> Start';
+                alert('⏰ Time is up! Great session.');
+            }
+        }, 1000);
+    }
+}
+
+function resetTimer() {
+    clearInterval(timerId);
+    isRunning = false;
+    timeLeft = currentModeMinutes * 60;
+    document.getElementById('startBtn').innerHTML = '<i class="fas fa-play"></i> Start';
+    updateTimerDisplay();
+}
+
+// Web Audio API White Noise / Ambient Generator
+let audioCtx = null;
+let activeNoiseNode = null;
+let activeSoundType = null;
+
+function toggleSound(type, btn) {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    if (activeSoundType === type) {
+        stopSound();
+        document.querySelectorAll('.sound-btn').forEach(b => b.classList.remove('playing'));
+        activeSoundType = null;
+        return;
+    }
+
+    stopSound();
+    document.querySelectorAll('.sound-btn').forEach(b => b.classList.remove('playing'));
+    btn.classList.add('playing');
+    activeSoundType = type;
+
+    // Generate gentle soothing noise buffer
+    const bufferSize = audioCtx.sampleRate * 2;
+    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+        data[i] = (Math.random() * 2 - 1) * 0.05;
+    }
+
+    const whiteNoise = audioCtx.createBufferSource();
+    whiteNoise.buffer = buffer;
+    whiteNoise.loop = true;
+
+    // Filter to simulate rain/waves/cafe
+    const filter = audioCtx.createBiquadFilter();
+    if (type === 'rain') {
+        filter.type = 'lowpass';
+        filter.frequency.value = 1000;
+    } else if (type === 'waves') {
+        filter.type = 'bandpass';
+        filter.frequency.value = 400;
+    } else {
+        filter.type = 'lowpass';
+        filter.frequency.value = 700;
+    }
+
+    whiteNoise.connect(filter);
+    filter.connect(audioCtx.destination);
+    whiteNoise.start();
+    activeNoiseNode = whiteNoise;
+}
+
+function stopSound() {
+    if (activeNoiseNode) {
+        try { activeNoiseNode.stop(); activeNoiseNode.disconnect(); } catch(e){}
+        activeNoiseNode = null;
+    }
+}
+
+// Scratchpad & Todos
+function saveNotes(val) { localStorage.setItem('study_notes', val); }
+document.getElementById('scratchpad').value = localStorage.getItem('study_notes') || '';
+
+let todos = JSON.parse(localStorage.getItem('study_todos') || '[]');
+function renderTodos() {
+    const list = document.getElementById('todoList');
+    if (!todos.length) {
+        list.innerHTML = '<p style="font-size:0.8rem;color:var(--text-secondary);margin:4px 0;">No tasks yet — add one above!</p>';
+        return;
+    }
+    list.innerHTML = todos.map((t, idx) => `
+        <div class="todo-item ${t.done ? 'done' : ''}">
+            <span onclick="toggleTodo(${idx})" style="cursor:pointer;flex:1;">${t.done ? '✅' : '⬜'} ${esc(t.text)}</span>
+            <button class="todo-del" onclick="delTodo(${idx})"><i class="fas fa-trash"></i></button>
+        </div>
+    `).join('');
+}
+function addTodo() {
+    const inp = document.getElementById('todoInput');
+    const text = inp.value.trim();
+    if (!text) return;
+    todos.push({ text, done: false });
+    localStorage.setItem('study_todos', JSON.stringify(todos));
+    inp.value = '';
+    renderTodos();
+}
+function toggleTodo(idx) {
+    todos[idx].done = !todos[idx].done;
+    localStorage.setItem('study_todos', JSON.stringify(todos));
+    renderTodos();
+}
+function delTodo(idx) {
+    todos.splice(idx, 1);
+    localStorage.setItem('study_todos', JSON.stringify(todos));
+    renderTodos();
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+renderTodos();
+</script>
+</body>
+</html>

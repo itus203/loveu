@@ -1,0 +1,42 @@
+{
+  "name": "DIU Nexus — Campus Social & Academic Hub",
+  "short_name": "DIU Nexus",
+  "description": "Private Digital Social Ecosystem for Daffodil International University Students, Faculty & Alumni",
+  "start_url": "/home.html",
+  "display": "standalone",
+  "background_color": "#070D1E",
+  "theme_color": "#0A6CFF",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "social", "productivity"],
+  "shortcuts": [
+    {
+      "name": "Messenger",
+      "url": "/views/messenger.html",
+      "description": "Open DIU Nexus Chat"
+    },
+    {
+      "name": "Class Routine",
+      "url": "/views/class-routine.html",
+      "description": "View class schedule"
+    },
+    {
+      "name": "Campus Map",
+      "url": "/views/campus-map.html",
+      "description": "Campus building and room locator"
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "name": "diu-nexus",
+  "version": "2.0.0",
+  "description": "DIU Nexus — The Social Platform for Daffodil International University Students",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "server": "node server/server.js",
+    "dist": "electron-builder"
+  },
+  "build": {
+    "appId": "com.diunexus.app",
+    "productName": "DIU Nexus",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "server/**/*",
+      "client/**/*",
+      "!node_modules/**/*",
+      "node_modules/express/**",
+      "node_modules/cors/**",
+      "node_modules/sqlite3/**",
+      "node_modules/sqlite/**",
+      "node_modules/bcryptjs/**",
+      "node_modules/jsonwebtoken/**",
+      "node_modules/multer/**",
+      "node_modules/socket.io/**",
+      "node_modules/dotenv/**",
+      "node_modules/nodemailer/**"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "client/assets/icon.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "client/assets/icon.icns"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "client/assets/icon.png"
+    }
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.5.1",
+    "@sendgrid/mail": "^8.1.6",
+    "axios": "^1.19.0",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "express-rate-limit": "^8.6.2",
+    "helmet": "^8.3.0",
+    "hpp": "^0.2.3",
+    "jsonwebtoken": "^9.0.0",
+    "mongodb": "^7.5.0",
+    "mongoose": "^9.9.3",
+    "multer": "^1.4.5-lts.1",
+    "nodemailer": "^6.10.1",
+    "pg": "^8.23.0",
+    "socket.io": "^4.6.1",
+    "sqlite": "^5.0.1",
+    "sqlite3": "^5.1.6"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.5.1",
+    "@capacitor/core": "^8.5.1",
+    "electron": "^25.0.0",
+    "electron-builder": "^24.4.0"
+  },
+  "allowScripts": {
+    "electron@25.9.8": true,
+    "sqlite3@5.1.7": true
+  }
+}

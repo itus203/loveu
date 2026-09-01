@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>DIU Academic Departments | DIU Nexus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/home.css">
+    <style>
+        body { padding-top: 64px; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); }
+        .dept-wrap { max-width: 1040px; margin: 0 auto; padding: 24px 16px 80px; }
+        
+        .page-hero {
+            background: linear-gradient(135deg, #0866ff, #0550c1);
+            border-radius: 16px;
+            padding: 28px 24px;
+            color: white;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 4px 20px rgba(8, 102, 255, 0.25);
+        }
+        .page-hero i { font-size: 2.8rem; opacity: 0.95; }
+        .page-hero h1 { font-size: 1.55rem; font-weight: 800; margin: 0; }
+        .page-hero p { opacity: 0.9; margin: 4px 0 0; font-size: 0.88rem; }
+
+        .dept-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 16px;
+        }
+        .dept-card {
+            background: var(--surface);
+            border-radius: 14px;
+            padding: 22px 18px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border: 1.5px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .dept-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            border-color: #0866ff;
+        }
+        .dept-icon {
+            width: 58px; height: 58px; border-radius: 50%;
+            background: #e7f0ff; color: #0866ff;
+            margin-bottom: 12px; display: flex;
+            align-items: center; justify-content: center;
+            font-size: 1.45rem; transition: transform 0.2s;
+        }
+        [data-theme="dark"] .dept-icon { background: rgba(8, 102, 255, 0.15); color: #38bdf8; }
+        .dept-card:hover .dept-icon { transform: scale(1.1); }
+        .dept-name { font-weight: 800; font-size: 0.95rem; margin-bottom: 4px; color: var(--text); }
+        .dept-count { font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); }
+    
+        /* Fix: Pill till missing + button blocked — ensure pills and following buttons are clickable */
+        .filter-bar, .category-tabs, .cats, .filter-tabs, .cat-tabs, .filter-pill, .cat-tab, .cat, .blood-type-grid, .search-bar {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 1;
+        }
+        .filter-chip, .cat-tab, .cat, .blood-btn, .btn-join, .btn-view, .btn-post, .btn-submit, .btn-sell, .contact-btn, .post-action, .member-row button, .file-row a {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 2;
+        }
+        /* Ensure no sticky pill blocks content */
+        .category-tabs, .filter-bar, .cats {
+            overflow-x: auto;
+            overflow-y: visible;
+            max-height: none;
+        }
+
+    </style>
+</head>
+<body>
+<script src="../js/config.js"></script>
+<script src="../js/shared.js"></script>
+
+<div class="dept-wrap">
+    <div class="page-hero">
+        <i class="fas fa-university"></i>
+        <div>
+            <h1>🏛️ Official DIU Academic Departments</h1>
+            <p>Daffodil International University — Connect with faculty and students across official academic departments</p>
+        </div>
+    </div>
+
+    <div class="dept-grid" id="deptGrid">
+        <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-secondary);">
+            <i class="fas fa-spinner fa-spin fa-2x"></i>
+        </div>
+    </div>
+
+    <!-- Dept Members Modal — visible to Admin/Student/Faculty/Alumni -->
+    <div id="deptMembersModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:16px;">
+        <div style="background:var(--surface);border-radius:16px;width:100%;max-width:520px;max-height:80vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);">
+                <h3 id="deptModalTitle" style="font-weight:800;">Department Members</h3>
+                <button onclick="closeDeptMembers()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--text-secondary);"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="deptMembersList" style="flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:8px;max-height:60vh;"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+const API = (typeof window.API !== 'undefined' ? window.API : (function(){ var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000/api'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin+'/api'; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin+'/api':'http://localhost:5000/api'; return 'http://localhost:5000/api'; } return window.location.origin+'/api'; })());
+const token = localStorage.getItem('token');
+if (!token) window.location.href = '../index.html';
+if (localStorage.getItem('darkMode') === '1') document.body.setAttribute('data-theme', 'dark');
+
+const ICONS = {
+    'CSE': 'fa-laptop-code',
+    'SWE': 'fa-code',
+    'ITM': 'fa-network-wired',
+    'CIS': 'fa-server',
+    'EEE': 'fa-bolt',
+    'ETE': 'fa-satellite-dish',
+    'Civil Engineering': 'fa-hard-hat',
+    'Textile Engineering': 'fa-tshirt',
+    'Architecture': 'fa-building',
+    'BBA': 'fa-chart-line',
+    'Innovation & Entrepreneurship': 'fa-lightbulb',
+    'Real Estate': 'fa-home',
+    'Tourism & Hospitality': 'fa-plane-departure',
+    'Pharmacy': 'fa-pills',
+    'Public Health': 'fa-heartbeat',
+    'Nutrition & Food Engineering': 'fa-apple-alt',
+    'Genetic Engineering & Biotech': 'fa-dna',
+    'English': 'fa-book',
+    'Law (LLB)': 'fa-gavel',
+    'Journalism & Media': 'fa-newspaper',
+    'Development Studies': 'fa-globe-asia'
+};
+
+async function loadDepartments() {
+    try {
+        const res = await fetch(`${API}/departments`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        const depts = await res.json();
+        document.getElementById('deptGrid').innerHTML = depts.map(d => `
+            <div class="dept-card" onclick="openDeptMembers('${encodeURIComponent(d.name)}')">
+                <div class="dept-icon"><i class="fas ${ICONS[d.name] || 'fa-graduation-cap'}"></i></div>
+                <div class="dept-name">${d.name}</div>
+                <div class="dept-count">${d.memberCount} member${d.memberCount !== 1 ? 's' : ''}</div>
+            </div>
+        `).join('');
+    } catch {
+        document.getElementById('deptGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#e41e3f;">Failed to load departments</div>';
+    }
+}
+
+async function openDeptMembers(deptEnc){
+    const dept = decodeURIComponent(deptEnc);
+    document.getElementById('deptModalTitle').textContent = dept + ' — Members (' + dept + ')';
+    document.getElementById('deptMembersList').innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-secondary);"><i class="fas fa-spinner fa-spin"></i> Loading members...</div>';
+    document.getElementById('deptMembersModal').style.display='flex';
+    try{
+        const res = await fetch(`${API}/departments/${encodeURIComponent(dept)}/members`, {headers:{Authorization:'Bearer '+token}});
+        const members = await res.json();
+        if(!res.ok) throw new Error(members.message||'Failed');
+        if(!members.length){ document.getElementById('deptMembersList').innerHTML='<div style="text-align:center;padding:20px;color:var(--text-secondary);"><i class="fas fa-users" style="font-size:2rem;opacity:0.3;display:block;margin-bottom:8px;"></i>No members in '+dept+' yet</div>'; return; }
+        document.getElementById('deptMembersList').innerHTML = members.map(m=>`
+            <div onclick="window.location.href='profile.html?id=${m._id}'" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;cursor:pointer;transition:background 0.15s;border:1px solid transparent;" onmouseover="this.style.background='var(--bg)'; this.style.borderColor='var(--border)'" onmouseout="this.style.background='none'; this.style.borderColor='transparent'">
+                <div style="width:44px;height:44px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,#0a66ff,#0540a0);color:white;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;font-size:1.1rem;">${m.profilePicture?`<img src="${(window.API_BASE||window.location.origin)+m.profilePicture}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.textContent='${(m.fullName||'?')[0].toUpperCase()}'">`:`${(m.fullName||'?')[0].toUpperCase()}`}</div>
+                <div style="flex:1;min-width:0;">
+                    <div style="font-weight:700;font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${m.fullName}</div>
+                    <div style="font-size:0.75rem;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${m.role||'Student'} ${m.batch?'· '+m.batch:''} · ${m.email||''}</div>
+                </div>
+                <i class="fas fa-chevron-right" style="color:var(--text-secondary);font-size:0.8rem;"></i>
+            </div>
+        `).join('');
+    }catch(e){
+        document.getElementById('deptMembersList').innerHTML=`<div style="text-align:center;padding:20px;color:#e41e3f;"><i class="fas fa-exclamation-triangle"></i> Failed: ${e.message}<br><button onclick="openDeptMembers('${deptEnc}')" style="margin-top:8px;background:#0866ff;color:white;border:none;padding:6px 12px;border-radius:6px;font-weight:700;cursor:pointer;">Retry</button></div>`;
+    }
+}
+function closeDeptMembers(){ document.getElementById('deptMembersModal').style.display='none'; }
+document.getElementById('deptMembersModal').addEventListener('click', e=>{ if(e.target===document.getElementById('deptMembersModal')) closeDeptMembers(); });
+
+loadDepartments();
+</script>
+</body>
+</html>

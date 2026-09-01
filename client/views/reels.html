@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Reels | DIU Nexus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --blue: #0866ff; --green: #31a24c; --red: #e41e3f; }
+        html, body { height: 100%; background: #000; font-family: 'Inter', sans-serif; color: white; overflow: hidden; }
+
+        /* FIXED NAVBAR — Professional pill style like Home (2nd image) */
+        .navbar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 56px;
+            background: rgba(0,0,0,0.92);
+            backdrop-filter: blur(16px) saturate(180%);
+            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            gap: 10px;
+            z-index: 4000;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .navbar-left { display:flex; align-items:center; gap:10px; flex-shrink:0; }
+        .navbar-brand { font-size: 1.2rem; font-weight: 800; color: var(--blue); letter-spacing: -0.5px; text-decoration:none; display:flex; align-items:center; gap:6px; }
+        .nav-search { display:flex; align-items:center; background: rgba(255,255,255,0.12); border-radius: 20px; padding: 7px 12px; gap:8px; border:1px solid rgba(255,255,255,0.08); transition:border-color 0.2s; }
+        .nav-search:focus-within { border-color: var(--blue); background: rgba(255,255,255,0.18); }
+        .nav-search i { color: rgba(255,255,255,0.6); font-size:0.85rem; }
+        .nav-search input { background:transparent; border:none; outline:none; color:white; font-family:inherit; font-size:0.85rem; width:160px; }
+        .nav-search input::placeholder { color: rgba(255,255,255,0.5); }
+        .navbar-center {
+            display:flex; align-items:center; gap:2px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 4px;
+            margin: 0 auto;
+        }
+        .nav-icon-btn {
+            width: 42px; height: 36px;
+            border-radius: 8px;
+            border: none;
+            background: transparent;
+            color: rgba(255,255,255,0.7);
+            font-size: 1.05rem;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.15s;
+        }
+        .nav-icon-btn:hover { background: rgba(255,255,255,0.12); color:white; }
+        .nav-icon-btn.active { background: var(--blue); color:white; box-shadow: 0 2px 8px rgba(8,102,255,0.4); }
+        .navbar-right { display: flex; align-items: center; gap: 6px; flex-shrink:0; }
+        .navbar-action-btn {
+            width: 38px; height: 38px; border-radius: 50%; border:none;
+            background: rgba(255,255,255,0.12); color:white; font-size:0.95rem;
+            display:flex; align-items:center; justify-content:center; cursor:pointer; transition:background 0.15s;
+        }
+        .navbar-action-btn:hover { background: rgba(255,255,255,0.2); }
+        @media(max-width:900px){ .nav-search input{ width:110px; } .navbar-center{ gap:1px; } .nav-icon-btn{ width:38px; } }
+        @media(max-width:600px){ .nav-search{ display:none; } .navbar-center{ background:transparent; padding:0; } }
+        .upload-label {
+            display: flex; align-items: center; gap: 6px;
+            background: var(--blue);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .upload-label:hover { background: #0550c1; }
+
+        /* REELS CONTAINER — professional TikTok-like */
+        .reels-container {
+            position: fixed;
+            top: 96px; left: 0; right: 0; bottom: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            background: #000;
+            overflow: hidden;
+        }
+
+        /* REEL FEED — centered 9:16 column with polished card */
+        .reels-feed {
+            height: 100%;
+            width: 100%;
+            max-width: 420px;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scrollbar-width: none;
+            position: relative;
+            background: #000;
+        }
+        .reels-feed::-webkit-scrollbar { display: none; }
+
+        /* EACH REEL ITEM — professional card with rounded corners on desktop */
+        .reel-item {
+            height: calc(100vh - 96px);
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #0a0a0a;
+            overflow: hidden;
+            border-radius: 0;
+        }
+        @media(min-width:700px){
+            .reel-item { margin: 12px auto; height: calc(100vh - 120px); max-height: 720px; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.08); }
+            .reels-feed { padding: 0 12px; }
+        }
+
+        /* VIDEO — proper 9:16 */
+        .reel-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            cursor: pointer;
+            display: block;
+        }
+
+        /* GRADIENT OVERLAY */
+        .reel-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                to top,
+                rgba(0,0,0,0.85) 0%,
+                rgba(0,0,0,0.3) 30%,
+                transparent 55%,
+                rgba(0,0,0,0.2) 100%
+            );
+            pointer-events: none;
+        }
+
+        /* PAUSE ICON (center) */
+        .pause-icon {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            width: 72px; height: 72px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.5);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2rem;
+            pointer-events: none;
+            transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s;
+            opacity: 0;
+            z-index: 5;
+        }
+        .pause-icon.show {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+
+        /* PROGRESS BAR */
+        .reel-progress {
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: rgba(255,255,255,0.3);
+            z-index: 10;
+        }
+        .reel-progress-bar {
+            height: 100%;
+            background: white;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        /* BOTTOM INFO */
+        .reel-info {
+            position: absolute;
+            bottom: 80px;
+            left: 12px;
+            right: 80px;
+            z-index: 10;
+        }
+        .reel-user {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .reel-avatar {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+            background: linear-gradient(135deg, var(--blue), #0550c1);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+        .reel-username { font-weight: 700; font-size: 0.92rem; text-shadow: 0 1px 4px rgba(0,0,0,0.8); }
+        .reel-caption {
+            font-size: 0.85rem;
+            line-height: 1.4;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+            max-height: 60px;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+        }
+        .reel-audio {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 8px;
+            font-size: 0.78rem;
+            opacity: 0.85;
+        }
+        .reel-audio i { animation: spin 3s linear infinite; font-size: 1rem; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ACTION BUTTONS (right side) */
+        .reel-actions {
+            position: absolute;
+            right: 10px;
+            bottom: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            z-index: 10;
+        }
+        .reel-action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+        }
+        .reel-action-btn button {
+            width: 46px; height: 46px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            backdrop-filter: blur(4px);
+            transition: background 0.15s, transform 0.15s;
+        }
+        .reel-action-btn button:hover { background: rgba(255,255,255,0.25); }
+        .reel-action-btn button:active { transform: scale(0.9); }
+        .reel-action-btn button.liked { background: rgba(228,30,63,0.3); color: var(--red); }
+        .reel-action-btn span {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+        }
+
+        /* HEART BURST ANIMATION */
+        @keyframes heart-burst {
+            0% { transform: scale(0) rotate(-15deg); opacity: 1; }
+            50% { transform: scale(1.4) rotate(5deg); opacity: 1; }
+            100% { transform: scale(1.8) rotate(0deg); opacity: 0; }
+        }
+        .heart-burst {
+            position: absolute;
+            font-size: 5rem;
+            pointer-events: none;
+            animation: heart-burst 0.6s ease forwards;
+            z-index: 20;
+            top: 50%; left: 50%;
+            transform-origin: center;
+            margin-left: -2.5rem;
+            margin-top: -2.5rem;
+        }
+
+        /* SOUND INDICATOR */
+        .sound-indicator {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            border: none;
+            color: white;
+            font-size: 0.9rem;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        /* COMMENT PANEL (slide up) */
+        .comment-panel {
+            position: fixed;
+            left: 0; right: 0;
+            bottom: -100%;
+            max-width: 420px;
+            margin: 0 auto;
+            background: #1c1e21;
+            border-radius: 20px 20px 0 0;
+            z-index: 200;
+            transition: bottom 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+            max-height: 75vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .comment-panel.open { bottom: 0; }
+        .comment-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .comment-panel-header h3 { font-size: 0.95rem; font-weight: 700; }
+        .comment-panel-close {
+            width: 30px; height: 30px; border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            border: none; color: white; font-size: 0.85rem;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+        }
+        .comment-panel-drag {
+            width: 40px; height: 4px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 2px;
+            margin: 8px auto 0;
+        }
+        .comment-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 16px;
+        }
+        .comment-list::-webkit-scrollbar { width: 4px; }
+        .comment-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
+        .comment-item-reel {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 14px;
+            animation: slide-up 0.2s ease;
+        }
+        @keyframes slide-up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+        .comment-item-reel .av {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--blue), #0550c1);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.8rem; font-weight: 700;
+            flex-shrink: 0;
+        }
+        .comment-item-reel .bubble {
+            background: rgba(255,255,255,0.1);
+            border-radius: 0 12px 12px 12px;
+            padding: 8px 12px;
+        }
+        .comment-item-reel .bubble .name { font-size: 0.8rem; font-weight: 700; margin-bottom: 2px; }
+        .comment-item-reel .bubble .text { font-size: 0.85rem; line-height: 1.4; color: rgba(255,255,255,0.9); }
+        .comment-input-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            background: #1c1e21;
+        }
+        .comment-input-bar input {
+            flex: 1;
+            background: rgba(255,255,255,0.1);
+            border: 1.5px solid rgba(255,255,255,0.15);
+            border-radius: 20px;
+            padding: 10px 16px;
+            color: white;
+            font-family: inherit;
+            font-size: 0.88rem;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+        .comment-input-bar input:focus { border-color: var(--blue); }
+        .comment-input-bar input::placeholder { color: rgba(255,255,255,0.4); }
+        .comment-send-btn {
+            width: 38px; height: 38px;
+            border-radius: 50%;
+            background: var(--blue);
+            border: none;
+            color: white;
+            font-size: 0.9rem;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+        .comment-send-btn:hover { transform: scale(1.1); }
+
+        /* SHARE PANEL */
+        .share-panel {
+            position: fixed;
+            left: 0; right: 0;
+            bottom: -100%;
+            max-width: 420px;
+            margin: 0 auto;
+            background: #1c1e21;
+            border-radius: 20px 20px 0 0;
+            z-index: 200;
+            transition: bottom 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+            padding: 0 0 20px;
+        }
+        .share-panel.open { bottom: 0; }
+        .share-header {
+            padding: 8px 16px 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .share-header h3 { font-size: 0.95rem; font-weight: 700; text-align: center; }
+        .share-options {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            padding: 16px;
+        }
+        .share-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 10px;
+            transition: background 0.15s;
+        }
+        .share-option:hover { background: rgba(255,255,255,0.08); }
+        .share-option .icon {
+            width: 52px; height: 52px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem;
+        }
+        .share-option span { font-size: 0.72rem; color: rgba(255,255,255,0.8); }
+        .share-copy-bar {
+            display: flex;
+            gap: 8px;
+            margin: 0 16px;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 10px;
+            align-items: center;
+        }
+        .share-copy-bar .link { flex: 1; font-size: 0.78rem; color: rgba(255,255,255,0.6); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .share-copy-bar button { background: var(--blue); border: none; border-radius: 6px; padding: 6px 12px; color: white; font-size: 0.78rem; font-weight: 700; cursor: pointer; font-family: inherit; white-space: nowrap; }
+
+        /* BACKDROP for panels */
+        .panel-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 190;
+            display: none;
+        }
+        .panel-backdrop.show { display: block; }
+
+        /* EMPTY STATE */
+        .reels-empty {
+            height: calc(100vh - 56px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            color: rgba(255,255,255,0.5);
+        }
+        .reels-empty i { font-size: 4rem; opacity: 0.3; }
+        .reels-empty h3 { font-size: 1rem; font-weight: 700; color: rgba(255,255,255,0.7); }
+        .reels-empty p { font-size: 0.85rem; }
+
+        /* LOADING */
+        .reels-loading {
+            height: calc(100vh - 56px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* TOAST */
+        #toast-container {
+            position: fixed;
+            bottom: 90px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            pointer-events: none;
+        }
+        .toast {
+            background: rgba(0,0,0,0.85);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            white-space: nowrap;
+            animation: toast-in 0.3s ease, toast-out 0.3s ease 2.5s forwards;
+        }
+        @keyframes toast-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+        @keyframes toast-out { to { opacity: 0; } }
+
+        @media (max-width: 500px) { .reels-feed { max-width: 100%; } .comment-panel { max-width: 100%; } .share-panel { max-width: 100%; } }
+    
+        /* Fix: Pill till missing + button blocked — ensure pills and following buttons are clickable */
+        .filter-bar, .category-tabs, .cats, .filter-tabs, .cat-tabs, .filter-pill, .cat-tab, .cat, .blood-type-grid, .search-bar {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 1;
+        }
+        .filter-chip, .cat-tab, .cat, .blood-btn, .btn-join, .btn-view, .btn-post, .btn-submit, .btn-sell, .contact-btn, .post-action, .member-row button, .file-row a {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 2;
+        }
+        /* Ensure no sticky pill blocks content */
+        .category-tabs, .filter-bar, .cats {
+            overflow-x: auto;
+            overflow-y: visible;
+            max-height: none;
+        }
+
+    </style>
+</head>
+<body>
+
+<!-- FIXED NAVBAR — Professional pill like Home (2nd image) -->
+<nav class="navbar">
+    <div class="navbar-left">
+        <a href="../home.html" class="navbar-brand" style="display:flex;align-items:center;gap:6px;"><img src="../assets/icon.svg" alt="NEXUS" style="width:26px;height:26px;flex-shrink:0;filter:drop-shadow(0 2px 4px rgba(10,108,255,0.3));" onerror="this.style.display='none'"><span style="font-weight:800;color:#0A6CFF;letter-spacing:0.5px;">NEXUS</span></a>
+        <div class="nav-search">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search DIU Nexus" oninput="if(this.value.length>2) location.href='../home.html?q='+encodeURIComponent(this.value)">
+        </div>
+    </div>
+    <div class="navbar-center" id="mainNavCenter">
+        <a href="../home.html" class="nav-icon-btn" title="Home"><i class="fas fa-home"></i></a>
+        <a href="groups.html" class="nav-icon-btn" title="Groups"><i class="fas fa-users"></i></a>
+        <a href="reels.html" class="nav-icon-btn active" title="Reels"><i class="fas fa-film"></i></a>
+        <a href="departments.html" class="nav-icon-btn" title="Departments"><i class="fas fa-building"></i></a>
+        <a href="events.html" class="nav-icon-btn" title="Events"><i class="fas fa-calendar-alt"></i></a>
+    </div>
+    <div class="navbar-right">
+        <button class="navbar-action-btn" onclick="location.href='messenger.html'" title="Messenger"><i class="fab fa-facebook-messenger"></i></button>
+        <button class="navbar-action-btn" onclick="location.href='../home.html'" title="Notifications"><i class="fas fa-bell"></i></button>
+        <label class="upload-label" style="margin-left:4px;">
+            <i class="fas fa-plus"></i> New Reel
+            <input type="file" accept="video/*" style="display:none" onchange="uploadReel(this)" id="reelInput">
+        </label>
+    </div>
+</nav>
+
+<!-- REELS PILLS — like TikTok/IG filters -->
+<div class="reels-pills-bar" id="reelsPillsBar" style="position:fixed;top:56px;left:0;right:0;background:#000;padding:8px 12px;display:flex;gap:8px;overflow-x:auto;z-index:998;border-bottom:1px solid rgba(255,255,255,0.08);scrollbar-width:none;-webkit-overflow-scrolling:touch;">
+    <button class="reels-pill active" data-filter="all" onclick="filterReelsPill('all', this)" style="padding:6px 16px;border-radius:20px;border:1px solid #fff;background:#fff;color:#000;font-size:0.78rem;font-weight:700;white-space:nowrap;cursor:pointer;transition:all 0.15s;">All</button>
+    <button class="reels-pill" data-filter="trending" onclick="filterReelsPill('trending', this)" style="padding:6px 16px;border-radius:20px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.12);color:white;font-size:0.78rem;font-weight:600;white-space:nowrap;cursor:pointer;transition:all 0.15s;">🔥 Trending</button>
+    <button class="reels-pill" data-filter="following" onclick="filterReelsPill('following', this)" style="padding:6px 16px;border-radius:20px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.12);color:white;font-size:0.78rem;font-weight:600;white-space:nowrap;cursor:pointer;">Following</button>
+    <button class="reels-pill" data-filter="campus" onclick="filterReelsPill('campus', this)" style="padding:6px 16px;border-radius:20px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.12);color:white;font-size:0.78rem;font-weight:600;white-space:nowrap;cursor:pointer;">🎓 Campus</button>
+    <button class="reels-pill" data-filter="funny" onclick="filterReelsPill('funny', this)" style="padding:6px 16px;border-radius:20px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.12);color:white;font-size:0.78rem;font-weight:600;white-space:nowrap;cursor:pointer;">😂 Funny</button>
+    <button class="reels-pill" data-filter="music" onclick="filterReelsPill('music', this)" style="padding:6px 16px;border-radius:20px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.12);color:white;font-size:0.78rem;font-weight:600;white-space:nowrap;cursor:pointer;">🎵 Music</button>
+</div>
+
+<!-- REELS CONTAINER -->
+<div class="reels-container" style="top:96px;">
+    <div class="reels-feed" id="reelsFeed">
+        <div class="reels-loading"><i class="fas fa-spinner fa-spin" style="font-size:2rem;opacity:0.5;"></i></div>
+    </div>
+</div>
+
+<!-- PANEL BACKDROP -->
+<div class="panel-backdrop" id="panelBackdrop" onclick="closePanels()"></div>
+
+<!-- COMMENT PANEL -->
+<div class="comment-panel" id="commentPanel">
+    <div class="comment-panel-drag"></div>
+    <div class="comment-panel-header">
+        <h3 id="commentCount">Comments</h3>
+        <button class="comment-panel-close" onclick="closePanels()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="comment-list" id="commentList"></div>
+    <div class="comment-input-bar">
+        <div class="reel-avatar" id="commentAvatar" style="width:32px;height:32px;font-size:0.75rem;">?</div>
+        <input type="text" id="commentInput" placeholder="Add a comment..." onkeydown="if(event.key==='Enter')postComment()">
+        <button class="comment-send-btn" onclick="postComment()"><i class="fas fa-paper-plane"></i></button>
+    </div>
+</div>
+
+<!-- SHARE PANEL -->
+<div class="share-panel" id="sharePanel">
+    <div class="comment-panel-drag" style="margin-bottom:12px;"></div>
+    <div class="share-header"><h3>Share Reel</h3></div>
+    <div class="share-options">
+        <div class="share-option" onclick="copyReelLink()">
+            <div class="icon" style="background:#e4e6eb;"><i class="fas fa-link" style="color:#1c1e21;"></i></div>
+            <span>Copy Link</span>
+        </div>
+        <div class="share-option" onclick="shareToWhatsApp()">
+            <div class="icon" style="background:#25D366;"><i class="fab fa-whatsapp" style="color:white;"></i></div>
+            <span>WhatsApp</span>
+        </div>
+        <div class="share-option" onclick="shareToFB()">
+            <div class="icon" style="background:#0866ff;"><i class="fab fa-facebook" style="color:white;"></i></div>
+            <span>Facebook</span>
+        </div>
+        <div class="share-option" onclick="shareToMessenger()">
+            <div class="icon" style="background:linear-gradient(135deg,#0866ff,#8e0cff);"><i class="fab fa-facebook-messenger" style="color:white;"></i></div>
+            <span>Messenger</span>
+        </div>
+    </div>
+    <div class="share-copy-bar">
+        <span class="link" id="shareLinkDisplay">https://diunexus.app/reel/...</span>
+        <button onclick="copyReelLink()">Copy</button>
+    </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script src="../js/config.js"></script>
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+const API = (typeof window.API !== 'undefined' ? window.API : (function(){ var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000/api'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin+'/api'; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin+'/api':'http://localhost:5000/api'; return 'http://localhost:5000/api'; } return window.location.origin+'/api'; })());
+const token = localStorage.getItem('token');
+const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
+if (!token) window.location.href = '../index.html';
+
+if (localStorage.getItem('darkMode') === '1') document.body.style.background = '#000';
+
+let reels = [];
+let activeReelId = null;
+let isMuted = false;
+let lastTap = 0;
+let progressInterval = null;
+
+// Set comment avatar
+const initials = (currentUser?.fullName || '?').trim().split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+document.getElementById('commentAvatar').textContent = initials;
+
+async function apiFetch(path, opts = {}) {
+    const h = { 'Authorization': `Bearer ${token}`, ...(opts.headers || {}) };
+    if (!(opts.body instanceof FormData)) h['Content-Type'] = 'application/json';
+    return fetch(`${API}${path}`, { ...opts, headers: h });
+}
+
+async function loadReels() {
+    try {
+        const res = await apiFetch('/reels');
+        reels = await res.json();
+        renderReels();
+    } catch (e) {
+        document.getElementById('reelsFeed').innerHTML = `
+            <div class="reels-empty">
+                <i class="fas fa-exclamation-circle"></i>
+                <h3>Could not load reels</h3>
+                <p>Check your connection and try again</p>
+            </div>`;
+    }
+}
+
+function renderReels() {
+    const feed = document.getElementById('reelsFeed');
+    if (!reels.length) {
+        feed.innerHTML = `
+            <div class="reels-empty">
+                <i class="fas fa-film"></i>
+                <h3>No Reels Yet</h3>
+                <p>Be the first to upload a reel!</p>
+            </div>`;
+        return;
+    }
+    feed.innerHTML = reels.map((r, i) => buildReelItem(r, i)).join('');
+    initScrollObserver();
+}
+
+function buildReelItem(r, idx) {
+    const initials = getInitials(r.fullName);
+    const avatarHtml = r.profilePicture
+        ? `<img class="reel-avatar" src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${r.profilePicture}" alt="" onerror="this.outerHTML='<div class=reel-avatar>${initials}</div>'">`
+        : `<div class="reel-avatar">${initials}</div>`;
+
+    return `
+    <div class="reel-item" id="reel-item-${r.id}" data-id="${r.id}" data-idx="${idx}"
+         ondblclick="doLike(event, '${r.id}', this)">
+
+        <div class="reel-progress"><div class="reel-progress-bar" id="prog-${r.id}"></div></div>
+
+        <video class="reel-video" id="vid-${r.id}"
+            src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${r.videoUrl}"
+            loop playsinline preload="metadata"
+            onclick="togglePlay('${r.id}', this)">
+        </video>
+
+        <div class="reel-overlay" onclick="togglePlay('${r.id}', document.getElementById('vid-${r.id}'))"></div>
+
+        <div class="pause-icon" id="pause-icon-${r.id}"><i class="fas fa-pause"></i></div>
+
+        <button class="sound-indicator" id="mute-${r.id}" onclick="toggleMute('${r.id}')">
+            <i class="fas fa-volume-${isMuted ? 'mute' : 'up'}"></i>
+        </button>
+
+        <!-- BOTTOM INFO -->
+        <div class="reel-info">
+            <div class="reel-user">
+                ${avatarHtml}
+                <span class="reel-username">${escHtml(r.fullName || 'User')}</span>
+            </div>
+            ${r.caption ? `<div class="reel-caption">${escHtml(r.caption)}</div>` : ''}
+            <div class="reel-audio"><i class="fas fa-music"></i> <span>Original Audio • ${escHtml(r.fullName || 'DIU Nexus')}</span></div>
+        </div>
+
+        <!-- ACTION BUTTONS -->
+        <div class="reel-actions">
+            <div class="reel-action-btn">
+                <button id="like-btn-${r.id}" onclick="doLike(event, '${r.id}', document.getElementById('reel-item-${r.id}'))" title="Like">
+                    <i class="fas fa-heart"></i>
+                </button>
+                <span id="like-count-${r.id}">${r.likeCount || 0}</span>
+            </div>
+            <div class="reel-action-btn">
+                <button onclick="openComments('${r.id}')" title="Comment"><i class="fas fa-comment"></i></button>
+                <span id="comment-count-${r.id}">${r.commentCount || 0}</span>
+            </div>
+            <div class="reel-action-btn">
+                <button onclick="openShare('${r.id}')" title="Share"><i class="fas fa-share"></i></button>
+                <span>Share</span>
+            </div>
+            <div class="reel-action-btn">
+                <button onclick="saveReel('${r.id}', this)" title="Save"><i class="fas fa-bookmark"></i></button>
+                <span>Save</span>
+            </div>
+            <div class="reel-action-btn">
+                <button onclick="reportContent('reels', '${r.id}')" title="Report" style="background:rgba(228,30,63,0.2);"><i class="fas fa-flag" style="font-size:0.85rem;"></i></button>
+                <span>Report</span>
+            </div>
+        </div>
+    </div>`;
+}
+
+function initScrollObserver() {
+    const feed = document.getElementById('reelsFeed');
+    const items = feed.querySelectorAll('.reel-item');
+    if (!items.length) return;
+
+    const obs = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            const video = entry.target.querySelector('video');
+            const id = entry.target.dataset.id;
+            if (entry.isIntersecting && entry.intersectionRatio > 0.6) {
+                activeReelId = id;
+                // Pause all others
+                document.querySelectorAll('.reel-item video').forEach(v => {
+                    if (v !== video) { v.pause(); v.currentTime = 0; }
+                });
+                // Play this
+                video.muted = isMuted;
+                video.play().catch(() => { video.muted = true; video.play(); });
+                startProgress(id, video);
+            } else {
+                if (video) video.pause();
+                clearProgressBar(id);
+            }
+        });
+    }, { threshold: [0.6], root: feed });
+
+    items.forEach(item => obs.observe(item));
+}
+
+function startProgress(id, video) {
+    clearInterval(progressInterval);
+    const bar = document.getElementById(`prog-${id}`);
+    if (!bar) return;
+    progressInterval = setInterval(() => {
+        if (!video.duration) return;
+        const pct = (video.currentTime / video.duration) * 100;
+        bar.style.width = pct + '%';
+    }, 100);
+}
+function clearProgressBar(id) {
+    const bar = document.getElementById(`prog-${id}`);
+    if (bar) bar.style.width = '0%';
+}
+
+function togglePlay(id, video) {
+    const icon = document.getElementById(`pause-icon-${id}`);
+    if (video.paused) {
+        video.play();
+        icon.innerHTML = '<i class="fas fa-play"></i>';
+    } else {
+        video.pause();
+        icon.innerHTML = '<i class="fas fa-pause"></i>';
+    }
+    icon.classList.add('show');
+    setTimeout(() => icon.classList.remove('show'), 700);
+}
+
+function toggleMute(id) {
+    isMuted = !isMuted;
+    document.querySelectorAll('.reel-item video').forEach(v => v.muted = isMuted);
+    document.querySelectorAll('[id^="mute-"]').forEach(btn => {
+        btn.innerHTML = `<i class="fas fa-volume-${isMuted ? 'mute' : 'up'}"></i>`;
+    });
+}
+
+function doLike(event, reelId, container) {
+    event.stopPropagation();
+    const btn = document.getElementById(`like-btn-${reelId}`);
+    const countEl = document.getElementById(`like-count-${reelId}`);
+    const isLiked = btn.classList.contains('liked');
+
+    // Optimistic UI
+    if (isLiked) {
+        btn.classList.remove('liked');
+        countEl.textContent = Math.max(0, parseInt(countEl.textContent) - 1);
+    } else {
+        btn.classList.add('liked');
+        countEl.textContent = parseInt(countEl.textContent) + 1;
+        // Double-tap heart burst
+        const burst = document.createElement('div');
+        burst.className = 'heart-burst';
+        burst.innerHTML = '❤️';
+        container.appendChild(burst);
+        setTimeout(() => burst.remove(), 800);
+    }
+
+    apiFetch(`/reels/${reelId}/like`, { method: 'POST' }).catch(() => {});
+}
+
+// COMMENTS
+let activeCommentReelId = null;
+
+async function openComments(reelId) {
+    activeCommentReelId = reelId;
+    document.getElementById('commentPanel').classList.add('open');
+    document.getElementById('panelBackdrop').classList.add('show');
+    document.getElementById('commentList').innerHTML = '<div style="padding:20px;text-align:center;color:rgba(255,255,255,0.4);"><i class="fas fa-spinner fa-spin"></i></div>';
+    document.getElementById('commentInput').focus();
+    await loadReelComments(reelId);
+}
+
+async function loadReelComments(reelId) {
+    try {
+        const res = await apiFetch(`/reels/${reelId}/comments`);
+        const comments = await res.json();
+        const list = document.getElementById('commentList');
+        document.getElementById('commentCount').textContent = `${comments.length} Comment${comments.length !== 1 ? 's' : ''}`;
+        if (!comments.length) {
+            list.innerHTML = '<div style="padding:40px;text-align:center;color:rgba(255,255,255,0.3);"><i class="fas fa-comment-slash" style="font-size:2rem;display:block;margin-bottom:8px;"></i>No comments yet. Be the first!</div>';
+            return;
+        }
+        list.innerHTML = comments.map(c => {
+            const av = getInitials(c.fullName);
+            return `<div class="comment-item-reel">
+                <div class="av">${av}</div>
+                <div class="bubble">
+                    <div class="name">${escHtml(c.fullName)}</div>
+                    <div class="text">${escHtml(c.content)}</div>
+                </div>
+            </div>`;
+        }).join('');
+    } catch {
+        document.getElementById('commentList').innerHTML = '<div style="padding:20px;text-align:center;color:rgba(255,255,255,0.3);">Failed to load comments</div>';
+    }
+}
+
+async function postComment() {
+    const input = document.getElementById('commentInput');
+    const text = input.value.trim();
+    if (!text || !activeCommentReelId) return;
+    input.value = '';
+    // Optimistic
+    const list = document.getElementById('commentList');
+    const av = getInitials(currentUser?.fullName || '?');
+    list.insertAdjacentHTML('beforeend', `<div class="comment-item-reel"><div class="av">${av}</div><div class="bubble"><div class="name">${escHtml(currentUser?.fullName)}</div><div class="text">${escHtml(text)}</div></div></div>`);
+    list.scrollTop = list.scrollHeight;
+    // Update count
+    const countEl = document.getElementById(`comment-count-${activeCommentReelId}`);
+    if (countEl) countEl.textContent = parseInt(countEl.textContent || '0') + 1;
+
+    try {
+        await apiFetch(`/reels/${activeCommentReelId}/comments`, {
+            method: 'POST',
+            body: JSON.stringify({ content: text })
+        });
+    } catch { showToast('Failed to post comment'); }
+}
+
+// SHARE
+let activeShareReelId = null;
+
+function openShare(reelId) {
+    activeShareReelId = reelId;
+    const url = `${window.location.origin}/views/reels.html?id=${reelId}`;
+    document.getElementById('shareLinkDisplay').textContent = url;
+    document.getElementById('sharePanel').classList.add('open');
+    document.getElementById('panelBackdrop').classList.add('show');
+}
+
+function copyReelLink() {
+    const url = `${window.location.origin}/views/reels.html?id=${activeShareReelId}`;
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(() => showToast('🔗 Link copied!'));
+    } else {
+        showToast('🔗 Link: ' + url);
+    }
+}
+
+function shareToWhatsApp() {
+    const url = `${window.location.origin}/views/reels.html?id=${activeShareReelId}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent('Check out this reel on DIU Nexus! ' + url)}`, '_blank');
+}
+function shareToFB() {
+    const url = `${window.location.origin}/views/reels.html?id=${activeShareReelId}`;
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+}
+function shareToMessenger() {
+    copyReelLink();
+    showToast('💬 Copied! Paste in Messenger');
+}
+
+async function saveReel(reelId, btn) {
+    btn.style.color = btn.style.color === 'var(--blue)' ? '' : 'var(--blue)';
+    showToast(btn.style.color ? '🔖 Reel saved!' : 'Reel unsaved');
+}
+
+function closePanels() {
+    document.getElementById('commentPanel').classList.remove('open');
+    document.getElementById('sharePanel').classList.remove('open');
+    document.getElementById('panelBackdrop').classList.remove('show');
+}
+
+async function uploadReel(input) {
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 500 * 1024 * 1024) { showToast('⚠️ File too large (max 500MB)'); return; }
+
+    showToast('⏳ Uploading reel...');
+    const caption = prompt('Add a caption (optional):') || '';
+    const fd = new FormData();
+    fd.append('video', file);
+    fd.append('caption', caption);
+
+    try {
+        const res = await fetch(`${API}/reels`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}` },
+            body: fd
+        });
+        if (!res.ok) throw new Error();
+        showToast('✅ Reel uploaded!');
+        input.value = '';
+        await loadReels();
+    } catch {
+        showToast('❌ Upload failed');
+    }
+}
+
+function filterReelsPill(filter, btn){
+    document.querySelectorAll('.reels-pill').forEach(b=>{
+        b.classList.remove('active');
+        b.style.background='rgba(255,255,255,0.12)';
+        b.style.color='white';
+        b.style.borderColor='rgba(255,255,255,0.2)';
+    });
+    btn.classList.add('active');
+    btn.style.background='#fff';
+    btn.style.color='#000';
+    btn.style.borderColor='#fff';
+    if(filter==='all'){ renderReels(); return; }
+    if(filter==='trending'){
+        const sorted=[...reels].sort((a,b)=>(b.likeCount||0)-(a.likeCount||0));
+        const feed=document.getElementById('reelsFeed');
+        if(!sorted.length){ feed.innerHTML='<div class="reels-empty"><i class="fas fa-fire"></i><h3>No trending reels</h3></div>'; return; }
+        feed.innerHTML=sorted.map((r,i)=>buildReelItem(r,i)).join('');
+        initScrollObserver(); return;
+    }
+    if(filter==='following'){
+        // Show only reels from friends (if available) else show all
+        const filtered=reels.filter(r=> r.isFollowing);
+        const feed=document.getElementById('reelsFeed');
+        if(!filtered.length){ feed.innerHTML='<div class="reels-empty"><i class="fas fa-user-friends"></i><h3>No following reels</h3><p>Follow more friends to see their reels</p></div>'; return; }
+        feed.innerHTML=filtered.map((r,i)=>buildReelItem(r,i)).join('');
+        initScrollObserver(); return;
+    }
+    const filtered=reels.filter(r=> (r.caption||'').toLowerCase().includes(filter));
+    const feed=document.getElementById('reelsFeed');
+    if(!filtered.length){ feed.innerHTML=`<div class="reels-empty"><i class="fas fa-film"></i><h3>No ${filter} reels</h3><p>Be the first to post #${filter}!</p></div>`; return; }
+    feed.innerHTML=filtered.map((r,i)=>buildReelItem(r,i)).join('');
+    initScrollObserver();
+}
+
+function getInitials(name) {
+    if (!name) return '?';
+    return name.trim().split(' ').slice(0, 2).map(n => n[0]?.toUpperCase()).join('');
+}
+function escHtml(s) {
+    return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+function showToast(msg) {
+    const c = document.getElementById('toast-container');
+    const t = document.createElement('div');
+    t.className = 'toast';
+    t.textContent = msg;
+    c.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+}
+
+loadReels();
+</script>
+</body>
+</html>

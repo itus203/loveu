@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Group | DIU Nexus</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="../css/home.css">
+<style>
+:root{--blue:#0866ff;--bg:#f0f2f5;--surface:#fff;--border:#e4e6eb;--text:#1c1e21;--text2:#65676b;--radius:12px;}
+[data-theme="dark"]{--bg:#18191a;--surface:#242526;--border:#3a3b3c;--text:#e4e6eb;--text2:#b0b3b8;}
+body{font-family:Inter,sans-serif;background:var(--bg);color:var(--text);margin:0;}
+.group-cover-wrap{position:relative;height:280px;overflow:hidden;background:linear-gradient(135deg,#667eea,#764ba2);}
+.group-cover-wrap img{width:100%;height:100%;object-fit:cover;}
+.group-cover-overlay{position:absolute;inset:0;background:linear-gradient(180deg,transparent 30%,rgba(0,0,0,0.6));}
+.group-header{max-width:1100px;margin:-60px auto 0;position:relative;z-index:2;padding:0 16px;}
+.group-header-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;box-shadow:0 4px 20px rgba(0,0,0,0.08);display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap;}
+.group-avatar{width:88px;height:88px;border-radius:14px;border:4px solid var(--surface);overflow:hidden;background:linear-gradient(135deg,#0866ff,#7c3aed);display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:1.6rem;flex-shrink:0;margin-top:-40px;box-shadow:0 4px 12px rgba(0,0,0,0.12);}
+.group-avatar img{width:100%;height:100%;object-fit:cover;}
+.group-title{flex:1;min-width:200px;}
+.group-title h1{font-size:1.4rem;font-weight:800;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.group-title .meta{font-size:0.82rem;color:var(--text2);margin-top:4px;display:flex;gap:10px;flex-wrap:wrap;}
+.badge{padding:2px 7px;border-radius:6px;font-size:0.65rem;font-weight:800;}
+.badge-public{background:#e7f0ff;color:#0866ff;}
+.badge-private{background:#fef3c7;color:#92400e;}
+.badge-verified{background:#dcfce7;color:#166534;}
+.group-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.btn{padding:9px 16px;border-radius:8px;font-weight:700;font-size:0.85rem;cursor:pointer;border:none;transition:all 0.15s;}
+.btn-primary{background:var(--blue);color:white;}
+.btn-primary:hover{background:#0550c1;}
+.btn-secondary{background:var(--bg);border:1px solid var(--border);color:var(--text);}
+.tabs{max-width:1100px;margin:14px auto 0;padding:0 16px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--border);background:var(--surface);border-radius:12px 12px 0 0;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{padding:12px 16px;font-weight:700;font-size:0.85rem;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;color:var(--text2);display:flex;align-items:center;gap:6px;}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue);background:var(--blue-light,#f0f7ff);}
+.tab-content{max-width:1100px;margin:0 auto;padding:16px;display:grid;grid-template-columns:1fr 320px;gap:16px;}
+@media(max-width:900px){.tab-content{grid-template-columns:1fr;}}
+.main-col{display:flex;flex-direction:column;gap:12px;}
+.side-col{position:sticky;top:16px;align-self:start;display:flex;flex-direction:column;gap:12px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
+.card-header{padding:12px 14px;font-weight:800;font-size:0.9rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.card-body{padding:12px 14px;}
+.post-composer{display:flex;gap:10px;align-items:flex-start;}
+.post-composer textarea{flex:1;padding:10px;border:1px solid var(--border);border-radius:10px;font-family:inherit;resize:vertical;min-height:60px;background:var(--bg);color:var(--text);outline:none;}
+.post-card{padding:14px;}
+.post-header{display:flex;gap:10px;align-items:center;margin-bottom:8px;}
+.post-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#0866ff,#7c3aed);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;overflow:hidden;}
+.post-avatar img{width:100%;height:100%;object-fit:cover;}
+.post-meta{flex:1;}
+.post-author{font-weight:700;font-size:0.88rem;display:flex;gap:6px;align-items:center;}
+.post-time{font-size:0.72rem;color:var(--text2);}
+.post-content{font-size:0.9rem;line-height:1.5;white-space:pre-wrap;word-break:break-word;margin:8px 0;}
+.post-actions{display:flex;gap:16px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:0.82rem;color:var(--text2);}
+.post-action{cursor:pointer;display:flex;align-items:center;gap:6px;font-weight:600;}
+.post-action:hover{color:var(--blue);}
+.post-action.active{color:var(--blue);}
+.chat-box{height:380px;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:var(--bg);border-radius:0 0 12px 12px;}
+.chat-input{display:flex;gap:8px;padding:10px;border-top:1px solid var(--border);background:var(--surface);}
+.chat-input input{flex:1;padding:9px 12px;border:1px solid var(--border);border-radius:20px;background:var(--bg);outline:none;font-family:inherit;}
+.member-row{display:flex;gap:10px;align-items:center;padding:8px;border-radius:8px;transition:background 0.15s;}
+.member-row:hover{background:var(--bg);}
+.file-row{display:flex;gap:10px;align-items:center;padding:8px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;background:var(--bg);}
+.poll-option{padding:8px 10px;border:1px solid var(--border);border-radius:8px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;transition:all 0.15s;}
+.poll-option:hover{background:var(--bg);}
+.poll-option.voted{border-color:var(--blue);background:var(--blue-light);}
+
+        /* Fix: Pill till missing + button blocked — ensure pills and following buttons are clickable */
+        .filter-bar, .category-tabs, .cats, .filter-tabs, .cat-tabs, .filter-pill, .cat-tab, .cat, .blood-type-grid, .search-bar {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 1;
+        }
+        .filter-chip, .cat-tab, .cat, .blood-btn, .btn-join, .btn-view, .btn-post, .btn-submit, .btn-sell, .contact-btn, .post-action, .member-row button, .file-row a {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 2;
+        }
+        /* Ensure no sticky pill blocks content */
+        .category-tabs, .filter-bar, .cats {
+            overflow-x: auto;
+            overflow-y: visible;
+            max-height: none;
+        }
+
+    </style>
+</head>
+<body>
+<nav class="navbar" style="position:sticky;top:0;z-index:1000;background:rgba(255,255,255,0.92);backdrop-filter:blur(16px) saturate(180%);-webkit-backdrop-filter:blur(16px) saturate(180%);border-bottom:1px solid rgba(0,0,0,0.06);padding:6px 12px;display:flex;align-items:center;gap:10px;box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+<div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+<button onclick="if(history.length>1) history.back(); else location.href='groups.html'" style="width:36px;height:36px;border-radius:50%;border:none;background:var(--bg);display:flex;align-items:center;justify-content:center;cursor:pointer;"><i class="fas fa-arrow-left"></i></button>
+<a href="../home.html" style="font-weight:800;color:var(--blue);text-decoration:none;white-space:nowrap;"><img src="../assets/icon.svg" alt="NEXUS" style="width:24px;height:24px;flex-shrink:0;margin-right:6px;" onerror="this.style.display='none'"><span style="color:#0A6CFF;font-weight:800;">NEXUS</span></a>
+</div>
+<div style="flex:1;display:flex;align-items:center;justify-content:center;gap:2px;background:var(--bg);padding:3px;border-radius:12px;max-width:420px;margin:0 auto;">
+<a href="../home.html" class="nav-icon-btn" style="flex:1;display:flex;align-items:center;justify-content:center;width:42px;height:40px;border-radius:10px;color:var(--text2);text-decoration:none;font-size:1.15rem;" title="Home"><i class="fas fa-home"></i></a>
+<a href="groups.html" class="nav-icon-btn active" style="flex:1;display:flex;align-items:center;justify-content:center;width:42px;height:40px;border-radius:10px;background:#e7f0ff;color:var(--blue);box-shadow:0 1px 3px rgba(8,102,255,0.15);text-decoration:none;font-size:1.15rem;" title="Groups"><i class="fas fa-users"></i></a>
+<a href="reels.html" class="nav-icon-btn" style="flex:1;display:flex;align-items:center;justify-content:center;width:42px;height:40px;border-radius:10px;color:var(--text2);text-decoration:none;font-size:1.15rem;" title="Reels"><i class="fas fa-film"></i></a>
+<a href="departments.html" class="nav-icon-btn" style="flex:1;display:flex;align-items:center;justify-content:center;width:42px;height:40px;border-radius:10px;color:var(--text2);text-decoration:none;font-size:1.15rem;" title="Departments"><i class="fas fa-building"></i></a>
+<a href="events.html" class="nav-icon-btn" style="flex:1;display:flex;align-items:center;justify-content:center;width:42px;height:40px;border-radius:10px;color:var(--text2);text-decoration:none;font-size:1.15rem;" title="Events"><i class="fas fa-calendar-alt"></i></a>
+</div>
+<div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
+<button onclick="shareGroup()" style="background:var(--bg);border:1px solid var(--border);padding:7px 12px;border-radius:8px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;"><i class="fas fa-share"></i> Share</button>
+<button id="joinBtn" onclick="toggleJoin()" style="background:var(--blue);color:white;border:none;padding:7px 14px;border-radius:8px;font-weight:700;cursor:pointer;">Join</button>
+<button id="inviteBtn" onclick="createInvite()" style="background:var(--surface);border:1px solid var(--border);padding:7px 12px;border-radius:8px;font-weight:600;cursor:pointer;display:none;"><i class="fas fa-link"></i> Invite</button>
+</div>
+</nav>
+
+<div class="group-cover-wrap" id="groupCover"><div class="group-cover-overlay"></div></div>
+<div class="group-header">
+<div class="group-header-card">
+<div class="group-avatar" id="groupAvatar">G</div>
+<div class="group-title">
+<h1 id="groupName">Loading... <span id="verifiedBadge" style="display:none;" class="badge badge-verified"><i class="fas fa-check-circle"></i> Verified</span> <span id="officialBadge" style="display:none;background:#fef3c7;color:#92400e;padding:2px 6px;border-radius:6px;font-size:0.65rem;">Official</span></h1>
+<div class="meta" id="groupMeta">—</div>
+<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;" id="groupTags"></div>
+</div>
+<div class="group-actions">
+<button onclick="openMembers()" style="background:var(--bg);border:1px solid var(--border);padding:8px 12px;border-radius:8px;font-weight:600;cursor:pointer;"><i class="fas fa-users"></i> <span id="memberCount">0</span></button>
+<button id="adminBtn" onclick="openAdmin()" style="display:none;background:#111827;color:white;border:none;padding:8px 12px;border-radius:8px;font-weight:700;cursor:pointer;"><i class="fas fa-cog"></i> Manage</button>
+</div>
+</div>
+</div>
+
+<div class="tabs" id="tabs">
+<div class="tab active" data-tab="posts" onclick="switchTab('posts',this)"><i class="fas fa-stream"></i> Posts</div>
+<div class="tab" data-tab="announcements" onclick="switchTab('announcements',this)"><i class="fas fa-bullhorn" style="color:#ef4444"></i> Announcements</div>
+<div class="tab" data-tab="chat" onclick="switchTab('chat',this)"><i class="fas fa-comments" style="color:#10b981"></i> Chat</div>
+<div class="tab" data-tab="files" onclick="switchTab('files',this)"><i class="fas fa-folder"></i> Files</div>
+<div class="tab" data-tab="events" onclick="switchTab('events',this)"><i class="fas fa-calendar"></i> Events</div>
+<div class="tab" data-tab="members" onclick="switchTab('members',this)"><i class="fas fa-users"></i> Members</div>
+<div class="tab" data-tab="about" onclick="switchTab('about',this)"><i class="fas fa-info-circle"></i> About</div>
+</div>
+
+<div class="tab-content">
+<div class="main-col" id="mainCol">
+<!-- Posts Tab -->
+<div id="tab-posts">
+<div class="card" id="composerCard" style="display:none;">
+<div class="card-body">
+<div class="post-composer">
+<div class="post-avatar" id="composerAvatar">U</div>
+<textarea id="postContent" placeholder="What's on your mind? Share with group..." rows="2"></textarea>
+</div>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center;">
+<label style="cursor:pointer;background:var(--bg);border:1px solid var(--border);padding:6px 10px;border-radius:8px;font-size:0.78rem;font-weight:600;"><i class="fas fa-image" style="color:#10b981"></i> Photo <input type="file" id="postMedia" accept="image/*,video/*" style="display:none;" onchange="previewPostMedia(this)"></label>
+<select id="postTopic" style="padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);font-size:0.78rem;"><option value="">Topic</option><option value="general">General</option><option value="announcement">Announcement</option><option value="assignment">Assignment</option><option value="notes">Notes</option><option value="question">Question</option></select>
+<label style="display:flex;align-items:center;gap:4px;font-size:0.78rem;"><input type="checkbox" id="postAnonymous"> Anonymous</label>
+<button onclick="createPost()" style="margin-left:auto;background:var(--blue);color:white;border:none;padding:8px 16px;border-radius:8px;font-weight:700;cursor:pointer;">Post</button>
+</div>
+<div id="postMediaPreview" style="display:none;margin-top:10px;position:relative;"><img id="postImgPrev" style="width:100%;max-height:240px;object-fit:cover;border-radius:8px;"><button onclick="clearPostMedia()" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.6);color:white;border:none;width:28px;height:28px;border-radius:50%;cursor:pointer;"><i class="fas fa-times"></i></button></div>
+</div>
+</div>
+<div id="postsList"></div>
+</div>
+
+<!-- Announcements -->
+<div id="tab-announcements" style="display:none;"></div>
+<!-- Chat -->
+<div id="tab-chat" style="display:none;">
+<div class="card">
+<div class="card-header">Group Chat <span style="font-weight:400;font-size:0.75rem;color:var(--text2);">Realtime • Messenger integrated</span></div>
+<div class="chat-box" id="chatBox"><div style="text-align:center;padding:20px;color:var(--text2);"><i class="fas fa-spinner fa-spin"></i> Loading...</div></div>
+<div class="chat-input">
+<input type="file" id="chatFile" style="display:none;" onchange="sendChatFile(this)">
+<button onclick="document.getElementById('chatFile').click()" style="background:var(--bg);border:1px solid var(--border);width:36px;height:36px;border-radius:50%;cursor:pointer;"><i class="fas fa-paperclip"></i></button>
+<input type="text" id="chatInput" placeholder="Write a message..." onkeydown="if(event.key==='Enter') sendChat()">
+<button onclick="sendChat()" style="background:var(--blue);color:white;border:none;width:36px;height:36px;border-radius:50%;cursor:pointer;"><i class="fas fa-paper-plane"></i></button>
+</div>
+</div>
+</div>
+<!-- Files -->
+<div id="tab-files" style="display:none;">
+<div class="card"><div class="card-header">Files & Resources <button onclick="document.getElementById('fileInput').click()" style="background:var(--blue);color:white;border:none;padding:6px 10px;border-radius:8px;font-weight:600;cursor:pointer;"><i class="fas fa-upload"></i> Upload</button></div>
+<div class="card-body">
+<input type="file" id="fileInput" style="display:none;" onchange="uploadFile(this)">
+<div style="display:flex;gap:6px;margin-bottom:10px;">
+<input type="text" id="fileSearch" placeholder="Search files..." style="flex:1;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);" oninput="loadFiles()">
+<select id="fileCategory" onchange="loadFiles()" style="padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);"><option value="">All</option><option value="notes">Notes</option><option value="assignment">Assignment</option><option value="slides">Slides</option><option value="question">Questions</option></select>
+</div>
+<div id="filesList"></div>
+</div></div>
+</div>
+<!-- Events -->
+<div id="tab-events" style="display:none;">
+<div class="card"><div class="card-header">Events <button onclick="openEventModal()" style="background:var(--blue);color:white;border:none;padding:6px 10px;border-radius:8px;font-weight:600;cursor:pointer;"><i class="fas fa-plus"></i> Create</button></div><div class="card-body" id="eventsList"></div></div>
+</div>
+<!-- Members -->
+<div id="tab-members" style="display:none;">
+<div class="card"><div class="card-header">Members <input type="text" id="memberSearch" placeholder="Search..." style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);font-size:0.82rem;" oninput="loadMembers()"></div><div class="card-body" id="membersList"></div></div>
+<div class="card" id="pendingCard" style="display:none;"><div class="card-header" style="color:#92400e;background:#fef3c7;"><i class="fas fa-clock"></i> Pending Approval</div><div class="card-body" id="pendingList"></div></div>
+</div>
+<!-- About -->
+<div id="tab-about" style="display:none;">
+<div class="card"><div class="card-header">About</div><div class="card-body" id="aboutBody"></div></div>
+<div class="card"><div class="card-header">Invite Link</div><div class="card-body"><div style="display:flex;gap:8px;"><input id="inviteLink" readonly style="flex:1;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);"><button onclick="copyInvite()" style="background:var(--blue);color:white;border:none;padding:8px 12px;border-radius:8px;font-weight:700;cursor:pointer;">Copy</button></div><div style="margin-top:8px;display:flex;gap:8px;"><button onclick="createInvite()" style="background:var(--bg);border:1px solid var(--border);padding:6px 10px;border-radius:8px;font-weight:600;cursor:pointer;"><i class="fas fa-link"></i> New Invite</button></div></div></div>
+<div class="card"><div class="card-header">Rules</div><div class="card-body" id="rulesBody" style="white-space:pre-wrap;font-size:0.85rem;"></div></div>
+</div>
+</div>
+
+<div class="side-col">
+<div class="card">
+<div class="card-header">About</div>
+<div class="card-body" style="font-size:0.85rem;color:var(--text2);">
+<div id="sideAbout"></div>
+<div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;" id="sideTags"></div>
+</div>
+</div>
+<div class="card" id="pollCard" style="display:none;">
+<div class="card-header">Polls</div>
+<div class="card-body" id="pollsList"></div>
+<button onclick="openPollModal()" style="width:100%;margin-top:8px;background:var(--bg);border:1px solid var(--border);padding:8px;border-radius:8px;font-weight:600;cursor:pointer;"><i class="fas fa-poll"></i> Create Poll</button>
+</div>
+<div class="card">
+<div class="card-header">Upcoming Events</div>
+<div class="card-body" id="sideEvents"></div>
+</div>
+<div class="card" id="adminCard" style="display:none;">
+<div class="card-header" style="background:#111827;color:white;"><i class="fas fa-chart-bar"></i> Admin Dashboard</div>
+<div class="card-body" id="adminStats" style="font-size:0.85rem;"></div>
+<button onclick="loadActivity()" style="width:100%;background:var(--bg);border:1px solid var(--border);padding:8px;border-radius:8px;font-weight:600;cursor:pointer;margin-top:8px;">View Activity Log</button>
+</div>
+</div>
+</div>
+
+<!-- Modals -->
+<div class="modal-overlay" id="eventModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:16px;">
+<div class="card" style="width:460px;max-width:95vw;">
+<div class="card-header">Create Event <button onclick="closeEventModal()" style="background:var(--bg);border:none;width:28px;height:28px;border-radius:50%;cursor:pointer;"><i class="fas fa-times"></i></button></div>
+<div class="card-body" style="display:flex;flex-direction:column;gap:10px;">
+<input id="evTitle" placeholder="Title *" style="padding:10px;border:1px solid var(--border);border-radius:8px;">
+<textarea id="evDesc" placeholder="Description" rows="2" style="padding:10px;border:1px solid var(--border);border-radius:8px;"></textarea>
+<input id="evVenue" placeholder="Venue / Location" style="padding:10px;border:1px solid var(--border);border-radius:8px;">
+<input id="evDate" type="datetime-local" style="padding:10px;border:1px solid var(--border);border-radius:8px;">
+<label style="display:flex;gap:6px;align-items:center;font-size:0.85rem;"><input type="checkbox" id="evOnline"> Online event</label>
+<button onclick="createEvent()" style="background:var(--blue);color:white;border:none;padding:10px;border-radius:8px;font-weight:700;cursor:pointer;">Create Event</button>
+</div>
+</div>
+</div>
+
+<div class="modal-overlay" id="pollModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:16px;">
+<div class="card" style="width:460px;max-width:95vw;">
+<div class="card-header">Create Poll <button onclick="closePollModal()" style="background:var(--bg);border:none;width:28px;height:28px;border-radius:50%;cursor:pointer;"><i class="fas fa-times"></i></button></div>
+<div class="card-body" style="display:flex;flex-direction:column;gap:10px;">
+<input id="pollQ" placeholder="Question *" style="padding:10px;border:1px solid var(--border);border-radius:8px;">
+<input id="pollO1" placeholder="Option 1" style="padding:10px;border:1px solid var(--border);border-radius:8px;">
+<input id="pollO2" placeholder="Option 2" style="padding:10px;border:1px solid var(--border);border-radius:8px;">
+<input id="pollO3" placeholder="Option 3 (optional)" style="padding:10px;border:1px solid var(--border);border-radius:8px;">
+<label style="display:flex;gap:6px;align-items:center;font-size:0.85rem;"><input type="checkbox" id="pollMulti"> Allow multiple</label>
+<label style="display:flex;gap:6px;align-items:center;font-size:0.85rem;"><input type="checkbox" id="pollAnon"> Anonymous</label>
+<button onclick="createPoll()" style="background:var(--blue);color:white;border:none;padding:10px;border-radius:8px;font-weight:700;cursor:pointer;">Create Poll</button>
+</div>
+</div>
+</div>
+
+<div id="toast-container" style="position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;"></div>
+<script src="../js/config.js"></script>
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+const API = (typeof window.API !== 'undefined' ? window.API : (function(){ var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000/api'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin+'/api'; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin+'/api':'http://localhost:5000/api'; return 'http://localhost:5000/api'; } return window.location.origin+'/api'; })());, token=localStorage.getItem('token');
+if(!token) location.href='../index.html';
+if(localStorage.getItem('darkMode')==='1') document.body.setAttribute('data-theme','dark');
+const groupId=new URLSearchParams(location.search).get('id');
+if(!groupId) location.href='groups.html';
+let currentGroup=null, myRole=null, socket=null;
+async function apiFetch(p,o={}){
+  const h={...(o.headers||{})};
+  if(!(o.body instanceof FormData)) h['Content-Type']='application/json';
+  h['Authorization']='Bearer '+token;
+  const r=await fetch(API+p,{...o,headers:h});
+  if(!r.ok){ let m=''; try{m=(await r.json()).message}catch{} throw new Error(m||'Failed'); }
+  return r;
+}
+function showToast(m,type){ const t=document.createElement('div'); t.style.cssText=`background:${type==='error'?'#ef4444':'#111827'};color:white;padding:10px 14px;border-radius:8px;font-size:0.85rem;`; t.textContent=m; document.getElementById('toast-container').appendChild(t); setTimeout(()=>t.remove(),3000); }
+function escapeHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function formatTime(d){ return new Date(d).toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}); }
+
+async function loadGroup(){
+  // Fix: handle missing groupId and show proper loading/error — makes tabs work even if group not found
+  if(!groupId || groupId==='null' || groupId==='undefined'){
+    document.getElementById('groupName').childNodes[0].textContent='No Group Selected';
+    document.getElementById('groupMeta').innerHTML='<span style="color:#e41e3f;">Please select a group from <a href="groups.html" style="color:var(--blue);text-decoration:underline;">Groups</a> page</span>';
+    document.getElementById('postsList').innerHTML='<div class="card" style="padding:30px;text-align:center;"><p>Please open a group from the Groups page.</p><a href="groups.html" style="display:inline-block;margin-top:10px;background:var(--blue);color:white;padding:8px 16px;border-radius:8px;text-decoration:none;font-weight:700;">Go to Groups</a></div>';
+    // Still allow tabs to work
+    document.querySelectorAll('.tab').forEach(t=> t.style.pointerEvents='auto');
+    return;
+  }
+  try{
+    const res=await apiFetch(`/groups/${groupId}`);
+    const g=await res.json();
+    if(!g || !g.name) throw new Error('Group not found');
+    currentGroup=g; myRole=g.myRole;
+    document.getElementById('groupName').childNodes[0].textContent=g.name+' ';
+    document.title=g.name+' | DIU Nexus';
+    if(g.cover_image) document.getElementById('groupCover').innerHTML=`<img src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${g.cover_image}" style="width:100%;height:100%;object-fit:cover;"><div class="group-cover-overlay"></div>`;
+    const av=document.getElementById('groupAvatar');
+    if(g.avatar_image) av.innerHTML=`<img src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${g.avatar_image}" style="width:100%;height:100%;object-fit:cover;">`;
+    else av.textContent=(g.name[0]||'G').toUpperCase();
+    document.getElementById('memberCount').textContent=g.memberCount||0;
+    document.getElementById('groupMeta').innerHTML=`<span>${g.privacy||'Public'} • ${g.memberCount||0} members</span><span>• ${g.category||'general'}</span>${g.department?`<span>• ${g.department}</span>`:''}${g.batch?`<span>• Batch ${g.batch}</span>`:''}${g.course_code?`<span>• ${g.course_code}</span>`:''}`;
+    document.getElementById('groupTags').innerHTML=`${g.is_verified?'<span class="badge badge-verified">Verified</span>':''}${g.is_official?'<span class="badge" style="background:#fef3c7;color:#92400e;">Official</span>':''}<span class="badge" style="background:var(--bg);border:1px solid var(--border);">${g.group_type||g.category||'general'}</span>`;
+    if(g.is_verified) document.getElementById('verifiedBadge').style.display='inline-block';
+    if(g.is_official) document.getElementById('officialBadge').style.display='inline-block';
+    document.getElementById('sideAbout').innerHTML=`<div style="font-weight:700;margin-bottom:6px;">${escapeHtml(g.name)}</div><div>${escapeHtml(g.description||'No description')}</div>`;
+    document.getElementById('aboutBody').innerHTML=`<div style="font-weight:700;">${escapeHtml(g.name)}</div><p style="color:var(--text2);margin:8px 0;">${escapeHtml(g.description||'We are here to save lives — Connect, share, and support your DIU community.')}</p><div style="font-size:0.82rem;color:var(--text2);">Category: ${g.category||'general'} • Type: ${g.group_type||'general'} ${g.department?`<br>Department: ${g.department}`:''} ${g.batch?`<br>Batch: ${g.batch}`:''} ${g.course_code?`<br>Course: ${g.course_code}`:''} <br>Privacy: ${g.privacy||'Public'} <br>Created: ${formatTime(g.created_at||new Date().toISOString())}</div>`;
+    document.getElementById('rulesBody').textContent=g.rules||'Be respectful • No spam • Help each other • Follow DIU community guidelines.';
+    const _base = (window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })());
+    document.getElementById('inviteLink').value=g.invite_link?`${_base}/views/group.html?id=${g.id}&invite=${g.invite_link}`:'';
+    const joinBtn=document.getElementById('joinBtn');
+    if(g.myRole){ joinBtn.textContent='✓ Joined'; joinBtn.style.background='var(--bg)'; joinBtn.style.color='var(--text2)'; joinBtn.style.border='1px solid var(--border)'; joinBtn.onclick=()=>leaveGroup(); document.getElementById('composerCard').style.display='block'; }
+    else { joinBtn.textContent=g.privacy==='Private'?'Request to Join':'Join Group'; joinBtn.onclick=()=>joinGroup(); document.getElementById('composerCard').style.display='none'; }
+    if(myRole && (myRole==='admin'||myRole==='super_admin'||myRole==='moderator')){
+      document.getElementById('inviteBtn').style.display='block';
+      document.getElementById('adminBtn').style.display='block';
+      document.getElementById('adminCard').style.display='block';
+      loadAnalytics();
+    }
+    const compAv=document.getElementById('composerAvatar');
+    try{ const me=JSON.parse(localStorage.getItem('user')||'{}'); compAv.textContent=(me.fullName||'U')[0].toUpperCase(); }catch{}
+  }catch(e){
+    console.error('loadGroup failed',e);
+    document.getElementById('groupName').childNodes[0].textContent='Group not found';
+    document.getElementById('groupMeta').innerHTML=`<span style="color:#e41e3f;">${escapeHtml(e.message||'Failed to load group')} — <a href="groups.html" style="color:var(--blue);">Go to Groups</a></span>`;
+    document.getElementById('postsList').innerHTML=`<div class="card" style="padding:24px;text-align:center;color:var(--text2);"><p>Could not load this group. It may have been deleted or you don’t have access.</p><a href="groups.html" style="display:inline-block;margin-top:12px;background:var(--blue);color:white;padding:8px 16px;border-radius:8px;text-decoration:none;font-weight:700;">Browse Groups</a></div>`;
+    // Allow tabs to still work even after error
+    document.querySelectorAll('.tab').forEach(t=> t.style.pointerEvents='auto');
+  }
+}
+
+async function toggleJoin(){
+  if(currentGroup.myRole) return leaveGroup();
+  return joinGroup();
+}
+async function joinGroup(){
+  try{
+    const invite=new URLSearchParams(location.search).get('invite');
+    const res=await apiFetch(`/groups/${groupId}/join`,{method:'POST',body:JSON.stringify({invite_code:invite||undefined})});
+    const data=await res.json();
+    showToast(data.status==='pending'?'Request sent':'Joined ✓');
+    loadGroup(); loadMembers();
+  }catch(e){ showToast(e.message,'error'); }
+}
+async function leaveGroup(){
+  if(!confirm('Leave group?')) return;
+  await apiFetch(`/groups/${groupId}/leave`,{method:'DELETE'});
+  showToast('Left'); location.href='groups.html';
+}
+function switchTab(tab, btn){
+  try{
+    if(!btn) btn = document.querySelector(`.tab[data-tab="${tab}"]`);
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    if(btn) btn.classList.add('active');
+    document.querySelectorAll('[id^="tab-"]').forEach(el=>el.style.display='none');
+    const target=document.getElementById('tab-'+tab);
+    if(target) target.style.display='block';
+    else console.warn('Tab not found',tab);
+    // Load content lazily — each with catch so one failure doesn't block others
+    if(tab==='posts') loadPosts().catch(e=>console.error('loadPosts',e));
+    if(tab==='announcements') loadAnnouncements().catch(e=>console.error(e));
+    if(tab==='chat') loadChat().catch(e=>console.error(e));
+    if(tab==='files') loadFiles().catch(e=>console.error(e));
+    if(tab==='events') loadEvents().catch(e=>console.error(e));
+    if(tab==='members') loadMembers().catch(e=>console.error(e));
+    // About is static, no load needed
+    // Ensure tab bar is visible and clickable
+    document.getElementById('tabs').style.pointerEvents='auto';
+  }catch(e){ console.error('switchTab failed',e); showToast('Tab switch failed: '+e.message,'error'); }
+}
+// Posts
+let postMediaFile=null;
+function previewPostMedia(input){ if(input.files[0]){ postMediaFile=input.files[0]; const url=URL.createObjectURL(input.files[0]); document.getElementById('postImgPrev').src=url; document.getElementById('postMediaPreview').style.display='block'; } }
+function clearPostMedia(){ postMediaFile=null; document.getElementById('postMediaPreview').style.display='none'; document.getElementById('postMedia').value=''; }
+async function createPost(){
+  const content=document.getElementById('postContent').value.trim();
+  if(!content && !postMediaFile) return showToast('Content required','error');
+  const fd=new FormData();
+  fd.append('content',content);
+  fd.append('topic',document.getElementById('postTopic').value);
+  if(document.getElementById('postAnonymous').checked) fd.append('is_anonymous','1');
+  if(postMediaFile) fd.append('media', postMediaFile);
+  try{
+    const res=await fetch(API+`/groups/${groupId}/posts`,{method:'POST',headers:{'Authorization':'Bearer '+token},body:fd});
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.message);
+    showToast(data.status==='pending'?'Pending approval':'Posted ✓');
+    document.getElementById('postContent').value=''; clearPostMedia();
+    loadPosts();
+  }catch(e){ showToast(e.message,'error'); }
+}
+async function loadPosts(){
+  const res=await apiFetch(`/groups/${groupId}/posts?limit=20`);
+  const posts=await res.json();
+  const el=document.getElementById('postsList');
+  if(!posts.length){ el.innerHTML='<div class="card" style="padding:30px;text-align:center;color:var(--text2);">No posts yet. Be the first!</div>'; return; }
+  el.innerHTML=posts.map(p=>`
+    <div class="card post-card">
+      <div class="post-header">
+        <div class="post-avatar">${p.profilePicture?`<img src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${p.profilePicture}" style="width:100%;height:100%;object-fit:cover;">`:`${p.is_anonymous?'👻':(p.fullName||'U')[0]}`}</div>
+        <div class="post-meta">
+          <div class="post-author">${p.is_anonymous?'Anonymous':escapeHtml(p.fullName)} ${p.is_pinned?'<span style="background:#fef3c7;color:#92400e;padding:1px 6px;border-radius:6px;font-size:0.65rem;">📌 Pinned</span>':''} ${p.is_announcement?'<span style="background:#fee2e2;color:#991b1b;padding:1px 6px;border-radius:6px;font-size:0.65rem;">📢 Announcement</span>':''}</div>
+          <div class="post-time">${formatTime(p.created_at)} • ${p.topic||'general'} ${p.feeling?`• ${p.feeling}`:''}</div>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:6px;">
+          ${myRole==='admin'||myRole==='super_admin'?`<button onclick="pinPost('${p.id}',${!p.is_pinned})" style="background:var(--bg);border:1px solid var(--border);padding:4px 8px;border-radius:6px;cursor:pointer;font-size:0.7rem;"><i class="fas fa-thumbtack"></i></button>`:''}
+          <button onclick="deletePost('${p.id}')" style="background:var(--bg);border:1px solid var(--border);padding:4px 8px;border-radius:6px;cursor:pointer;font-size:0.7rem;"><i class="fas fa-trash"></i></button>
+        </div>
+      </div>
+      <div class="post-content">${escapeHtml(p.content)} ${p.hashtags?`<span style="color:var(--blue);">${p.hashtags}</span>`:''}</div>
+      ${p.media_url?`<img src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${p.media_url}" style="width:100%;border-radius:8px;margin-top:8px;max-height:320px;object-fit:cover;" onerror="this.style.display='none'">`:''}
+      <div class="post-actions">
+        <span class="post-action ${p.myReaction?'active':''}" onclick="reactPost('${p.id}')"><i class="fas fa-heart"></i> ${p.likeCount||0} Like</span>
+        <span class="post-action" onclick="focusComment('${p.id}')"><i class="fas fa-comment"></i> ${p.commentCount||0} Comment</span>
+        <span class="post-action" onclick="sharePost('${p.id}')"><i class="fas fa-share"></i> Share</span>
+        <span class="post-action" onclick="savePost('${p.id}')"><i class="fas fa-bookmark"></i> Save</span>
+      </div>
+      <div id="comments-${p.id}" style="margin-top:8px;"></div>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <input id="comment-${p.id}" placeholder="Write a comment..." style="flex:1;padding:8px;border:1px solid var(--border);border-radius:20px;background:var(--bg);font-size:0.85rem;" onkeydown="if(event.key==='Enter') addComment('${p.id}')">
+        <button onclick="addComment('${p.id}')" style="background:var(--blue);color:white;border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;"><i class="fas fa-paper-plane" style="font-size:0.75rem;"></i></button>
+      </div>
+    </div>
+  `).join('');
+  // Load comments for each
+  posts.forEach(p=>loadComments(p.id));
+}
+async function loadAnnouncements(){
+  const res=await apiFetch(`/groups/${groupId}/posts?pinned=true`);
+  const posts=await res.json();
+  const el=document.getElementById('tab-announcements');
+  if(!posts.length){ el.innerHTML='<div class="card" style="padding:30px;text-align:center;color:var(--text2);">No announcements</div>'; return; }
+  el.innerHTML='<div style="display:flex;flex-direction:column;gap:12px;">'+posts.map(p=>`<div class="card post-card"><div class="post-content"><span style="background:#fef3c7;color:#92400e;padding:2px 6px;border-radius:6px;font-size:0.7rem;">📌 Pinned</span> ${escapeHtml(p.content)}</div></div>`).join('')+'</div>';
+}
+async function reactPost(id){
+  await apiFetch(`/groups/${groupId}/posts/${id}/react`,{method:'POST',body:JSON.stringify({type:'like'})});
+  loadPosts();
+}
+async function deletePost(id){
+  if(!confirm('Delete?')) return;
+  await apiFetch(`/groups/${groupId}/posts/${id}`,{method:'DELETE'});
+  loadPosts();
+}
+async function pinPost(id, pin){
+  await apiFetch(`/groups/${groupId}/posts/${id}/pin`,{method:'POST',body:JSON.stringify({pin})});
+  loadPosts();
+}
+async function addComment(postId){
+  const input=document.getElementById(`comment-${postId}`);
+  const content=input.value.trim();
+  if(!content) return;
+  await apiFetch(`/groups/${groupId}/posts/${postId}/comment`,{method:'POST',body:JSON.stringify({content})});
+  input.value=''; loadComments(postId); loadPosts();
+}
+async function loadComments(postId){
+  try{
+    const res=await apiFetch(`/groups/${groupId}/posts/${postId}/comments`);
+    const comments=await res.json();
+    const el=document.getElementById(`comments-${postId}`);
+    if(!el) return;
+    if(!comments.length){ el.innerHTML=''; return; }
+    const render=(list, depth=0)=> list.map(c=>`<div style="margin-left:${depth*16}px;display:flex;gap:8px;margin-bottom:6px;">
+      <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0866ff,#7c3aed);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.7rem;flex-shrink:0;">${(c.fullName||'U')[0]}</div>
+      <div style="flex:1;background:var(--bg);padding:8px 10px;border-radius:12px;">
+        <div style="font-weight:700;font-size:0.82rem;">${escapeHtml(c.fullName)} <span style="font-weight:400;color:var(--text2);font-size:0.7rem;">${formatTime(c.created_at)}</span></div>
+        <div style="font-size:0.85rem;">${escapeHtml(c.content)}</div>
+      </div>
+    </div>${c.replies && c.replies.length ? render(c.replies, depth+1) : ''}`).join('');
+    el.innerHTML=render(comments);
+  }catch{}
+}
+function focusComment(id){ document.getElementById(`comment-${id}`)?.focus(); }
+function savePost(id){ showToast('Saved ✓'); }
+function sharePost(id){ navigator.clipboard.writeText(location.href).then(()=>showToast('Link copied')); }
+
+// Chat
+async function loadChat(){
+  const res=await apiFetch(`/groups/${groupId}/messages`);
+  const msgs=await res.json();
+  const box=document.getElementById('chatBox');
+  if(!msgs.length){ box.innerHTML='<div style="text-align:center;padding:20px;color:var(--text2);">No messages yet</div>'; return; }
+  box.innerHTML=msgs.map(m=>`<div style="display:flex;gap:8px;align-items:flex-start;${String(m.sender_id)===String(JSON.parse(localStorage.getItem('user')).id||0)?'flex-direction:row-reverse;':''}">
+    <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0866ff,#7c3aed);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.7rem;flex-shrink:0;">${(m.fullName||'U')[0]}</div>
+    <div style="max-width:70%;background:${String(m.sender_id)===String(JSON.parse(localStorage.getItem('user')).id||0)?'var(--blue)':'var(--surface)'};color:${String(m.sender_id)===String(JSON.parse(localStorage.getItem('user')).id||0)?'white':'var(--text)'};padding:8px 10px;border-radius:14px;font-size:0.85rem;box-shadow:0 1px 2px rgba(0,0,0,0.06);border:1px solid var(--border);">
+      <div style="font-weight:700;font-size:0.7rem;opacity:0.8;">${escapeHtml(m.fullName)}</div>
+      <div>${escapeHtml(m.content)}</div>
+      ${m.mediaUrl?`<img src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${m.mediaUrl}" style="width:100%;border-radius:8px;margin-top:6px;max-width:220px;">`:''}
+    </div>
+  </div>`).join('');
+  box.scrollTop=box.scrollHeight;
+  // Socket join
+  if(!socket){ initChatSocket(); }
+}
+let socket=null;
+function initChatSocket(){
+  socket=io(((window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())));
+  const me=JSON.parse(localStorage.getItem('user')).id||JSON.parse(localStorage.getItem('user'))._id;
+  socket.emit('user_online', String(me));
+  socket.emit('join_group', groupId);
+  socket.on('group_message', (data)=>{
+    if(String(data.groupId)===String(groupId)) loadChat();
+  });
+}
+async function sendChat(){
+  const input=document.getElementById('chatInput');
+  const content=input.value.trim();
+  if(!content) return;
+  input.value='';
+  await apiFetch(`/groups/${groupId}/messages`,{method:'POST',body:JSON.stringify({content})});
+  loadChat();
+}
+async function sendChatFile(input){
+  if(!input.files[0]) return;
+  const fd=new FormData(); fd.append('file', input.files[0]); fd.append('content','');
+  await fetch(API+`/groups/${groupId}/messages`,{method:'POST',headers:{'Authorization':'Bearer '+token},body:fd});
+  loadChat();
+}
+
+// Files
+async function loadFiles(){
+  const q=document.getElementById('fileSearch')?.value||'';
+  const cat=document.getElementById('fileCategory')?.value||'';
+  const res=await apiFetch(`/groups/${groupId}/files?${q?`q=${encodeURIComponent(q)}&`:''}${cat?`category=${cat}`:''}`);
+  const files=await res.json();
+  const el=document.getElementById('filesList');
+  if(!files.length){ el.innerHTML='<div style="text-align:center;padding:20px;color:var(--text2);">No files</div>'; return; }
+  el.innerHTML=files.map(f=>`<div class="file-row">
+    <div style="width:36px;height:36px;border-radius:8px;background:var(--blue-light);display:flex;align-items:center;justify-content:center;color:var(--blue);"><i class="fas fa-file"></i></div>
+    <div style="flex:1;min-width:0;">
+      <div style="font-weight:700;font-size:0.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(f.file_name)}</div>
+      <div style="font-size:0.7rem;color:var(--text2);">${f.category} • ${escapeHtml(f.fullName||'')} • ${formatTime(f.created_at)}</div>
+    </div>
+    <a href="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${f.file_url}" download target="_blank" style="background:var(--blue);color:white;padding:6px 10px;border-radius:8px;text-decoration:none;font-weight:700;font-size:0.75rem;">Download</a>
+  </div>`).join('');
+}
+async function uploadFile(input){
+  if(!input.files[0]) return;
+  const fd=new FormData(); fd.append('file', input.files[0]); fd.append('category', document.getElementById('fileCategory').value||'general');
+  await fetch(API+`/groups/${groupId}/files`,{method:'POST',headers:{'Authorization':'Bearer '+token},body:fd});
+  showToast('Uploaded ✓'); loadFiles();
+}
+
+// Events
+async function loadEvents(){
+  const res=await apiFetch(`/groups/${groupId}/events`);
+  const events=await res.json();
+  const el=document.getElementById('eventsList');
+  const side=document.getElementById('sideEvents');
+  if(!events.length){ el.innerHTML='<div style="text-align:center;padding:20px;color:var(--text2);">No events</div>'; side.innerHTML='<div style="color:var(--text2);font-size:0.82rem;">No upcoming events</div>'; return; }
+  el.innerHTML=events.map(e=>`<div class="card" style="padding:12px;margin-bottom:10px;">
+    ${e.cover_image?`<img src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${e.cover_image}" style="width:100%;height:140px;object-fit:cover;border-radius:8px;margin-bottom:8px;">`:''}
+    <div style="font-weight:800;">${escapeHtml(e.title)}</div>
+    <div style="font-size:0.82rem;color:var(--text2);">${escapeHtml(e.venue||'')} • ${formatTime(e.event_date)}</div>
+    <div style="font-size:0.82rem;margin-top:6px;">${escapeHtml(e.description||'')}</div>
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <button onclick="rsvpEvent('${e.id}','going')" style="flex:1;background:var(--blue);color:white;border:none;padding:7px;border-radius:8px;font-weight:700;cursor:pointer;">Going • ${e.goingCount||0}</button>
+      <button onclick="rsvpEvent('${e.id}','interested')" style="flex:1;background:var(--bg);border:1px solid var(--border);padding:7px;border-radius:8px;font-weight:600;cursor:pointer;">Interested</button>
+    </div>
+  </div>`).join('');
+  side.innerHTML=events.slice(0,3).map(e=>`<div style="padding:8px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;background:var(--bg);"><div style="font-weight:700;font-size:0.85rem;">${escapeHtml(e.title)}</div><div style="font-size:0.72rem;color:var(--text2);">${formatTime(e.event_date)} • ${e.goingCount||0} going</div></div>`).join('');
+}
+function openEventModal(){ document.getElementById('eventModal').style.display='flex'; }
+function closeEventModal(){ document.getElementById('eventModal').style.display='none'; }
+async function createEvent(){
+  const title=document.getElementById('evTitle').value.trim();
+  if(!title) return showToast('Title required','error');
+  const res=await apiFetch(`/groups/${groupId}/events`,{method:'POST',body:JSON.stringify({title, description:document.getElementById('evDesc').value, venue:document.getElementById('evVenue').value, event_date:document.getElementById('evDate').value, is_online:document.getElementById('evOnline').checked})});
+  if(res.ok){ closeEventModal(); showToast('Event created'); loadEvents(); }
+}
+async function rsvpEvent(id, status){
+  await apiFetch(`/groups/${groupId}/events/${id}/rsvp`,{method:'POST',body:JSON.stringify({status})});
+  showToast(status==='going'?'Going ✓':'Interested ✓'); loadEvents();
+}
+
+// Members
+async function loadMembers(){
+  const q=document.getElementById('memberSearch')?.value||'';
+  const res=await apiFetch(`/groups/${groupId}/members${q?`?q=${encodeURIComponent(q)}`:''}`);
+  const members=await res.json();
+  const el=document.getElementById('membersList');
+  el.innerHTML=members.map(m=>`<div class="member-row">
+    <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#0866ff,#7c3aed);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;overflow:hidden;">${m.profilePicture?`<img src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${m.profilePicture}" style="width:100%;height:100%;object-fit:cover;">`:`${(m.fullName||'U')[0]}`}</div>
+    <div style="flex:1;min-width:0;">
+      <div style="font-weight:700;font-size:0.85rem;display:flex;gap:6px;align-items:center;">${escapeHtml(m.fullName)} ${m.badge?`<span style="background:#e7f0ff;color:#0866ff;padding:1px 6px;border-radius:6px;font-size:0.65rem;">${m.badge}</span>`:''} ${m.isNew?'<span style="background:#dcfce7;color:#166534;padding:1px 6px;border-radius:6px;font-size:0.65rem;">New</span>':''}</div>
+      <div style="font-size:0.7rem;color:var(--text2);">${m.department||''} ${m.badge2?`• ${m.badge2}`:''} • ${m.role}</div>
+    </div>
+    ${myRole==='super_admin' || myRole==='admin' ? `<select onchange="updateRole('${m._id}',this.value)" style="padding:4px 8px;border-radius:6px;border:1px solid var(--border);font-size:0.75rem;background:var(--bg);">
+      <option value="member" ${m.role==='member'?'selected':''}>Member</option>
+      <option value="moderator" ${m.role==='moderator'?'selected':''}>Moderator</option>
+      <option value="admin" ${m.role==='admin'?'selected':''}>Admin</option>
+    </select>
+    <button onclick="memberAction('${m._id}','mute')" style="background:var(--bg);border:1px solid var(--border);padding:4px 8px;border-radius:6px;cursor:pointer;font-size:0.7rem;"><i class="fas fa-volume-mute"></i></button>
+    <button onclick="memberAction('${m._id}','ban')" style="background:#fee2e2;border:none;padding:4px 8px;border-radius:6px;cursor:pointer;color:#991b1b;font-size:0.7rem;"><i class="fas fa-ban"></i></button>` : ''}
+  </div>`).join('');
+  // Pending
+  if(myRole==='admin'||myRole==='super_admin'||myRole==='moderator'){
+    const pres=await apiFetch(`/groups/${groupId}/pending`).then(r=>r.json()).catch(()=>[]);
+    const pcard=document.getElementById('pendingCard');
+    if(pres.length){
+      pcard.style.display='block';
+      document.getElementById('pendingList').innerHTML=pres.map(p=>`<div style="display:flex;gap:10px;align-items:center;padding:8px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;background:var(--bg);">
+        <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#0866ff,#7c3aed);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;">${(p.fullName||'U')[0]}</div>
+        <div style="flex:1;"><div style="font-weight:700;font-size:0.85rem;">${escapeHtml(p.fullName)}</div><div style="font-size:0.7rem;color:var(--text2);">${p.department||''}</div></div>
+        <button onclick="approveMember('${p.id||p._id}','approve')" style="background:var(--blue);color:white;border:none;padding:6px 10px;border-radius:6px;font-weight:700;cursor:pointer;">Approve</button>
+        <button onclick="approveMember('${p.id||p._id}','reject')" style="background:var(--bg);border:1px solid var(--border);padding:6px 10px;border-radius:6px;cursor:pointer;">Reject</button>
+      </div>`).join('');
+    } else pcard.style.display='none';
+  }
+}
+async function updateRole(userId, role){
+  await apiFetch(`/groups/${groupId}/members/role`,{method:'PUT',body:JSON.stringify({userId, role})});
+  showToast('Role updated'); loadMembers();
+}
+async function memberAction(userId, action){
+  if(action==='ban' && !confirm('Ban user?')) return;
+  if(action==='mute' && !confirm('Mute 24h?')) return;
+  await apiFetch(`/groups/${groupId}/members/role`,{method:'PUT',body:JSON.stringify({userId, action})});
+  showToast(action==='ban'?'Banned':'Muted'); loadMembers();
+}
+async function approveMember(userId, action){
+  await apiFetch(`/groups/${groupId}/approve`,{method:'POST',body:JSON.stringify({userId, action})});
+  showToast(action==='approve'?'Approved':'Rejected'); loadMembers();
+}
+
+// Polls
+async function loadPolls(){
+  try{
+    const res=await apiFetch(`/groups/${groupId}/polls`);
+    const polls=await res.json();
+    const el=document.getElementById('pollsList');
+    if(!polls.length){ el.innerHTML='<div style="color:var(--text2);font-size:0.82rem;">No polls</div>'; document.getElementById('pollCard').style.display='block'; return; }
+    document.getElementById('pollCard').style.display='block';
+    el.innerHTML=polls.map(p=>`<div style="padding:10px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;background:var(--bg);">
+      <div style="font-weight:700;font-size:0.85rem;">${escapeHtml(p.question)}</div>
+      <div style="margin-top:6px;">${p.results.map((r,i)=>`<div class="poll-option" onclick="votePoll('${p.id}',${i})"><span>${escapeHtml(r.option)}</span><span style="font-weight:700;">${r.count} • ${r.percent}%</span></div>`).join('')}</div>
+      <div style="font-size:0.7rem;color:var(--text2);margin-top:4px;">${p.totalVotes} votes</div>
+    </div>`).join('');
+  }catch{}
+}
+async function votePoll(pollId, idx){
+  await apiFetch(`/groups/${groupId}/polls/${pollId}/vote`,{method:'POST',body:JSON.stringify({option_index: idx})});
+  showToast('Voted'); loadPolls();
+}
+function openPollModal(){ document.getElementById('pollModal').style.display='flex'; }
+function closePollModal(){ document.getElementById('pollModal').style.display='none'; }
+async function createPoll(){
+  const q=document.getElementById('pollQ').value.trim();
+  const o1=document.getElementById('pollO1').value.trim();
+  const o2=document.getElementById('pollO2').value.trim();
+  const o3=document.getElementById('pollO3').value.trim();
+  if(!q||!o1||!o2) return showToast('Question + 2 options required','error');
+  const opts=[o1,o2]; if(o3) opts.push(o3);
+  await apiFetch(`/groups/${groupId}/polls`,{method:'POST',body:JSON.stringify({question:q, options:opts, allow_multiple:document.getElementById('pollMulti').checked, is_anonymous:document.getElementById('pollAnon').checked})});
+  closePollModal(); showToast('Poll created'); loadPolls();
+}
+
+// Invites & Analytics
+async function createInvite(){
+  const res=await apiFetch(`/groups/${groupId}/invites`,{method:'POST',body:JSON.stringify({})});
+  const data=await res.json();
+  document.getElementById('inviteLink').value=data.inviteLink;
+  showToast('Invite created'); navigator.clipboard.writeText(data.inviteLink);
+}
+function copyInvite(){ const el=document.getElementById('inviteLink'); el.select(); document.execCommand('copy'); showToast('Copied'); }
+function shareGroup(){ navigator.clipboard.writeText(location.href).then(()=>showToast('Link copied')); }
+async function loadAnalytics(){
+  try{
+    const res=await apiFetch(`/groups/${groupId}/analytics`);
+    const a=await res.json();
+    document.getElementById('adminStats').innerHTML=`
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div style="background:var(--bg);padding:10px;border-radius:8px;text-align:center;"><div style="font-size:1.2rem;font-weight:800;">${a.memberCount}</div><div style="font-size:0.7rem;color:var(--text2);">Members</div></div>
+        <div style="background:var(--bg);padding:10px;border-radius:8px;text-align:center;"><div style="font-size:1.2rem;font-weight:800;">${a.newMembers}</div><div style="font-size:0.7rem;color:var(--text2);">New 7d</div></div>
+        <div style="background:var(--bg);padding:10px;border-radius:8px;text-align:center;"><div style="font-size:1.2rem;font-weight:800;">${a.postCount}</div><div style="font-size:0.7rem;color:var(--text2);">Posts</div></div>
+        <div style="background:var(--bg);padding:10px;border-radius:8px;text-align:center;"><div style="font-size:1.2rem;font-weight:800;">${a.postsToday}</div><div style="font-size:0.7rem;color:var(--text2);">Today</div></div>
+      </div>
+      <div style="margin-top:8px;font-size:0.78rem;color:var(--text2);">Pending: ${a.pendingPosts} posts • ${a.pendingMembers} members • ${a.reports} reports</div>
+    `;
+  }catch{}
+}
+async function loadActivity(){
+  const res=await apiFetch(`/groups/${groupId}/activity`);
+  const logs=await res.json().catch(()=>[]);
+  alert(logs.map(l=>`${formatTime(l.created_at)} • ${l.fullName||'System'}: ${l.action}`).join('\n')||'No activity');
+}
+function openAdmin(){ switchTab('members', document.querySelector('[data-tab="members"]')); document.getElementById('adminCard').scrollIntoView({behavior:'smooth'}); }
+function openMembers(){ switchTab('members', document.querySelector('[data-tab="members"]')); }
+
+loadGroup().then(()=>{ loadPosts(); loadPolls(); });
+</script>
+</body>
+</html>

@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Project Showcase & Team Finder | DIU Nexus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/home.css">
+    <style>
+        body { padding-top: 64px; background: var(--bg); font-family: 'Inter', sans-serif; }
+        .showcase-wrap { max-width: 1020px; margin: 0 auto; padding: 24px 16px 80px; }
+        
+        .page-hero {
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+            border-radius: 16px;
+            padding: 32px 24px;
+            color: white;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 4px 20px rgba(14, 165, 233, 0.25);
+        }
+        .page-hero i { font-size: 3rem; opacity: 0.95; }
+        .page-hero h1 { font-size: 1.6rem; font-weight: 800; margin: 0; }
+        .page-hero p { opacity: 0.9; margin: 6px 0 0; font-size: 0.92rem; }
+
+        .showcase-layout { display: grid; grid-template-columns: 320px 1fr; gap: 20px; align-items: start; }
+        @media(max-width:768px) { .showcase-layout { grid-template-columns: 1fr; } }
+
+        .form-card {
+            background: var(--surface);
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+            position: sticky;
+            top: 76px;
+            border: 1px solid var(--border);
+        }
+        .form-card h3 { font-weight: 800; color: #0284c7; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; font-size: 1.05rem; }
+        .form-group { margin-bottom: 12px; }
+        .form-label { display: block; font-size: 0.76rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; text-transform: uppercase; }
+        .form-input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.88rem;
+            background: var(--surface);
+            color: var(--text);
+            outline: none;
+        }
+        .form-input:focus { border-color: #0284c7; }
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            background: #0284c7;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.92rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        /* Project Cards */
+        .proj-card {
+            background: var(--surface);
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+            transition: transform 0.15s;
+        }
+        .proj-card:hover { transform: translateY(-2px); }
+        .proj-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+        .proj-title { font-size: 1.15rem; font-weight: 800; color: var(--text); }
+        .proj-author { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 10px; }
+        .proj-desc { font-size: 0.88rem; line-height: 1.5; color: var(--text); margin-bottom: 12px; }
+        
+        .tag-list { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+        .proj-tag { padding: 4px 10px; border-radius: 20px; background: #e0f2fe; color: #0369a1; font-size: 0.75rem; font-weight: 700; }
+        .team-badge { background: #fef08a; color: #854d0e; }
+
+        .proj-links { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; border-top: 1px solid var(--border); padding-top: 12px; }
+        .plink-btn {
+            padding: 7px 14px;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-github { background: #1e293b; color: white; }
+        .btn-live { background: #0284c7; color: white; }
+        .btn-upvote { background: #f1f5f9; color: var(--text); border: 1px solid var(--border); margin-left: auto; }
+    
+        /* Fix: Pill till missing + button blocked — ensure pills and following buttons are clickable */
+        .filter-bar, .category-tabs, .cats, .filter-tabs, .cat-tabs, .filter-pill, .cat-tab, .cat, .blood-type-grid, .search-bar {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 1;
+        }
+        .filter-chip, .cat-tab, .cat, .blood-btn, .btn-join, .btn-view, .btn-post, .btn-submit, .btn-sell, .contact-btn, .post-action, .member-row button, .file-row a {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 2;
+        }
+        /* Ensure no sticky pill blocks content */
+        .category-tabs, .filter-bar, .cats {
+            overflow-x: auto;
+            overflow-y: visible;
+            max-height: none;
+        }
+
+    </style>
+</head>
+<body>
+<script src="../js/config.js"></script>
+<script src="../js/shared.js"></script>
+<div class="showcase-wrap">
+    <div class="page-hero">
+        <i class="fas fa-rocket"></i>
+        <div>
+            <h1>🚀 Project Showcase & Team Finder</h1>
+            <p>Showcase your projects — FYDP, personal builds, and innovations. Get feedback from the DIU community.</p>
+        </div>
+    </div>
+
+    <div class="showcase-layout">
+        <!-- Submit Project Form -->
+        <div class="form-card">
+            <h3><i class="fas fa-code-branch"></i> Add New Project</h3>
+            <div class="form-group">
+                <label class="form-label">Project Title *</label>
+                <input class="form-input" id="projTitle" placeholder="e.g., AI Diagnostic Tool for Diabetics">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Tech Stack (comma separated)</label>
+                <input class="form-input" id="projTech" placeholder="e.g., React, Python, FastAPI, ML">
+            </div>
+            <div class="form-group">
+                <label class="form-label">GitHub URL</label>
+                <input class="form-input" id="projGithub" placeholder="https://github.com/username/repo">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Live Demo Link</label>
+                <input class="form-input" id="projLive" placeholder="https://myproject.com">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Looking for Teammates?</label>
+                <select class="form-input" id="projLooking">
+                    <option value="No">No — Project Complete</option>
+                    <option value="Frontend Developer">Looking for Frontend Dev</option>
+                    <option value="Backend Developer">Looking for Backend Dev</option>
+                    <option value="AI / ML Engineer">Looking for AI/ML Engineer</option>
+                    <option value="UI/UX Designer">Looking for UI/UX Designer</option>
+                    <option value="Hackathon Partner">Looking for Hackathon Partner</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Description *</label>
+                <textarea class="form-input" id="projDesc" rows="3" placeholder="e.g., A smart campus navigation app with AR features, built with Flutter and Firebase..."></textarea>
+            </div>
+            <button class="btn-submit" onclick="postProject()"><i class="fas fa-paper-plane"></i> Publish Project</button>
+        </div>
+
+        <!-- Project List -->
+        <div id="projectList"></div>
+    </div>
+</div>
+
+<div id="toast-container" style="position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column-reverse;gap:8px;"></div>
+
+<script>
+const API = (typeof window.API !== 'undefined' ? window.API : (function(){ var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000/api'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin+'/api'; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin+'/api':'http://localhost:5000/api'; return 'http://localhost:5000/api'; } return window.location.origin+'/api'; })());
+const myUser = JSON.parse(localStorage.getItem('user') || 'null');
+const token = localStorage.getItem('token');
+if (!token) window.location.href = '../index.html';
+if (localStorage.getItem('darkMode') === '1') document.body.setAttribute('data-theme','dark');
+
+let allProjects = [];
+const myId = String(myUser?._id || myUser?.id || 'guest');
+
+async function loadProjects() {
+    try {
+        const res = await fetch(`${API}/showcase`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!res.ok) throw new Error('Failed to load projects');
+        allProjects = await res.json();
+        renderProjects();
+    } catch (e) {
+        showToast('Error loading projects: ' + e.message);
+    }
+}
+
+async function postProject() {
+    const title = document.getElementById('projTitle').value.trim();
+    const desc = document.getElementById('projDesc').value.trim();
+    const tech = document.getElementById('projTech').value.trim();
+    const github = document.getElementById('projGithub').value.trim();
+    const live = document.getElementById('projLive').value.trim();
+    const looking = document.getElementById('projLooking').value;
+
+    if (!title || !desc) {
+        showToast('Please enter title and description');
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API}/showcase`, {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                title: title,
+                description: desc,
+                tech_stack: tech || null,
+                category: looking === 'No' ? null : looking,
+                image_url: null,
+                demo_url: live || null,
+                github_url: github || null,
+                play_store_url: null
+            })
+        });
+        if (!res.ok) {
+            const data = await res.json();
+            throw new Error(data.message || 'Failed to publish');
+        }
+        showToast('🚀 Project Published!');
+        ['projTitle','projDesc','projTech','projGithub','projLive'].forEach(id => document.getElementById(id).value = '');
+        await loadProjects();
+    } catch (e) {
+        showToast('Error posting project: ' + e.message);
+    }
+}
+
+async function toggleUpvote(id) {
+    try {
+        const res = await fetch(`${API}/showcase/${id}/like`, {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!res.ok) {
+            const data = await res.json();
+            throw new Error(data.message || 'Failed');
+        }
+        await loadProjects();
+    } catch (e) {
+        showToast('Error liking project: ' + e.message);
+    }
+}
+
+async function deleteProject(id) {
+    if (!confirm('Delete this project?')) return;
+    try {
+        const res = await fetch(`${API}/showcase/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!res.ok) {
+            const data = await res.json();
+            throw new Error(data.message || 'Failed to delete');
+        }
+        showToast('Project deleted');
+        await loadProjects();
+    } catch (e) {
+        showToast('Error deleting project: ' + e.message);
+    }
+}
+
+function renderProjects() {
+    const el = document.getElementById('projectList');
+    if (!allProjects.length) {
+        el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-secondary);">No projects posted yet</div>';
+        return;
+    }
+
+    el.innerHTML = allProjects.map(p => {
+        const upvotes = p.like_count || 0;
+        const liked = p.liked_by_me || false;
+        return `
+        <div class="proj-card">
+            <div class="proj-header">
+                <div class="proj-title">${esc(p.title)}</div>
+            </div>
+            <div class="proj-author"><i class="fas fa-user-circle"></i> By ${esc(p.fullName || p.author || 'User')}</div>
+            <div class="proj-desc">${esc(p.description || p.desc)}</div>
+            
+            <div class="tag-list">
+                ${p.tech_stack ? p.tech_stack.split(',').map(t => `<span class="proj-tag">${esc(t.trim())}</span>`).join('') : ''}
+                ${p.category && p.category !== 'No' ? `<span class="proj-tag team-badge"><i class="fas fa-user-plus"></i> ${esc(p.category)}</span>` : ''}
+            </div>
+
+            <div class="proj-links">
+                ${p.github_url ? `<a href="${esc(p.github_url)}" target="_blank" class="plink-btn btn-github"><i class="fab fa-github"></i> GitHub</a>` : ''}
+                ${p.demo_url ? `<a href="${esc(p.demo_url)}" target="_blank" class="plink-btn btn-live"><i class="fas fa-external-link-alt"></i> Live Demo</a>` : ''}
+                <button class="plink-btn btn-upvote" onclick="toggleUpvote(${p.id})">
+                    <i class="${liked ? 'fas fa-heart' : 'far fa-heart'}" style="color:#e41e3f;"></i> ${upvotes} Upvotes
+                </button>
+                ${p.user_id === myId ? `<button onclick="deleteProject(${p.id})" class="plink-btn" style="background:#fee2e2;color:#e41e3f;"><i class="fas fa-trash"></i></button>` : ''}
+            </div>
+        </div>
+    `}).join('');
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function showToast(msg) { const t=document.createElement('div'); t.style.cssText='background:#1c1e21;color:white;padding:12px 18px;border-radius:10px;font-family:Inter,sans-serif;font-size:0.88rem;'; t.textContent=msg; document.getElementById('toast-container').appendChild(t); setTimeout(()=>t.remove(),2800); }
+
+loadProjects();
+</script>
+</body>
+</html>

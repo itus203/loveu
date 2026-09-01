@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Pages | DIU Nexus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/home.css">
+    <style>
+        body { padding-top: 64px; background: var(--bg); }
+        .pages-wrap { max-width: 1000px; margin: 0 auto; padding: 24px 16px 80px; }
+        .top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+        .top-bar h2 { font-size: 1.3rem; font-weight: 800; }
+        .btn-create { background: #0866ff; color: white; border: none; border-radius: 10px; padding: 10px 20px; font-family: inherit; font-size: 0.88rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+
+        .pages-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap: 16px; }
+        .page-card { background: var(--surface); border-radius: 14px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: transform 0.15s, box-shadow 0.15s; cursor: pointer; }
+        .page-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+        .page-cover { width: 100%; height: 120px; object-fit: cover; background: linear-gradient(135deg, #0866ff, #0550c1); display: flex; align-items: center; justify-content: center; font-size: 3rem; }
+        .page-body { padding: 14px; }
+        .page-avatar { width: 52px; height: 52px; border-radius: 50%; margin-top: -30px; margin-bottom: 8px; border: 3px solid var(--surface); object-fit: cover; background: white; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 800; color: #0866ff; }
+        .page-name { font-weight: 800; font-size: 0.95rem; }
+        .page-cat { font-size: 0.75rem; color: var(--text-secondary); margin-top: 2px; }
+        .page-followers { font-size: 0.78rem; color: var(--text-secondary); margin-top: 4px; }
+        .follow-btn { width: 100%; margin-top: 10px; padding: 8px; border-radius: 8px; border: none; font-family: inherit; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.15s; }
+        .follow-btn.follow { background: #e7f0ff; color: #0866ff; }
+        .follow-btn.following { background: var(--bg); color: var(--text-secondary); }
+
+        /* Create Page Modal */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 500; align-items: center; justify-content: center; }
+        .modal-overlay.show { display: flex; }
+        .modal { background: var(--surface); border-radius: 16px; padding: 24px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; }
+        .modal h2 { font-size: 1.1rem; font-weight: 800; margin-bottom: 16px; }
+        .form-group { margin-bottom: 12px; }
+        .form-label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; text-transform: uppercase; }
+        .form-input { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 0.88rem; background: var(--surface); color: var(--text); outline: none; }
+        .form-input:focus { border-color: #0866ff; }
+        .btn-submit { width: 100%; padding: 12px; background: #0866ff; color: white; border: none; border-radius: 10px; font-family: inherit; font-size: 0.92rem; font-weight: 700; cursor: pointer; }
+
+        /* Page View */
+        .page-view { display: none; }
+        .page-view.show { display: block; }
+        .pages-list { }
+        .pages-list.hidden { display: none; }
+        .pv-cover { width: 100%; height: 280px; object-fit: cover; background: linear-gradient(135deg,#0866ff,#0550c1); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 5rem; margin-bottom: 16px; }
+        .pv-header { display: flex; align-items: flex-end; gap: 16px; margin-bottom: 16px; }
+        .pv-av { width: 80px; height: 80px; border-radius: 50%; border: 4px solid var(--surface); background: white; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 800; color: #0866ff; flex-shrink: 0; }
+        .pv-info h2 { font-size: 1.4rem; font-weight: 800; }
+        .pv-info p { color: var(--text-secondary); font-size: 0.85rem; }
+        .pv-actions { display: flex; gap: 8px; margin-left: auto; }
+        .pv-action-btn { padding: 9px 18px; border-radius: 8px; border: none; font-family: inherit; font-size: 0.85rem; font-weight: 700; cursor: pointer; }
+        .btn-follow-page { background: #0866ff; color: white; }
+        .btn-message-page { background: var(--bg); color: var(--text); border: 1.5px solid var(--border); }
+
+        .page-post-box { background: var(--surface); border-radius: 14px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .page-post-input { width: 100%; border: 1.5px solid var(--border); border-radius: 10px; padding: 12px 16px; font-family: inherit; font-size: 0.9rem; resize: none; outline: none; background: var(--bg); color: var(--text); min-height: 80px; }
+        .page-post-input:focus { border-color: #0866ff; }
+        .post-it-btn { float: right; margin-top: 8px; background: #0866ff; color: white; border: none; border-radius: 8px; padding: 8px 20px; font-family: inherit; font-weight: 700; cursor: pointer; }
+
+        .tabs { display: flex; gap: 4px; border-bottom: 2px solid var(--border); margin-bottom: 20px; }
+        .ptab { padding: 10px 18px; border: none; background: none; font-family: inherit; font-size: 0.88rem; font-weight: 600; color: var(--text-secondary); cursor: pointer; border-bottom: 2.5px solid transparent; margin-bottom: -2px; }
+        .ptab.active { color: #0866ff; border-bottom-color: #0866ff; }
+
+        .search-bar2 { background: var(--surface); border: 1.5px solid var(--border); border-radius: 10px; padding: 10px 16px; width: 100%; margin-bottom: 16px; font-family: inherit; font-size: 0.88rem; color: var(--text); outline: none; }
+        .search-bar2:focus { border-color: #0866ff; }
+
+        .section-title { font-weight: 800; font-size: 1rem; margin-bottom: 12px; }
+    
+        /* Fix: Pill till missing + button blocked — ensure pills and following buttons are clickable */
+        .filter-bar, .category-tabs, .cats, .filter-tabs, .cat-tabs, .filter-pill, .cat-tab, .cat, .blood-type-grid, .search-bar {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 1;
+        }
+        .filter-chip, .cat-tab, .cat, .blood-btn, .btn-join, .btn-view, .btn-post, .btn-submit, .btn-sell, .contact-btn, .post-action, .member-row button, .file-row a {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 2;
+        }
+        /* Ensure no sticky pill blocks content */
+        .category-tabs, .filter-bar, .cats {
+            overflow-x: auto;
+            overflow-y: visible;
+            max-height: none;
+        }
+
+    </style>
+</head>
+<body>
+<script src="../js/config.js"></script>
+<script src="../js/shared.js"></script>
+<div class="pages-wrap">
+
+    <!-- Pages List View -->
+    <div class="pages-list" id="pagesList">
+        <div class="top-bar">
+            <div>
+                <h2>📰 Pages</h2>
+                <p style="font-size:0.85rem;color:var(--text-secondary);">DIU communities, clubs & official pages</p>
+            </div>
+            <button class="btn-create" onclick="document.getElementById('createModal').classList.add('show')"><i class="fas fa-plus"></i> Create Page</button>
+        </div>
+        <input class="search-bar2" placeholder="🔍 Search pages..." oninput="filterPages(this.value)">
+
+        <div class="section-title">Pages you follow</div>
+        <div class="pages-grid" id="myPagesGrid"><p style="color:var(--text-secondary);font-size:0.85rem;grid-column:1/-1;">No pages followed yet</p></div>
+
+        <div class="section-title" style="margin-top:24px;">Discover Pages</div>
+        <div class="pages-grid" id="allPagesGrid"><div style="text-align:center;padding:40px;color:var(--text-secondary);grid-column:1/-1;">No pages yet — create one!</div></div>
+    </div>
+
+    <!-- Page View -->
+    <div class="page-view" id="pageView">
+        <button onclick="backToPages()" style="background:none;border:none;color:#0866ff;font-family:inherit;font-size:0.9rem;font-weight:700;cursor:pointer;margin-bottom:16px;"><i class="fas fa-arrow-left"></i> Back to Pages</button>
+        <div class="pv-cover" id="pvCover">📰</div>
+        <div class="pv-header">
+            <div class="pv-av" id="pvAvatar">📰</div>
+            <div class="pv-info">
+                <h2 id="pvName">Page Name</h2>
+                <p id="pvMeta">Category · 0 followers</p>
+            </div>
+            <div class="pv-actions">
+                <button class="pv-action-btn btn-follow-page" id="pvFollowBtn" onclick="toggleFollowPage()">+ Follow</button>
+                <button class="pv-action-btn btn-message-page"><i class="fas fa-share"></i> Share</button>
+            </div>
+        </div>
+        <p id="pvDesc" style="color:var(--text-secondary);font-size:0.88rem;margin-bottom:16px;"></p>
+
+        <div class="tabs">
+            <button class="ptab active" onclick="switchPTab('posts',this)">Posts</button>
+            <button class="ptab" onclick="switchPTab('about',this)">About</button>
+        </div>
+
+        <!-- Posts tab -->
+        <div id="ptab-posts">
+            <div id="pvPostBox" style="display:none;" class="page-post-box">
+                <textarea class="page-post-input" id="pagePostInput" placeholder="Write something on this page..."></textarea>
+                <button class="post-it-btn" onclick="postToPage()"><i class="fas fa-paper-plane"></i> Post</button>
+                <div style="clear:both;"></div>
+            </div>
+            <div id="pvPostsList"></div>
+        </div>
+
+        <!-- About tab -->
+        <div id="ptab-about" style="display:none;">
+            <div style="background:var(--surface);border-radius:14px;padding:20px;">
+                <p><strong>Category:</strong> <span id="aboutCat"></span></p>
+                <p style="margin-top:8px;"><strong>Created by:</strong> <span id="aboutCreator"></span></p>
+                <p style="margin-top:8px;"><strong>Description:</strong> <span id="aboutDesc"></span></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Page Modal -->
+<div class="modal-overlay" id="createModal">
+    <div class="modal">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <h2>📰 Create Page</h2>
+            <button onclick="document.getElementById('createModal').classList.remove('show')" style="background:none;border:none;font-size:1.2rem;cursor:pointer;">&times;</button>
+        </div>
+        <div class="form-group"><label class="form-label">Page Name *</label><input class="form-input" id="pageName" placeholder="e.g., DIU CS Club"></div>
+        <div class="form-group"><label class="form-label">Category</label>
+            <select class="form-input" id="pageCategory">
+                <option>Education</option><option>Club</option><option>Community</option><option>Entertainment</option><option>Sports</option><option>Business</option><option>Official</option>
+            </select>
+        </div>
+        <div class="form-group"><label class="form-label">Description</label><textarea class="form-input" id="pageDesc" rows="3" placeholder="e.g., DIU Photography Club — Share your vision"></textarea></div>
+        <div class="form-group"><label class="form-label">Emoji / Icon</label><input class="form-input" id="pageEmoji" placeholder="📷" maxlength="2" value="📰"></div>
+        <button class="btn-submit" onclick="createPage()"><i class="fas fa-plus"></i> Create Page</button>
+    </div>
+</div>
+
+<div id="toast-container" style="position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column-reverse;gap:8px;"></div>
+
+<script>
+const myUser = JSON.parse(localStorage.getItem('user') || 'null');
+const token = localStorage.getItem('token');
+if (!token) window.location.href = '../index.html';
+if (localStorage.getItem('darkMode') === '1') document.body.setAttribute('data-theme','dark');
+
+let pages = JSON.parse(localStorage.getItem('diu_pages') || '[]');
+let currentPageId = null;
+const myId = String(myUser?._id || myUser?.id || '');
+
+function savePagesData() { localStorage.setItem('diu_pages', JSON.stringify(pages)); }
+
+function renderPages(list) {
+    const myPages = (list || pages).filter(p => p.followers?.includes(myId));
+    const allPg = list || pages;
+    document.getElementById('myPagesGrid').innerHTML = myPages.length
+        ? myPages.map(pageCard).join('')
+        : '<p style="color:var(--text-secondary);font-size:0.85rem;grid-column:1/-1;">No pages followed yet</p>';
+    document.getElementById('allPagesGrid').innerHTML = allPg.length
+        ? allPg.map(pageCard).join('')
+        : '<div style="text-align:center;padding:40px;color:var(--text-secondary);grid-column:1/-1;">No pages yet — create one!</div>';
+}
+
+function pageCard(p) {
+    const isFollowing = p.followers?.includes(myId);
+    return `<div class="page-card" onclick="openPage('${p.id}')">
+        <div class="page-cover" style="background:${p.color||'linear-gradient(135deg,#0866ff,#0550c1)'}">${p.emoji||'📰'}</div>
+        <div class="page-body">
+            <div class="page-name">${esc(p.name)}</div>
+            <div class="page-cat">${esc(p.category||'')}</div>
+            <div class="page-followers"><i class="fas fa-users"></i> ${(p.followers||[]).length} followers</div>
+            <button class="follow-btn ${isFollowing?'following':'follow'}" onclick="event.stopPropagation();toggleFollow('${p.id}',this)">${isFollowing?'✓ Following':'+ Follow'}</button>
+        </div>
+    </div>`;
+}
+
+function createPage() {
+    const name = document.getElementById('pageName').value.trim();
+    if (!name) { showToast('Page name required'); return; }
+    const colors = ['linear-gradient(135deg,#0866ff,#0550c1)','linear-gradient(135deg,#7c3aed,#4f46e5)','linear-gradient(135deg,#e41e3f,#c01232)','linear-gradient(135deg,#059669,#047857)','linear-gradient(135deg,#f97316,#ea580c)'];
+    const page = {
+        id: Date.now().toString(),
+        name, category: document.getElementById('pageCategory').value,
+        description: document.getElementById('pageDesc').value,
+        emoji: document.getElementById('pageEmoji').value || '📰',
+        color: colors[Math.floor(Math.random()*colors.length)],
+        createdBy: myUser?.fullName || 'Unknown',
+        createdById: myId,
+        followers: [myId],
+        posts: [],
+        createdAt: new Date().toISOString()
+    };
+    pages.unshift(page);
+    savePagesData();
+    renderPages();
+    document.getElementById('createModal').classList.remove('show');
+    ['pageName','pageDesc'].forEach(id => document.getElementById(id).value = '');
+    showToast('✅ Page created!');
+    openPage(page.id);
+}
+
+function toggleFollow(pageId, btn) {
+    const page = pages.find(p => p.id === pageId);
+    if (!page) return;
+    if (!page.followers) page.followers = [];
+    if (page.followers.includes(myId)) {
+        page.followers = page.followers.filter(id => id !== myId);
+        btn.textContent = '+ Follow'; btn.className = 'follow-btn follow';
+    } else {
+        page.followers.push(myId);
+        btn.textContent = '✓ Following'; btn.className = 'follow-btn following';
+    }
+    savePagesData(); renderPages();
+}
+
+function openPage(pageId) {
+    const page = pages.find(p => p.id === pageId);
+    if (!page) return;
+    currentPageId = pageId;
+    document.getElementById('pvCover').textContent = page.emoji || '📰';
+    document.getElementById('pvCover').style.background = page.color || '';
+    document.getElementById('pvAvatar').textContent = page.emoji || '📰';
+    document.getElementById('pvName').textContent = page.name;
+    document.getElementById('pvMeta').textContent = `${page.category} · ${(page.followers||[]).length} followers`;
+    document.getElementById('pvDesc').textContent = page.description || '';
+    document.getElementById('aboutCat').textContent = page.category;
+    document.getElementById('aboutCreator').textContent = page.createdBy;
+    document.getElementById('aboutDesc').textContent = page.description || 'No description';
+    const isOwner = page.createdById === myId;
+    document.getElementById('pvPostBox').style.display = isOwner ? 'block' : 'none';
+    const isFollowing = (page.followers||[]).includes(myId);
+    const btn = document.getElementById('pvFollowBtn');
+    btn.textContent = isFollowing ? '✓ Following' : '+ Follow';
+    btn.style.background = isFollowing ? 'var(--bg)' : '#0866ff';
+    btn.style.color = isFollowing ? 'var(--text)' : 'white';
+    renderPagePosts(page);
+    document.getElementById('pagesList').classList.add('hidden');
+    document.getElementById('pageView').classList.add('show');
+}
+
+function backToPages() {
+    currentPageId = null;
+    document.getElementById('pagesList').classList.remove('hidden');
+    document.getElementById('pageView').classList.remove('show');
+}
+
+function toggleFollowPage() {
+    const btn = document.getElementById('pvFollowBtn');
+    toggleFollow(currentPageId, { textContent: '', className: '', style: {} });
+    const page = pages.find(p => p.id === currentPageId);
+    const isFollowing = (page?.followers||[]).includes(myId);
+    btn.textContent = isFollowing ? '✓ Following' : '+ Follow';
+    btn.style.background = isFollowing ? 'var(--bg)' : '#0866ff';
+    btn.style.color = isFollowing ? 'var(--text)' : 'white';
+    document.getElementById('pvMeta').textContent = `${page.category} · ${(page.followers||[]).length} followers`;
+}
+
+function postToPage() {
+    const content = document.getElementById('pagePostInput').value.trim();
+    if (!content) { showToast('Please write something first'); return; }
+    const page = pages.find(p => p.id === currentPageId);
+    if (!page) return;
+    if (!page.posts) page.posts = [];
+    page.posts.unshift({ id: Date.now(), content, author: myUser?.fullName, createdAt: new Date().toISOString(), likes: 0 });
+    savePagesData();
+    renderPagePosts(page);
+    document.getElementById('pagePostInput').value = '';
+    showToast('✅ Posted!');
+}
+
+function renderPagePosts(page) {
+    const posts = page.posts || [];
+    const el = document.getElementById('pvPostsList');
+    if (!posts.length) { el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-secondary);">No posts yet</div>'; return; }
+    el.innerHTML = posts.map(post => `
+        <div style="background:var(--surface);border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#0866ff,#0550c1);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;">${(page.emoji||'📰')}</div>
+                <div>
+                    <div style="font-weight:700;font-size:0.9rem;">${esc(page.name)}</div>
+                    <div style="font-size:0.75rem;color:var(--text-secondary);">${timeAgo(post.createdAt)}</div>
+                </div>
+            </div>
+            <p style="font-size:0.92rem;line-height:1.5;">${esc(post.content)}</p>
+            <div style="display:flex;gap:16px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
+                <button onclick="likePagePost('${page.id}','${post.id}',this)" style="background:none;border:none;font-family:inherit;font-size:0.85rem;color:var(--text-secondary);cursor:pointer;font-weight:600;">👍 Like (${post.likes||0})</button>
+                <button style="background:none;border:none;font-family:inherit;font-size:0.85rem;color:var(--text-secondary);cursor:pointer;font-weight:600;">💬 Comment</button>
+            </div>
+        </div>`).join('');
+}
+
+function likePagePost(pageId, postId, btn) {
+    const page = pages.find(p => p.id === pageId);
+    const post = page?.posts?.find(p => p.id == postId);
+    if (!post) return;
+    post.likes = (post.likes || 0) + 1;
+    savePagesData();
+    btn.innerHTML = `👍 Like (${post.likes})`;
+}
+
+function switchPTab(tab, btn) {
+    document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('ptab-posts').style.display = tab === 'posts' ? 'block' : 'none';
+    document.getElementById('ptab-about').style.display = tab === 'about' ? 'block' : 'none';
+}
+
+function filterPages(q) {
+    if (!q) { renderPages(); return; }
+    renderPages(pages.filter(p => p.name.toLowerCase().includes(q.toLowerCase()) || p.category.toLowerCase().includes(q.toLowerCase())));
+}
+
+function timeAgo(d) {
+    if(!d) return '';
+    let dt = typeof d === 'string' && !d.includes('T') ? d.replace(' ', 'T') + 'Z' : d;
+    const s = Math.max(0, (Date.now() - new Date(dt).getTime()) / 1000);
+    if(s < 60) return 'Just now';
+    if(s < 3600) return Math.floor(s/60) + 'm ago';
+    if(s < 86400) return Math.floor(s/3600) + 'h ago';
+    return Math.floor(s/86400) + 'd ago';
+}
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function showToast(msg) { const t=document.createElement('div'); t.style.cssText='background:#1c1e21;color:white;padding:12px 18px;border-radius:10px;font-family:Inter,sans-serif;font-size:0.88rem;'; t.textContent=msg; document.getElementById('toast-container').appendChild(t); setTimeout(()=>t.remove(),2800); }
+
+renderPages();
+</script>
+</body>
+</html>

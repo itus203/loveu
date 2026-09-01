@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Bus Schedule | DIU Nexus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/home.css">
+    <style>
+        body{padding-top:64px;}
+        .hero{background:linear-gradient(135deg,#059669,#047857);padding:40px 24px;text-align:center;color:white;}
+        .hero h1{font-size:2rem;font-weight:800;}
+        .container{max-width:800px;margin:0 auto;padding:24px 16px;}
+        .route-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+        .rtab{padding:8px 16px;border-radius:20px;border:1.5px solid var(--border,#e4e6eb);font-family:inherit;font-size:0.85rem;font-weight:600;cursor:pointer;background:var(--surface,#fff);transition:all 0.15s;}
+        .rtab.active,.rtab:hover{background:#059669;color:white;border-color:#059669;}
+        .schedule-table{width:100%;border-collapse:collapse;background:var(--surface,#fff);border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+        .schedule-table th{background:#059669;color:white;padding:12px 16px;font-size:0.85rem;font-weight:700;text-align:left;}
+        .schedule-table td{padding:12px 16px;font-size:0.88rem;border-bottom:1px solid var(--border,#e4e6eb);}
+        .schedule-table tr:last-child td{border-bottom:none;}
+        .schedule-table tr:nth-child(even){background:var(--bg,#f8f9fa);}
+        .status-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:0.72rem;font-weight:700;}
+        .status-running{background:#d1fae5;color:#059669;}
+        .status-stopped{background:#fee2e2;color:#dc2626;}
+        .time-display{font-size:1.5rem;font-weight:800;text-align:center;padding:16px;background:var(--surface,#fff);border-radius:14px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+        .time-display .label{font-size:0.75rem;color:#65676b;font-weight:500;display:block;}
+    
+        /* Fix: Pill till missing + button blocked — ensure pills and following buttons are clickable */
+        .filter-bar, .category-tabs, .cats, .filter-tabs, .cat-tabs, .filter-pill, .cat-tab, .cat, .blood-type-grid, .search-bar {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 1;
+        }
+        .filter-chip, .cat-tab, .cat, .blood-btn, .btn-join, .btn-view, .btn-post, .btn-submit, .btn-sell, .contact-btn, .post-action, .member-row button, .file-row a {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 2;
+        }
+        /* Ensure no sticky pill blocks content */
+        .category-tabs, .filter-bar, .cats {
+            overflow-x: auto;
+            overflow-y: visible;
+            max-height: none;
+        }
+
+    </style>
+</head>
+<body>
+<script src="../js/config.js"></script>
+<script src="../js/shared.js"></script>
+<div class="hero"><h1><i class="fas fa-bus"></i> DIU Bus Schedule</h1><p style="opacity:0.85;margin-top:6px;">Official campus bus timings for all routes</p></div>
+<div class="container">
+    <div class="time-display" id="clock"><span class="label">Current Time</span>--:--:--</div>
+    <button id="adminBusToggle" onclick="document.getElementById('adminBusPanel').style.display = document.getElementById('adminBusPanel').style.display==='none' ? 'block' : 'none'" style="display:none; background:#059669; color:white; border:none; padding:10px 16px; border-radius:10px; font-weight:700; cursor:pointer; margin-bottom:12px; width:100%;"><i class="fas fa-cogs"></i> Admin: Manage Bus Template (Click to Edit)</button>
+    <!-- Admin Bus Template Editor (Only Admin Sees, Hidden Until Edit) -->
+    <div id="adminBusPanel" style="display:none; background:var(--surface); border:2px solid #059669; border-radius:14px; padding:18px; margin-bottom:20px; box-shadow:0 2px 10px rgba(5,150,105,0.08);">
+        <h3 style="font-weight:800; color:#059669; margin-bottom:12px; display:flex; align-items:center; gap:8px;"><i class="fas fa-bus"></i> Admin: Bus Template Editor <span style="font-size:0.7rem; background:#d1fae5; color:#065f46; padding:2px 8px; border-radius:20px; font-weight:700;">Globally Visible</span></h3>
+        <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:12px;">Add / Edit bus name, time, pickup/drop location — changes are instantly visible to all DIU students globally.</p>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <input id="busRouteName" placeholder="Bus Name / Route * e.g., Mirpur - DSC" style="padding:10px; border:1.5px solid var(--border); border-radius:8px; font-family:inherit;">
+            <input id="busNumber" placeholder="Bus No e.g., DIU-101" style="padding:10px; border:1.5px solid var(--border); border-radius:8px; font-family:inherit;">
+            <input id="busPickup" placeholder="Pickup Point * e.g., Mirpur-10" style="padding:10px; border:1.5px solid var(--border); border-radius:8px; font-family:inherit;">
+            <input id="busDrop" placeholder="Drop Point * e.g., DIU Campus" style="padding:10px; border:1.5px solid var(--border); border-radius:8px; font-family:inherit;">
+            <input id="busDeparture" placeholder="Departure Time * e.g., 7:00 AM" style="padding:10px; border:1.5px solid var(--border); border-radius:8px; font-family:inherit;">
+            <input id="busReturn" placeholder="Return Time e.g., 5:00 PM" style="padding:10px; border:1.5px solid var(--border); border-radius:8px; font-family:inherit;">
+            <input id="busStops" placeholder="Stops (comma separated) e.g., Mirpur-1, Mirpur-10" style="padding:10px; border:1.5px solid var(--border); border-radius:8px; font-family:inherit; grid-column:1/-1;">
+            <input id="busDriver" placeholder="Driver Name (optional)" style="padding:10px; border:1.5px solid var(--border); border-radius:8px; font-family:inherit;">
+            <input id="busDriverPhone" placeholder="Driver Phone (optional)" style="padding:10px; border:1.5px solid var(--border); border-radius:8px; font-family:inherit;">
+        </div>
+        <div style="display:flex; gap:8px; margin-top:12px;">
+            <button id="busSaveBtn" onclick="saveBusRoute()" style="flex:1; padding:11px; background:#059669; color:white; border:none; border-radius:10px; font-weight:700; cursor:pointer;"><i class="fas fa-plus"></i> Add Bus Route</button>
+            <button id="busCancelBtn" onclick="cancelBusEdit()" style="display:none; padding:11px 18px; background:var(--bg); border:1.5px solid var(--border); border-radius:10px; font-weight:700; cursor:pointer;">Cancel</button>
+        </div>
+        <input type="hidden" id="editingBusId" value="">
+    </div>
+    <div class="route-tabs" id="routeTabs"></div>
+    <div id="scheduleContent"></div>
+    <div style="background:var(--surface,#fff);border-radius:14px;padding:16px;margin-top:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+        <h3 style="font-weight:700;margin-bottom:12px;"><i class="fas fa-info-circle" style="color:#059669;"></i> Notes</h3>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:6px;">
+            <li style="font-size:0.85rem;color:#65676b;">🕐 Schedules may vary on Fridays & public holidays</li>
+            <li style="font-size:0.85rem;color:#65676b;">📍 Buses depart from the main campus gate</li>
+            <li style="font-size:0.85rem;color:#65676b;">📞 Bus helpline: 02-9090000 ext. 201</li>
+            <li style="font-size:0.85rem;color:#65676b;">⚠️ Last update: <span id="lastUpdateText">Loading...</span> <span id="lastUpdateAdminEdit" style="display:none; margin-left:8px;"><input id="lastUpdateInput" placeholder="e.g., 27/4/2026" style="padding:4px 8px;border:1px solid #e4e6eb;border-radius:6px;font-size:0.8rem;width:120px;"><button onclick="saveLastUpdate()" style="background:#059669;color:white;border:none;padding:4px 10px;border-radius:6px;font-size:0.75rem;font-weight:700;cursor:pointer;margin-left:4px;">Save</button></span> <button id="editLastUpdateBtn" onclick="document.getElementById('lastUpdateAdminEdit').style.display='inline-flex'; this.style.display='none';" style="display:none; background:#e7f0ff;color:#059669;border:none;padding:3px 8px;border-radius:6px;font-size:0.7rem;font-weight:700;cursor:pointer;margin-left:6px;"><i class="fas fa-pen"></i> Edit</button></li>
+        </ul>
+    </div>
+</div>
+<script>
+if(localStorage.getItem('darkMode')==='1') document.body.setAttribute('data-theme','dark');
+let ROUTES = []; // Dynamic only — admin filled buses only will show
+let activeRoute=null; // set after API load
+const myUserBus = JSON.parse(localStorage.getItem('user')||'null');
+if(myUserBus && myUserBus.role==='Admin'){
+    const toggleBtn=document.getElementById('adminBusToggle');
+    if(toggleBtn) toggleBtn.style.display='block';
+    // Panel stays hidden until admin clicks Edit or toggle
+}
+// Load globally visible buses from API (admin edits are instantly global)
+(async()=>{
+  try{
+    const base = ((window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })()));
+    const res=await fetch(base+'/api/bus/routes');
+    if(res.ok){
+      const data=await res.json();
+      if(Array.isArray(data) && data.length){
+        // data is flat list of bus_routes rows — group by routeName for display
+        const grouped={};
+        data.forEach(r=>{
+          const key=(r.routeName||r.route||r.pickupPoint||'DIU Route').trim();
+          const id=key.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9\-]/g,'');
+          if(!grouped[id]) grouped[id]={id, name:key, color:'#059669', stops:[]};
+          grouped[id].stops.push({
+            id: r.id,
+            time: r.departureTime||r.time||r.departure||'',
+            from: r.pickupPoint||r.from||'',
+            to: r.dropPoint||r.to||'',
+            status: r.status||'running',
+            busNumber: r.busNumber||r.routeNumber||'',
+            driverName: r.driverName||'',
+            driverPhone: r.driverPhone||'',
+            routeName: r.routeName||key
+          });
+        });
+        const apiRoutes=Object.values(grouped);
+        if(apiRoutes.length){
+            ROUTES.length=0;
+            apiRoutes.forEach(g=> ROUTES.push(g));
+            // Rebuild tabs
+            const tabsEl=document.getElementById('routeTabs');
+            tabsEl.innerHTML='';
+            ROUTES.forEach(r=>{
+                const btn=document.createElement('button');
+                btn.className='rtab'+(r.id===activeRoute?' active':'');
+                btn.textContent=r.name;
+                btn.onclick=()=>{activeRoute=r.id;document.querySelectorAll('.rtab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderSchedule();};
+                tabsEl.appendChild(btn);
+            });
+            activeRoute=ROUTES[0].id;
+            document.querySelectorAll('.rtab').forEach((b,i)=> b.classList.toggle('active', i===0));
+            renderSchedule();
+        }
+      }
+    }
+  }catch(e){ console.log('Bus API fallback', e.message); }
+})();
+
+// Last update — admin can edit date like 27/4/2026
+(async()=>{
+  try{
+    const base2 = ((window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })()));
+    const r=await fetch(base2+'/api/bus/settings');
+    if(r.ok){ const d=await r.json(); document.getElementById('lastUpdateText').textContent=d.last_update||'Spring 2026 semester'; }
+    // Show edit button only for Admin
+    if(myUserBus && myUserBus.role==='Admin'){
+        const btn=document.getElementById('editLastUpdateBtn');
+        if(btn) btn.style.display='inline-flex';
+    }
+  }catch{}
+})();
+async function saveLastUpdate(){
+  const v=document.getElementById('lastUpdateInput').value.trim();
+  if(!v){ showToast('Date required','error'); return; }
+  const token=localStorage.getItem('token');
+  const base2 = ((window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })()));
+  try{
+    const res=await fetch(base2+'/api/bus/settings', {method:'PUT', headers:{'Content-Type':'application/json','Authorization':'Bearer '+token}, body:JSON.stringify({last_update: v})});
+    const d=await res.json();
+    if(!res.ok) throw new Error(d.message);
+    document.getElementById('lastUpdateText').textContent=v;
+    document.getElementById('lastUpdateAdminEdit').style.display='none';
+    document.getElementById('editLastUpdateBtn').style.display='inline-flex';
+    showToast('✅ Last update saved');
+  }catch(e){ showToast(e.message,'error'); }
+}
+const tabs=document.getElementById('routeTabs');
+ROUTES.forEach(r=>{
+    const btn=document.createElement('button');
+    btn.className='rtab'+(r.id===activeRoute?' active':'');
+    btn.textContent=r.name;
+    btn.onclick=()=>{activeRoute=r.id;document.querySelectorAll('.rtab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderSchedule();};
+    tabs.appendChild(btn);
+});
+function renderSchedule(){
+    if(!ROUTES.length){ document.getElementById('scheduleContent').innerHTML='<div style="text-align:center;padding:30px;color:var(--text-secondary);">No bus routes yet — Admin can add from above.</div>'; document.getElementById('routeTabs').innerHTML=''; return; }
+    if(!activeRoute) activeRoute=ROUTES[0].id;
+    const r=ROUTES.find(x=>x.id===activeRoute);
+    if(!r){ document.getElementById('scheduleContent').innerHTML='<div style="text-align:center;padding:30px;color:var(--text-secondary);">No bus routes yet — Admin can add from above.</div>'; return; }
+    const isAdmin = myUserBus && myUserBus.role==='Admin';
+    document.getElementById('scheduleContent').innerHTML=`
+    <table class="schedule-table"><thead><tr><th>Time</th><th>Bus / Route</th><th>From → To</th><th>Status</th>${isAdmin?'<th>Admin</th>':''}</tr></thead><tbody>
+    ${r.stops.map(s=>{
+        const isRunning=s.status==='running';
+        const busInfo = s.busNumber ? `<div style="font-size:0.75rem;color:#059669;font-weight:700;">${esc(s.busNumber)}</div>` : '';
+        const driverInfo = s.driverName ? `<div style="font-size:0.7rem;color:var(--text-secondary);">${esc(s.driverName)} ${s.driverPhone? '· '+esc(s.driverPhone):''}</div>` : '';
+        return `<tr>
+            <td><strong>${esc(s.time)}</strong><div style="font-size:0.7rem;color:var(--text-secondary);">${esc(s.routeName||r.name)}</div></td>
+            <td>${esc(r.name)} ${busInfo} ${driverInfo}</td>
+            <td><span style="font-weight:600;">${esc(s.from)}</span> <span style="color:var(--text-secondary);">→</span> <span style="font-weight:600;">${esc(s.to)}</span></td>
+            <td><span class="status-badge ${isRunning?'status-running':'status-stopped'}">${isRunning?'🟢 Running':'🔴 Stopped'}</span></td>
+            ${isAdmin?`<td><div style="display:flex;gap:6px;"><button onclick="editBusRoute('${s.id}')" style="background:#e7f0ff;color:#059669;border:none;padding:6px 10px;border-radius:6px;font-size:0.75rem;font-weight:700;cursor:pointer;"><i class="fas fa-pen"></i></button><button onclick="deleteBusRoute('${s.id}')" style="background:#fee2e2;color:#dc2626;border:none;padding:6px 10px;border-radius:6px;font-size:0.75rem;font-weight:700;cursor:pointer;"><i class="fas fa-trash"></i></button></div></td>`:''}
+        </tr>`;
+    }).join('')}
+    </tbody></table>`;
+}
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+async function saveBusRoute(){
+    const routeName=document.getElementById('busRouteName').value.trim();
+    const busNumber=document.getElementById('busNumber').value.trim();
+    const pickup=document.getElementById('busPickup').value.trim();
+    const drop=document.getElementById('busDrop').value.trim();
+    const departure=document.getElementById('busDeparture').value.trim();
+    const ret=document.getElementById('busReturn').value.trim();
+    const stops=document.getElementById('busStops').value.trim();
+    const driverName=document.getElementById('busDriver').value.trim();
+    const driverPhone=document.getElementById('busDriverPhone').value.trim();
+    if(!routeName || !departure){ showToast('Bus name and departure time required','error'); return; }
+    const editingId=document.getElementById('editingBusId').value;
+    const token=localStorage.getItem('token');
+    const payload={ routeName, route: routeName, busNumber, routeNumber: busNumber, pickupPoint: pickup, from: pickup, dropPoint: drop, to: drop, departureTime: departure, time: departure, returnTime: ret, arrivalTime: ret, stops, driverName, driverPhone, status:'On Time' };
+    try{
+        const url = editingId ? `/api/bus/routes/${editingId}` : '/api/bus/routes';
+        const method = editingId ? 'PUT' : 'POST';
+        const res=await fetch((window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())  +url, {method, headers:{'Content-Type':'application/json','Authorization':'Bearer '+token}, body:JSON.stringify(payload)});
+        const data=await res.json();
+        if(!res.ok) throw new Error(data.message||'Failed');
+        showToast(editingId?'✅ Bus route updated globally!':'✅ Bus route added globally!','success');
+        cancelBusEdit();
+        // Reload from API
+        const r2=await fetch((window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())  +'/api/bus/routes');
+        if(r2.ok){
+            const d2=await r2.json();
+            if(Array.isArray(d2) && d2.length){
+                const grouped={};
+                d2.forEach(r=>{
+                  const key=(r.routeName||r.route||'DIU Route').trim();
+                  const id=key.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9\-]/g,'');
+                  if(!grouped[id]) grouped[id]={id, name:key, color:'#059669', stops:[]};
+                  grouped[id].stops.push({id:r.id, time:r.departureTime||r.time||'', from:r.pickupPoint||r.from||'', to:r.dropPoint||r.to||'', status:r.status||'running', busNumber:r.busNumber||'', driverName:r.driverName||'', driverPhone:r.driverPhone||'', routeName:r.routeName||key});
+                });
+                ROUTES.length=0;
+                Object.values(grouped).forEach(g=> ROUTES.push(g));
+                const tabsEl=document.getElementById('routeTabs');
+                tabsEl.innerHTML='';
+                ROUTES.forEach(rr=>{
+                    const btn=document.createElement('button');
+                    btn.className='rtab'+(rr.id===activeRoute?' active':'');
+                    btn.textContent=rr.name;
+                    btn.onclick=()=>{activeRoute=rr.id;document.querySelectorAll('.rtab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderSchedule();};
+                    tabsEl.appendChild(btn);
+                });
+                if(!ROUTES.find(x=>x.id===activeRoute)) activeRoute=ROUTES[0].id;
+                renderSchedule();
+            }
+        } else {
+            renderSchedule();
+        }
+    }catch(e){ showToast(e.message||'Failed','error'); }
+}
+function cancelBusEdit(){
+    document.getElementById('editingBusId').value='';
+    ['busRouteName','busNumber','busPickup','busDrop','busDeparture','busReturn','busStops','busDriver','busDriverPhone'].forEach(id=> document.getElementById(id).value='');
+    document.getElementById('busSaveBtn').innerHTML='<i class="fas fa-plus"></i> Add Bus Route';
+    document.getElementById('busCancelBtn').style.display='none';
+}
+async function editBusRoute(id){
+    // Show template editor only for admin when edit clicked
+    const panel=document.getElementById('adminBusPanel');
+    if(panel) panel.style.display='block';
+    // Find bus in ROUTES
+    for(const r of ROUTES){
+        const s=r.stops.find(x=>String(x.id)===String(id));
+        if(s){
+            document.getElementById('busRouteName').value=s.routeName||r.name||'';
+            document.getElementById('busNumber').value=s.busNumber||'';
+            document.getElementById('busPickup').value=s.from||'';
+            document.getElementById('busDrop').value=s.to||'';
+            document.getElementById('busDeparture').value=s.time||'';
+            document.getElementById('busStops').value=s.stops||'';
+            document.getElementById('busDriver').value=s.driverName||'';
+            document.getElementById('busDriverPhone').value=s.driverPhone||'';
+            document.getElementById('editingBusId').value=id;
+            document.getElementById('busSaveBtn').innerHTML='<i class="fas fa-save"></i> Update Bus Route';
+            document.getElementById('busCancelBtn').style.display='inline-block';
+            if(panel) panel.scrollIntoView({behavior:'smooth', block:'center'});
+            break;
+        }
+    }
+}
+async function deleteBusRoute(id){
+    if(!confirm('Delete this bus schedule? This will be removed globally for all students.')) return;
+    const token=localStorage.getItem('token');
+    try{
+        const res=await fetch((window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())  +'/api/bus/routes/'+id, {method:'DELETE', headers:{'Authorization':'Bearer '+token}});
+        const data=await res.json();
+        if(!res.ok) throw new Error(data.message||'Failed');
+        showToast('🗑️ Bus route deleted globally','success');
+        // Remove from local ROUTES
+        for(const r of ROUTES){
+            const idx=r.stops.findIndex(s=>String(s.id)===String(id));
+            if(idx>=0){ r.stops.splice(idx,1); if(!r.stops.length){ const ri=ROUTES.findIndex(x=>x.id===r.id); if(ri>=0) ROUTES.splice(ri,1); if(activeRoute===r.id) activeRoute=ROUTES[0]?.id||'mirpur'; } break; }
+        }
+        // Rebuild tabs if needed
+        const tabsEl=document.getElementById('routeTabs');
+        tabsEl.innerHTML='';
+        ROUTES.forEach(rr=>{
+            const btn=document.createElement('button');
+            btn.className='rtab'+(rr.id===activeRoute?' active':'');
+            btn.textContent=rr.name;
+            btn.onclick=()=>{activeRoute=rr.id;document.querySelectorAll('.rtab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderSchedule();};
+            tabsEl.appendChild(btn);
+        });
+        renderSchedule();
+    }catch(e){ showToast(e.message,'error'); }
+}
+function tick(){const n=new Date();document.getElementById('clock').innerHTML=`<span class="label">Current Time (Dhaka)</span>${n.toLocaleTimeString('en-BD',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}<br><span style="font-size:0.78rem;color:#65676b;font-weight:400;">${n.toLocaleDateString('en-BD',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</span>`;}
+renderSchedule(); tick(); setInterval(tick,1000);
+</script>
+</body></html>

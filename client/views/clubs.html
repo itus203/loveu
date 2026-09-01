@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Clubs & Workshops Hub | DIU Nexus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/home.css">
+    <style>
+        body { padding-top: 64px; background: var(--bg); font-family: 'Inter', sans-serif; }
+        .clubs-wrap { max-width: 1060px; margin: 0 auto; padding: 24px 16px 80px; }
+        
+        .page-hero {
+            background: linear-gradient(135deg, #ec4899, #be185d);
+            border-radius: 16px;
+            padding: 32px 24px;
+            color: white;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 4px 20px rgba(236, 72, 153, 0.25);
+        }
+        .page-hero i { font-size: 3rem; opacity: 0.95; }
+        .page-hero h1 { font-size: 1.6rem; font-weight: 800; margin: 0; }
+        .page-hero p { opacity: 0.9; margin: 6px 0 0; font-size: 0.92rem; }
+
+        .tabs-header { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 8px; }
+        .tab-btn { padding: 8px 18px; border: none; background: none; font-family: inherit; font-size: 0.92rem; font-weight: 700; color: var(--text-secondary); cursor: pointer; border-radius: 8px; }
+        .tab-btn.active { background: #ec4899; color: white; }
+
+        /* Clubs Grid */
+        .club-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+        .club-card {
+            background: var(--surface);
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border: 1px solid var(--border);
+            transition: transform 0.15s;
+        }
+        .club-card:hover { transform: translateY(-2px); }
+        .club-banner { height: 110px; background: linear-gradient(135deg, #ec4899, #8b5cf6); display: flex; align-items: center; justify-content: center; font-size: 2.8rem; color: white; }
+        .club-body { padding: 18px; }
+        .club-name { font-size: 1.05rem; font-weight: 800; margin-bottom: 4px; color: var(--text); }
+        .club-desc { font-size: 0.82rem; color: var(--text-secondary); line-height: 1.45; margin-bottom: 14px; height: 38px; overflow: hidden; }
+        .btn-join-club { width: 100%; padding: 9px; border-radius: 8px; border: none; font-weight: 700; font-family: inherit; cursor: pointer; background: #fdf2f8; color: #be185d; transition: all 0.15s; }
+        .btn-join-club.joined { background: #dcfce7; color: #15803d; }
+
+        /* Events / Workshops */
+        .event-card {
+            background: var(--surface);
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border: 1px solid var(--border);
+            margin-bottom: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+        .ev-title { font-size: 1.1rem; font-weight: 800; color: var(--text); }
+        .ev-meta { font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px; display: flex; gap: 12px; }
+        .ev-reg-btn { padding: 9px 20px; border-radius: 8px; background: #ec4899; color: white; font-weight: 700; border: none; cursor: pointer; }
+    
+        /* Fix: Pill till missing + button blocked — ensure pills and following buttons are clickable */
+        .filter-bar, .category-tabs, .cats, .filter-tabs, .cat-tabs, .filter-pill, .cat-tab, .cat, .blood-type-grid, .search-bar {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 1;
+        }
+        .filter-chip, .cat-tab, .cat, .blood-btn, .btn-join, .btn-view, .btn-post, .btn-submit, .btn-sell, .contact-btn, .post-action, .member-row button, .file-row a {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 2;
+        }
+        /* Ensure no sticky pill blocks content */
+        .category-tabs, .filter-bar, .cats {
+            overflow-x: auto;
+            overflow-y: visible;
+            max-height: none;
+        }
+
+    </style>
+</head>
+<body>
+<script src="../js/config.js"></script>
+<script src="../js/shared.js"></script>
+<div class="clubs-wrap">
+    <div class="page-hero">
+        <i class="fas fa-users-cog"></i>
+        <div>
+            <h1>🎪 DIU Clubs, Hackathons & Workshops</h1>
+            <p>Join clubs, find hackathons, and grow with the DIU community. Explore your passion beyond the classroom.</p>
+        </div>
+    </div>
+
+    <div class="tabs-header">
+        <button class="tab-btn active" onclick="switchClubTab('clubs', this)"><i class="fas fa-flag"></i> All Clubs</button>
+        <button class="tab-btn" onclick="switchClubTab('workshops', this)"><i class="fas fa-calendar-check"></i> Workshops & Hackathons</button>
+    </div>
+
+    <!-- Clubs Tab -->
+    <div id="tab-clubs" class="club-grid"></div>
+
+    <!-- Workshops Tab -->
+    <div id="tab-workshops" style="display:none;"></div>
+</div>
+
+<div id="toast-container" style="position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column-reverse;gap:8px;"></div>
+
+<script>
+const API = (typeof window.API !== 'undefined' ? window.API : (function(){ var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000/api'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin+'/api'; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin+'/api':'http://localhost:5000/api'; return 'http://localhost:5000/api'; } return window.location.origin+'/api'; })());
+const myUser = JSON.parse(localStorage.getItem('user') || 'null');
+const token = localStorage.getItem('token');
+if (!token) window.location.href = '../index.html';
+if (localStorage.getItem('darkMode') === '1') document.body.setAttribute('data-theme','dark');
+
+let myRoles = {};
+
+const CLUBS = [
+    { id: 1, name: "DIU Computer Programming Club (CPC)", emoji: "💻", desc: "Competitive programming, ICPC training, hackathons and coding bootcamps.", members: 1420 },
+    { id: 2, name: "DIU Robotics Club (DIURC)", emoji: "🤖", desc: "IoT, hardware automation, line following robotics and national tech fairs.", members: 890 },
+    { id: 3, name: "DIU Cyber Security Club", emoji: "🛡️", desc: "Ethical hacking, Capture The Flag (CTF) contests and network security.", members: 670 },
+    { id: 4, name: "DIU Toastmasters & Debating Club", emoji: "🎙️", desc: "Public speaking, leadership skills, national and inter-university debate.", members: 540 },
+    { id: 5, name: "DIU Cultural & Music Club", emoji: "🎸", desc: "Campus music concerts, drama, stage performance and seasonal fests.", members: 920 },
+    { id: 6, name: "DIU Photographic Society", emoji: "📸", desc: "Campus photo walks, creative exhibitions and cinematography workshops.", members: 610 }
+];
+
+const WORKSHOPS = [
+    { id: 101, title: "🚀 Full-Stack AI Application Bootcamp with Next.js & Python", club: "DIU CPC", date: "Upcoming Saturday, 10:00 AM", venue: "Smart Lab 702, DSC" },
+    { id: 102, title: "🏆 Intra-DIU Hackathon & Tech Olympiad 2026", club: "DIURC", date: "Next Month (24-25th)", venue: "DIU Auditorium" },
+    { id: 103, title: "🔒 Web Penetration Testing & Bug Bounty 101", club: "Cyber Security Club", date: "Friday, 3:00 PM", venue: "Online (Google Meet)" }
+];
+
+async function loadClubs() {
+    try {
+        const res = await fetch(`${API}/clubs`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!res.ok) throw new Error('Failed to load clubs');
+        const clubs = await res.json();
+        myRoles = {};
+        clubs.forEach(c => {
+            if (c.my_role) myRoles[c.id] = c.my_role;
+        });
+        renderClubs();
+    } catch (e) {
+        showToast('Error loading clubs: ' + e.message);
+    }
+}
+
+function renderClubs() {
+    document.getElementById('tab-clubs').innerHTML = CLUBS.map(c => {
+        const isJoined = !!myRoles[c.id];
+        return `
+        <div class="club-card">
+            <div class="club-banner">${c.emoji}</div>
+            <div class="club-body">
+                <div class="club-name">${esc(c.name)}</div>
+                <div class="club-desc">${esc(c.desc)}</div>
+                <button class="btn-join-club ${isJoined ? 'joined' : ''}" onclick="toggleJoinClub(${c.id}, this)">
+                    ${isJoined ? '✓ Member of Club' : '+ Join Club Community'}
+                </button>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function renderWorkshops() {
+    document.getElementById('tab-workshops').innerHTML = WORKSHOPS.map(w => `
+        <div class="event-card">
+            <div>
+                <div class="ev-title">${esc(w.title)}</div>
+                <div class="ev-meta">
+                    <span><i class="fas fa-flag" style="color:#ec4899;"></i> ${esc(w.club)}</span>
+                    <span><i class="fas fa-clock" style="color:#059669;"></i> ${esc(w.date)}</span>
+                    <span><i class="fas fa-map-marker-alt" style="color:#0284c7;"></i> ${esc(w.venue)}</span>
+                </div>
+            </div>
+            <button class="ev-reg-btn" onclick="registerWorkshop('${esc(w.title)}')"><i class="fas fa-ticket-alt"></i> Register Now</button>
+        </div>
+    `).join('');
+}
+
+async function toggleJoinClub(id, btn) {
+    try {
+        if (myRoles[id]) {
+            const res = await fetch(`${API}/clubs/${id}/leave`, {
+                method: 'DELETE',
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.message || 'Failed to leave');
+            }
+            delete myRoles[id];
+            showToast('Left club');
+        } else {
+            const res = await fetch(`${API}/clubs/${id}/join`, {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.message || 'Failed to join');
+            }
+            myRoles[id] = 'member';
+            showToast('🎉 Joined Club Community!');
+        }
+        renderClubs();
+    } catch (e) {
+        showToast('Error: ' + e.message);
+    }
+}
+
+function registerWorkshop(title) {
+    showToast(`✅ Registered for "${title}"! Check notification for passes.`);
+}
+
+function switchClubTab(tab, btn) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-clubs').style.display = tab === 'clubs' ? 'grid' : 'none';
+    document.getElementById('tab-workshops').style.display = tab === 'workshops' ? 'block' : 'none';
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function showToast(msg) { const t=document.createElement('div'); t.style.cssText='background:#1c1e21;color:white;padding:12px 18px;border-radius:10px;font-family:Inter,sans-serif;font-size:0.88rem;'; t.textContent=msg; document.getElementById('toast-container').appendChild(t); setTimeout(()=>t.remove(),2800); }
+
+loadClubs();
+renderWorkshops();
+</script>
+</body>
+</html>

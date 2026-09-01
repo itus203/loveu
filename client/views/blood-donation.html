@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Blood Donation | DIU Nexus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/home.css">
+    <style>
+        body { padding-top: 64px; background: var(--bg); }
+        .blood-wrap { max-width: 900px; margin: 0 auto; padding: 24px 16px 80px; }
+        .page-hero { background: linear-gradient(135deg, #e41e3f, #c01232); border-radius: 16px; padding: 32px 24px; color: white; margin-bottom: 24px; text-align: center; position: relative; overflow: hidden; }
+        .page-hero::before { content: '🩸'; font-size: 8rem; position: absolute; right: -10px; top: -10px; opacity: 0.15; }
+        .page-hero h1 { font-size: 1.8rem; font-weight: 800; margin-bottom: 6px; }
+        .page-hero p { opacity: 0.88; font-size: 0.92rem; }
+
+        .blood-grid { display: grid; grid-template-columns: 320px 1fr; gap: 20px; align-items: start; }
+        @media(max-width:700px) { .blood-grid { grid-template-columns: 1fr; } }
+
+        .form-card { background: var(--surface); border-radius: 14px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.07); }
+        .form-card h3 { font-weight: 800; color: #e41e3f; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .form-group { margin-bottom: 12px; }
+        .form-label { display: block; font-size: 0.78rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.3px; }
+        .form-input { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 0.88rem; background: var(--surface); color: var(--text); outline: none; }
+        .form-input:focus { border-color: #e41e3f; }
+        .blood-type-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; }
+        .blood-btn { padding: 10px 4px; border: 2px solid var(--border); border-radius: 8px; background: var(--surface); font-family: inherit; font-size: 0.88rem; font-weight: 800; cursor: pointer; text-align: center; transition: all 0.15s; }
+        .blood-btn.selected { background: #e41e3f; color: white; border-color: #e41e3f; }
+        .blood-btn:hover:not(.selected) { border-color: #e41e3f; color: #e41e3f; }
+        .btn-post { width: 100%; padding: 13px; background: #e41e3f; color: white; border: none; border-radius: 10px; font-family: inherit; font-size: 0.95rem; font-weight: 700; cursor: pointer; margin-top: 8px; transition: opacity 0.15s; }
+        .btn-post:hover { opacity: 0.9; }
+
+        .req-card { background: var(--surface); border-radius: 14px; padding: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 12px; border-left: 4px solid #e41e3f; transition: transform 0.15s; }
+        .req-card:hover { transform: translateY(-2px); }
+        .req-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+        .blood-badge { width: 52px; height: 52px; border-radius: 50%; background: #e41e3f; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 800; flex-shrink: 0; }
+        .req-title { font-weight: 800; font-size: 0.98rem; }
+        .req-meta { font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px; }
+        .urgency-badge { padding: 3px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; }
+        .urgent-critical { background: #fee2e2; color: #e41e3f; }
+        .urgent-soon { background: #fff7ed; color: #f97316; }
+        .urgent-normal { background: #d1fae5; color: #059669; }
+        .req-details { font-size: 0.85rem; line-height: 1.5; margin-bottom: 10px; color: var(--text-secondary); }
+        .req-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .contact-btn { padding: 8px 16px; border-radius: 8px; border: none; font-family: inherit; font-size: 0.82rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .btn-call { background: #d1fae5; color: #059669; }
+        .btn-msg { background: #e7f0ff; color: #0866ff; }
+        .filter-bar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+        .filter-chip { padding: 6px 16px; border-radius: 20px; border: 1.5px solid var(--border); background: var(--surface); font-family: inherit; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+        .filter-chip.active { background: #e41e3f; color: white; border-color: #e41e3f; }
+    
+        /* Fix: Pill till missing + button blocked — ensure pills and following buttons are clickable */
+        .filter-bar, .category-tabs, .cats, .filter-tabs, .cat-tabs, .filter-pill, .cat-tab, .cat, .blood-type-grid, .search-bar {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 1;
+        }
+        .filter-chip, .cat-tab, .cat, .blood-btn, .btn-join, .btn-view, .btn-post, .btn-submit, .btn-sell, .contact-btn, .post-action, .member-row button, .file-row a {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 2;
+        }
+        /* Ensure no sticky pill blocks content */
+        .category-tabs, .filter-bar, .cats {
+            overflow-x: auto;
+            overflow-y: visible;
+            max-height: none;
+        }
+
+    </style>
+</head>
+<body>
+<script src="../js/config.js"></script>
+<script src="../js/shared.js"></script>
+<div class="blood-wrap">
+    <div class="page-hero">
+        <h1>🩸 Blood Donation Network</h1>
+        <p>We are here to save lives — Find donors, request blood, and help your DIU family in emergencies. Search by blood group.</p>
+    </div>
+
+    <div class="blood-grid">
+        <!-- Form -->
+        <div class="form-card">
+            <h3><i class="fas fa-hand-holding-heart"></i> Submit Blood Request</h3>
+            <div class="form-group">
+                <label class="form-label">Blood Group *</label>
+                <div class="blood-type-grid" id="bloodGrid">
+                    <button class="blood-btn" onclick="selectBlood(this,'A+')">A+</button>
+                    <button class="blood-btn" onclick="selectBlood(this,'A-')">A-</button>
+                    <button class="blood-btn" onclick="selectBlood(this,'B+')">B+</button>
+                    <button class="blood-btn" onclick="selectBlood(this,'B-')">B-</button>
+                    <button class="blood-btn" onclick="selectBlood(this,'AB+')">AB+</button>
+                    <button class="blood-btn" onclick="selectBlood(this,'AB-')">AB-</button>
+                    <button class="blood-btn" onclick="selectBlood(this,'O+')">O+</button>
+                    <button class="blood-btn" onclick="selectBlood(this,'O-')">O-</button>
+                </div>
+                <input type="hidden" id="selectedBlood">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Patient Name *</label>
+                <input class="form-input" id="patientName" placeholder="Patient Name">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Hospital / Location *</label>
+                <input class="form-input" id="hospital" placeholder="e.g. DMCH, DIU Medical Center">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Date Needed *</label>
+                <input class="form-input" id="dateNeeded" type="date">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Urgency</label>
+                <select class="form-input" id="urgency">
+                    <option value="critical">🔴 Critical (Need within 24 hours)</option>
+                    <option value="soon">🟡 Soon (Need within 2-3 days)</option>
+                    <option value="normal">🟢 Normal (Need within a week)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Contact Number *</label>
+                <input class="form-input" id="contactNum" placeholder="01XXXXXXXXX" type="tel">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Additional Details</label>
+                <textarea class="form-input" id="details" rows="3" placeholder="e.g., Need 2 bags for surgery at DMCH, patient in ICU..."></textarea>
+            </div>
+            <button class="btn-post" onclick="postRequest()"><i class="fas fa-paper-plane"></i> Post Request</button>
+        </div>
+
+        <!-- Requests List -->
+        <div>
+            <div class="filter-bar">
+                <button class="filter-chip active" onclick="filterReqs('all',this)">All</button>
+                <button class="filter-chip" onclick="filterReqs('A+',this)">A+</button>
+                <button class="filter-chip" onclick="filterReqs('B+',this)">B+</button>
+                <button class="filter-chip" onclick="filterReqs('O+',this)">O+</button>
+                <button class="filter-chip" onclick="filterReqs('AB+',this)">AB+</button>
+                <button class="filter-chip" onclick="filterReqs('critical',this)">🔴 Critical</button>
+            </div>
+            <div id="reqsList"><div style="text-align:center;padding:40px;color:var(--text-secondary);"><i class="fas fa-spinner fa-spin fa-2x"></i></div></div>
+        </div>
+    </div>
+</div>
+<div id="toast-container" style="position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column-reverse;gap:8px;"></div>
+
+<script>
+const API = (typeof window.API !== 'undefined' ? window.API : (function(){ var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000/api'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin+'/api'; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin+'/api':'http://localhost:5000/api'; return 'http://localhost:5000/api'; } return window.location.origin+'/api'; })());
+const token = localStorage.getItem('token');
+const myUser = JSON.parse(localStorage.getItem('user') || 'null');
+if (!token) window.location.href = '../index.html';
+if (localStorage.getItem('darkMode') === '1') document.body.setAttribute('data-theme','dark');
+
+let selectedBlood = '';
+let allReqs = [];
+let currentFilter = 'all';
+
+function selectBlood(btn, type) {
+    document.querySelectorAll('.blood-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedBlood = type;
+    document.getElementById('selectedBlood').value = type;
+}
+
+// Global — store on server so every DIU student sees it
+async function getReqsFromServer(){
+    try{
+        const res=await fetch(`${API}/blood/requests`, {headers:{'Authorization':'Bearer '+token}});
+        if(!res.ok) throw new Error('Failed');
+        return await res.json();
+    }catch(e){
+        console.error('getReqs server failed',e);
+        // fallback to local
+        try{ return JSON.parse(localStorage.getItem('blood_requests')||'[]'); }catch{ return []; }
+    }
+}
+function getReqs(){ return allReqs; } // now server-backed
+function saveReqs(data){ allReqs=data; try{ localStorage.setItem('blood_requests', JSON.stringify(data)); }catch{} }
+
+async function postRequest() {
+    if (!selectedBlood) { showToast('Please select blood group'); return; }
+    const patientName = document.getElementById('patientName').value.trim();
+    const hospital = document.getElementById('hospital').value.trim();
+    const dateNeeded = document.getElementById('dateNeeded').value;
+    const urgency = document.getElementById('urgency').value;
+    const contactNum = document.getElementById('contactNum').value.trim();
+    const details = document.getElementById('details').value.trim();
+    if (!patientName || !hospital || !dateNeeded || !contactNum) { showToast('Please fill in all required fields'); return; }
+
+    // Try server first — globally visible
+    try{
+        const res=await fetch(`${API}/blood/requests`, {
+            method:'POST',
+            headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+            body: JSON.stringify({ bloodGroup:selectedBlood, patientName, hospital, dateNeeded, urgency, contactNum, details })
+        });
+        const data=await res.json();
+        if(!res.ok) throw new Error(data.message||'Failed to post');
+        showToast('✅ Blood request posted — visible to all DIU students!');
+        // Refresh from server
+        allReqs = await getReqsFromServer();
+        renderReqs(allReqs);
+    }catch(e){
+        console.error(e);
+        showToast(e.message||'Failed — saved locally', 'error');
+        // Fallback local
+        const req = { id: Date.now(), bloodGroup:selectedBlood, patientName, hospital, dateNeeded, urgency, contactNum, details, postedBy: myUser?.fullName || 'Anonymous', postedById: myUser?._id || myUser?.id, createdAt: new Date().toISOString() };
+        const reqs = JSON.parse(localStorage.getItem('blood_requests')||'[]');
+        reqs.unshift(req);
+        localStorage.setItem('blood_requests', JSON.stringify(reqs));
+        allReqs = reqs;
+        renderReqs(allReqs);
+    }
+    // Clear form
+    ['patientName','hospital','dateNeeded','contactNum','details'].forEach(id => document.getElementById(id).value = '');
+    document.querySelectorAll('.blood-btn').forEach(b => b.classList.remove('selected'));
+    selectedBlood = '';
+}
+
+function filterReqs(f, btn) {
+    currentFilter = f;
+    document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    if (f === 'all') renderReqs(allReqs);
+    else if (f === 'critical') renderReqs(allReqs.filter(r => r.urgency === 'critical'));
+    else renderReqs(allReqs.filter(r => r.bloodGroup === f));
+}
+
+function renderReqs(list) {
+    const el = document.getElementById('reqsList');
+    if (!list.length) { el.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-secondary);"><i class="fas fa-heartbeat" style="font-size:3rem;opacity:0.2;display:block;margin-bottom:12px;"></i>No active blood requests</div>'; return; }
+    el.innerHTML = list.map(r => {
+        const urgClass = { critical: 'urgent-critical', soon: 'urgent-soon', normal: 'urgent-normal' }[r.urgency] || 'urgent-normal';
+        const urgText = { critical: '🔴 Critical', soon: '🟡 Soon', normal: '🟢 Normal' }[r.urgency] || 'Normal';
+        const dateStr = r.dateNeeded ? new Date(r.dateNeeded).toLocaleDateString('en-BD', { day:'numeric', month:'short', year:'numeric' }) : '';
+        return `<div class="req-card">
+            <div class="req-header">
+                <div class="blood-badge">${esc(r.bloodGroup)}</div>
+                <div style="flex:1;">
+                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                        <div class="req-title">${esc(r.patientName)}</div>
+                        <span class="urgency-badge ${urgClass}">${urgText}</span>
+                    </div>
+                    <div class="req-meta"><i class="fas fa-hospital"></i> ${esc(r.hospital)} · <i class="fas fa-calendar"></i> ${dateStr}</div>
+                    <div class="req-meta" style="margin-top:2px;">Posted by ${esc(r.postedBy)}</div>
+                </div>
+            </div>
+            ${r.details ? `<div class="req-details">${esc(r.details)}</div>` : ''}
+            <div class="req-actions">
+                <a href="tel:${esc(r.contactNum)}" class="contact-btn btn-call"><i class="fas fa-phone"></i> ${esc(r.contactNum)}</a>
+                <a href="messenger.html?userId=${r.postedById||''}" class="contact-btn btn-msg"><i class="fas fa-comment"></i> Message</a>
+                ${(myUser?._id||myUser?.id) == r.postedById ? `<button onclick="deleteReq(${r.id})" class="contact-btn" style="background:#fee2e2;color:#e41e3f;"><i class="fas fa-trash"></i> Delete</button>` : `<button onclick="reportContent('blood_request', ${r.id})" class="contact-btn" style="background:#fff7ed;color:#e41e3f;border:1px solid #fed7aa;"><i class="fas fa-flag"></i> Report</button>`}
+            </div>
+        </div>`;
+    }).join('');
+}
+
+async function deleteReq(id) {
+    if (!confirm('Delete this request?')) return;
+    try{
+        const res=await fetch(`${API}/blood/requests/${id}`, {method:'DELETE', headers:{'Authorization':'Bearer '+token}});
+        if(!res.ok) throw new Error('Server delete failed');
+        showToast('Deleted — removed for all');
+    }catch(e){
+        console.warn('delete fallback local',e);
+    }
+    // Refresh from server (global)
+    try{ allReqs=await getReqsFromServer(); }catch{ allReqs=getReqs().filter(r=>r.id!==id); saveReqs(allReqs); }
+    renderReqs(allReqs);
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function showToast(msg) { const t=document.createElement('div'); t.style.cssText='background:#1c1e21;color:white;padding:12px 18px;border-radius:10px;font-family:Inter,sans-serif;font-size:0.88rem;'; t.textContent=msg; document.getElementById('toast-container').appendChild(t); setTimeout(()=>t.remove(),2800); }
+
+// Initial load — globally visible from server
+(async()=>{
+    try{ allReqs=await getReqsFromServer(); }
+    catch{ allReqs=JSON.parse(localStorage.getItem('blood_requests')||'[]'); }
+    renderReqs(allReqs);
+})();
+</script>
+</body>
+</html>

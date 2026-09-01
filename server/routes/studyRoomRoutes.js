@@ -1,0 +1,13 @@
+const router = require('express').Router();
+const auth = require('../middleware/authMiddleware');
+const { createRoom, getRooms, joinRoom, getRoomMessages, sendMessage, leaveRoom, updateRoom, deleteRoom, deleteMessage } = require('../controllers/studyRoomController');
+router.get('/', auth, getRooms);
+router.post('/', auth, createRoom);
+router.put('/:id', auth, updateRoom);
+router.delete('/:id', auth, deleteRoom);
+router.post('/:id/join', auth, joinRoom);
+router.delete('/:id/leave', auth, leaveRoom);
+router.get('/:id/messages', auth, getRoomMessages);
+router.post('/:id/messages', auth, sendMessage);
+router.delete('/:id/messages/:mid', auth, deleteMessage);
+module.exports = router;

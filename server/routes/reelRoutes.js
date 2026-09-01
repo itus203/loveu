@@ -1,0 +1,14 @@
+const router = require('express').Router();
+const auth = require('../middleware/authMiddleware');
+const upload = require('../middleware/uploadMiddleware');
+const ctrl = require('../controllers/reelController');
+router.get('/', auth, ctrl.getReels);
+router.post('/', auth, upload.single('video'), ctrl.createReel);
+router.post('/:id/like', auth, ctrl.likeReel);
+router.get('/:id/comments', auth, ctrl.getReelComments);
+router.post('/:id/comments', auth, ctrl.addReelComment);
+router.delete('/:id/comments/:cid', auth, ctrl.deleteReelComment);
+router.put('/:id/comments/:cid', auth, ctrl.updateReelComment);
+router.put('/:id', auth, ctrl.updateReel);
+router.delete('/:id', auth, ctrl.deleteReel);
+module.exports = router;

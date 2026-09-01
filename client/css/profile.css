@@ -1,0 +1,45 @@
+/* =============================================
+   DIU NEXUS — PROFILE / SHARED STYLES
+============================================= */
+@import url('home.css');
+
+/* Additional profile styles not in home.css */
+.profile-friends-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: 12px;
+}
+.profile-friend-card {
+    background: var(--surface-alt);
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.15s;
+}
+.profile-friend-card:hover { transform: scale(1.02); }
+.profile-friend-card img {
+    width: 100%; aspect-ratio: 1;
+    object-fit: cover;
+}
+.profile-friend-card .name {
+    padding: 6px 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.photo-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3px;
+}
+.photo-grid img {
+    width: 100%; aspect-ratio: 1;
+    object-fit: cover;
+    cursor: pointer;
+    transition: opacity 0.15s;
+}
+.photo-grid img:hover { opacity: 0.85; }

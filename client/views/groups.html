@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Groups | DIU Nexus — University Groups</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="../css/home.css">
+<style>
+:root{--blue:#0866ff;--blue-light:#e7f0ff;--bg:#f0f2f5;--surface:#fff;--border:#e4e6eb;--text:#1c1e21;--text2:#65676b;--radius:14px;}
+[data-theme="dark"]{--bg:#18191a;--surface:#242526;--border:#3a3b3c;--text:#e4e6eb;--text2:#b0b3b8;}
+body{font-family:Inter,sans-serif;background:var(--bg);color:var(--text);margin:0;}
+.groups-hero{background:linear-gradient(135deg,#0866ff 0%,#0550c1 50%,#7c3aed 100%);padding:36px 16px 28px;text-align:center;color:white;position:relative;overflow:hidden;}
+.groups-hero::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at top,rgba(255,255,255,0.15),transparent 60%);}
+.groups-hero h1{font-size:1.9rem;font-weight:800;position:relative;z-index:1;}
+.groups-hero p{opacity:0.9;margin-top:6px;font-size:0.9rem;position:relative;z-index:1;}
+.groups-shell{max-width:1100px;margin:0 auto;padding:16px;display:grid;grid-template-columns:280px 1fr;gap:16px;}
+@media(max-width:900px){.groups-shell{grid-template-columns:1fr;}}
+.sidebar{position:sticky;top:16px;align-self:start;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
+.sidebar h3{font-size:0.95rem;font-weight:800;margin-bottom:10px;}
+.filter-pill{width:100%;text-align:left;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);font-weight:600;font-size:0.85rem;cursor:pointer;display:flex;align-items:center;gap:8px;margin-bottom:6px;transition:all 0.15s;}
+.filter-pill.active{background:var(--blue-light);border-color:var(--blue);color:var(--blue);}
+.filter-pill i{width:18px;}
+.groups-main{background:transparent;}
+.search-bar{display:flex;gap:8px;margin-bottom:12px;}
+.search-bar input{flex:1;padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:var(--surface);font-family:inherit;outline:none;}
+.search-bar button{padding:10px 16px;border-radius:10px;border:none;background:var(--blue);color:white;font-weight:700;cursor:pointer;}
+.category-tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none;margin-bottom:12px;}
+.category-tabs::-webkit-scrollbar{display:none;}
+.cat-tab{white-space:nowrap;padding:7px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);font-weight:600;font-size:0.82rem;cursor:pointer;transition:all 0.15s;}
+.cat-tab.active{background:var(--blue);color:white;border-color:var(--blue);box-shadow:0 2px 8px rgba(8,102,255,0.25);}
+.groups-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
+.group-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.06);transition:transform 0.18s,box-shadow 0.18s;display:flex;flex-direction:column;}
+.group-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,0.08);}
+.group-cover{height:112px;position:relative;background:linear-gradient(135deg,#667eea,#764ba2);overflow:hidden;}
+.group-cover img{width:100%;height:100%;object-fit:cover;}
+.group-cover .privacy-badge{position:absolute;top:8px;left:8px;background:rgba(0,0,0,0.6);color:white;padding:3px 8px;border-radius:12px;font-size:0.65rem;font-weight:700;backdrop-filter:blur(4px);}
+.group-cover .member-badge{position:absolute;bottom:-18px;right:12px;background:var(--surface);border:1px solid var(--border);padding:4px 8px;border-radius:12px;font-size:0.65rem;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,0.08);display:flex;align-items:center;gap:4px;}
+.group-avatar{position:absolute;bottom:-22px;left:14px;width:52px;height:52px;border-radius:12px;border:3px solid var(--surface);overflow:hidden;background:linear-gradient(135deg,#0866ff,#0550c1);display:flex;align-items:center;justify-content:center;color:white;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,0.12);}
+.group-avatar img{width:100%;height:100%;object-fit:cover;}
+.group-body{padding:28px 14px 14px;}
+.group-name{font-weight:800;font-size:0.98rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:6px;}
+.group-name .verified{color:#0866ff;font-size:0.75rem;}
+.group-category{font-size:0.7rem;font-weight:700;padding:2px 6px;border-radius:6px;background:var(--bg);color:var(--text2);display:inline-block;margin-top:4px;}
+.group-desc{font-size:0.82rem;color:var(--text2);margin:8px 0 10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:36px;}
+.group-stats{display:flex;gap:10px;font-size:0.72rem;color:var(--text2);margin-bottom:10px;}
+.group-actions{display:flex;gap:8px;}
+.btn-join{flex:1;padding:8px;border:none;border-radius:8px;font-weight:700;font-size:0.85rem;cursor:pointer;transition:all 0.15s;}
+.btn-join.primary{background:var(--blue);color:white;}
+.btn-join.primary:hover{background:#0550c1;}
+.btn-join.member{background:var(--bg);border:1px solid var(--border);color:var(--text2);}
+.btn-view{padding:8px 12px;border:1px solid var(--border);background:var(--surface);border-radius:8px;font-weight:600;cursor:pointer;}
+.section-title{font-weight:800;font-size:1.05rem;margin:18px 0 10px;display:flex;align-items:center;gap:8px;}
+.empty-state{grid-column:1/-1;text-align:center;padding:40px;color:var(--text2);background:var(--surface);border:1px dashed var(--border);border-radius:12px;}
+.modal{max-height:90vh;overflow-y:auto;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(max-width:600px){.form-grid{grid-template-columns:1fr;}}
+
+        /* Fix: Pill till missing + button blocked — ensure pills and following buttons are clickable */
+        .filter-bar, .category-tabs, .cats, .filter-tabs, .cat-tabs, .filter-pill, .cat-tab, .cat, .blood-type-grid, .search-bar {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 1;
+        }
+        .filter-chip, .cat-tab, .cat, .blood-btn, .btn-join, .btn-view, .btn-post, .btn-submit, .btn-sell, .contact-btn, .post-action, .member-row button, .file-row a {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 2;
+        }
+        /* Ensure no sticky pill blocks content */
+        .category-tabs, .filter-bar, .cats {
+            overflow-x: auto;
+            overflow-y: visible;
+            max-height: none;
+        }
+
+    </style>
+</head>
+<body>
+<!-- Modern Navbar — Always pill + Back Arrow (same as Home) -->
+<nav class="navbar">
+    <div class="navbar-left">
+        <button class="back-btn" onclick="handleBack()" title="Back" style="display:flex;"><i class="fas fa-arrow-left"></i></button>
+        <a href="../home.html" class="nav-logo" style="display:flex;align-items:center;gap:6px;"><img src="../assets/icon.svg" alt="NEXUS" style="width:26px;height:26px;flex-shrink:0;filter:drop-shadow(0 2px 4px rgba(10,108,255,0.3));" onerror="this.style.display='none'"><span style="font-weight:800;color:#0A6CFF;margin-left:6px;letter-spacing:0.5px;font-size:1.1rem;">NEXUS</span></a>
+        <div class="nav-search" style="position:relative;">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search DIU Nexus" oninput="if(this.value.length>2) window.location.href='../home.html?q='+encodeURIComponent(this.value)">
+            <div class="search-dropdown" id="searchDropdown"></div>
+        </div>
+    </div>
+    <div class="navbar-center" id="mainNavCenter">
+        <a href="../home.html" class="nav-icon-btn" data-tab="home" title="Home"><i class="fas fa-home"></i></a>
+        <a href="groups.html" class="nav-icon-btn active" data-tab="groups" title="Groups"><i class="fas fa-users"></i></a>
+        <a href="reels.html" class="nav-icon-btn" data-tab="reels" title="Reels"><i class="fas fa-film"></i></a>
+        <a href="departments.html" class="nav-icon-btn" data-tab="departments" title="Departments"><i class="fas fa-building"></i></a>
+        <a href="events.html" class="nav-icon-btn" data-tab="events" title="Events"><i class="fas fa-calendar-alt"></i></a>
+    </div>
+    <div class="navbar-right">
+        <button class="navbar-action-btn" onclick="window.location.href='messenger.html'" title="Messenger"><i class="fab fa-facebook-messenger"></i></button>
+        <button class="navbar-action-btn" onclick="window.location.href='../home.html'" title="Notifications"><i class="fas fa-bell"></i></button>
+        <button class="navbar-action-btn" onclick="window.location.href='profile.html'" title="Account"><div class="avatar-placeholder" style="width:32px;height:32px;font-size:0.85rem;border-radius:50%;">?</div></button>
+    </div>
+</nav>
+<script src="../js/config.js"></script>
+<script>
+function handleBack(){ try{ if(history.length>1 && document.referrer) history.back(); else window.location.href='../home.html'; }catch{ window.location.href='../home.html'; } }
+(function(){
+  const path=window.location.pathname.toLowerCase();
+  document.querySelectorAll('.nav-icon-btn').forEach(btn=>{
+    const href=(btn.getAttribute('href')||'').toLowerCase();
+    const target=href.split('/').pop().split('?')[0];
+    const current=path.split('/').pop().split('?')[0] || 'groups.html';
+    btn.classList.toggle('active', target===current);
+  });
+})();
+</script>
+<div style="max-width:1100px;margin:0 auto;padding:0 16px 8px; display:flex; justify-content:flex-end;">
+<button onclick="openCreateModal()" style="background:var(--blue);color:white;border:none;border-radius:10px;padding:8px 14px;font-weight:700;cursor:pointer; margin-top:12px;"><i class="fas fa-plus"></i> Create Group</button>
+</div>
+
+<div class="groups-hero">
+<h1><i class="fas fa-users"></i> University Groups</h1>
+<p>Department • Batch • Course • Club — Facebook Group + Classroom + Messenger, DIU জন্য</p>
+<div style="max-width:560px;margin:14px auto 0;position:relative;z-index:1;display:flex;gap:8px;">
+<input id="heroSearch" type="text" placeholder="Search groups, e.g. SWE 43, CSE, Photography Club..." style="flex:1;padding:12px 16px;border-radius:12px;border:none;outline:none;font-family:inherit;box-shadow:0 4px 16px rgba(0,0,0,0.15);" oninput="debounceSearch(this.value)" onkeydown="if(event.key==='Enter') doSearch()">
+<button onclick="doSearch()" style="background:#111827;color:white;border:none;border-radius:12px;padding:0 18px;font-weight:700;cursor:pointer;"><i class="fas fa-search"></i></button>
+</div>
+</div>
+
+<div class="groups-shell">
+<aside class="sidebar">
+<h3><i class="fas fa-compass" style="color:var(--blue)"></i> Browse</h3>
+<button class="filter-pill active" data-filter="all" onclick="setFilter('all',this)"><i class="fas fa-th-large"></i> All Groups</button>
+<button class="filter-pill" data-filter="my" onclick="setFilter('my',this)"><i class="fas fa-user-check"></i> My Groups</button>
+<button class="filter-pill" data-filter="department" onclick="setFilter('department',this)"><i class="fas fa-building"></i> Department</button>
+<button class="filter-pill" data-filter="batch" onclick="setFilter('batch',this)"><i class="fas fa-users"></i> Batch</button>
+<button class="filter-pill" data-filter="course" onclick="setFilter('course',this)"><i class="fas fa-book"></i> Course</button>
+<button class="filter-pill" data-filter="club" onclick="setFilter('club',this)"><i class="fas fa-palette"></i> Clubs</button>
+<button class="filter-pill" data-filter="official" onclick="setFilter('official',this)"><i class="fas fa-check-circle" style="color:#0866ff"></i> Official</button>
+<hr style="border:none;border-top:1px solid var(--border);margin:12px 0;">
+<h3 style="font-size:0.85rem;opacity:0.8;">University Quick</h3>
+<button class="filter-pill" onclick="quickFilter('SWE')"><i class="fas fa-laptop-code"></i> SWE</button>
+<button class="filter-pill" onclick="quickFilter('CSE')"><i class="fas fa-desktop"></i> CSE</button>
+<button class="filter-pill" onclick="quickFilter('EEE')"><i class="fas fa-bolt"></i> EEE</button>
+<button class="filter-pill" onclick="quickFilter('43')"><i class="fas fa-graduation-cap"></i> Batch 43</button>
+<div style="margin-top:12px;padding:10px;background:var(--bg);border-radius:10px;font-size:0.78rem;color:var(--text2);">
+<i class="fas fa-lightbulb" style="color:#f59e0b"></i> <b>Tip:</b> Create a <b>Course Group</b> for SE233 to share notes, assignments & polls.
+</div>
+</aside>
+
+<div class="groups-main">
+<div class="category-tabs" id="catTabs">
+<button class="cat-tab active" data-cat="all" onclick="setCat('all',this)">All</button>
+<button class="cat-tab" data-cat="department" onclick="setCat('department',this)">🎓 Department</button>
+<button class="cat-tab" data-cat="course" onclick="setCat('course',this)">📚 Course</button>
+<button class="cat-tab" data-cat="batch" onclick="setCat('batch',this)">👥 Batch</button>
+<button class="cat-tab" data-cat="club" onclick="setCat('club',this)">🎭 Club</button>
+<button class="cat-tab" data-cat="competition" onclick="setCat('competition',this)">🏆 Competition</button>
+<button class="cat-tab" data-cat="project" onclick="setCat('project',this)">🔬 Project</button>
+</div>
+
+<div class="section-title" id="myGroupsTitle" style="display:none;"><i class="fas fa-star" style="color:#f59e0b"></i> My Groups</div>
+<div class="groups-grid" id="myGroupsGrid" style="display:none;"></div>
+
+<div class="section-title"><i class="fas fa-fire" style="color:#ef4444"></i> Discover <span id="discoverCount" style="font-weight:400;font-size:0.82rem;color:var(--text2);"></span></div>
+<div class="groups-grid" id="groupsGrid"><div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text2);"><i class="fas fa-spinner fa-spin fa-2x"></i></div></div>
+
+<div class="section-title"><i class="fas fa-bolt" style="color:#8b5cf6"></i> Recommended for You</div>
+<div class="groups-grid" id="recommendedGrid"></div>
+</div>
+</div>
+
+<!-- Create Group Modal — University Focused -->
+<div class="modal-overlay" id="createGroupModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:16px;">
+<div class="modal" style="width:560px;max-width:95vw;background:var(--surface);border-radius:14px;overflow:hidden;max-height:90vh;display:flex;flex-direction:column;">
+<div class="modal-header" style="padding:16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;"><span class="modal-title" style="font-weight:800;">Create University Group</span><button class="modal-close" onclick="closeCreateModal()" style="background:var(--bg);border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;"><i class="fas fa-times"></i></button></div>
+<div class="modal-body" style="padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+<div style="border:2px dashed var(--border);border-radius:10px;height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden;background:var(--bg);" onclick="document.getElementById('coverInput').click()">
+<span style="font-size:0.78rem;font-weight:700;opacity:0.7;"><i class="fas fa-image"></i> Cover Photo</span>
+<img id="coverPreview" style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
+<input type="file" id="coverInput" accept="image/*" style="display:none;" onchange="previewFile(this,'coverPreview')">
+</div>
+<div style="border:2px dashed var(--border);border-radius:10px;height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden;background:var(--bg);" onclick="document.getElementById('avatarInput').click()">
+<span style="font-size:0.78rem;font-weight:700;opacity:0.7;"><i class="fas fa-users"></i> Group Avatar</span>
+<img id="avatarPreview" style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
+<input type="file" id="avatarInput" accept="image/*" style="display:none;" onchange="previewFile(this,'avatarPreview')">
+</div>
+</div>
+<input id="grpName" type="text" placeholder="Group name * e.g. SWE 43_J1, CSE 45, Photography Club" style="padding:11px;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;font-weight:600;">
+<textarea id="grpDesc" placeholder="Description — what is this group for?" rows="2" style="padding:11px;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;resize:vertical;"></textarea>
+<div class="form-grid">
+<select id="grpCategory" style="padding:10px;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;"><option value="general">Category</option><option value="department">Department</option><option value="course">Course</option><option value="batch">Batch</option><option value="club">Club</option><option value="competition">Competition</option><option value="project">Project</option><option value="official">Official</option></select>
+<select id="grpType" style="padding:10px;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;"><option value="general">Type</option><option value="department">Department</option><option value="course">Course</option><option value="batch">Batch</option><option value="club">Club</option><option value="campus">Campus</option></select>
+</div>
+<div class="form-grid">
+<select id="grpDept" style="padding:10px;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;"><option value="">Department</option><option>CSE</option><option>SWE</option><option>ITM</option><option>CIS</option><option>EEE</option><option>ETE</option><option>Civil Engineering</option><option>Textile Engineering</option><option>Architecture</option><option>BBA</option><option>Innovation & Entrepreneurship</option><option>Real Estate</option><option>Tourism & Hospitality</option><option>Pharmacy</option><option>Public Health</option><option>Nutrition & Food Engineering</option><option>Genetic Engineering & Biotech</option><option>English</option><option>Law</option><option>Journalism & Media</option><option>Development Studies</option></select>
+<input id="grpBatch" type="text" placeholder="Batch e.g. 43" style="padding:10px;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;">
+</div>
+<div class="form-grid">
+<input id="grpCourse" type="text" placeholder="Course code e.g. SE233" style="padding:10px;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;">
+<select id="grpPrivacy" style="padding:10px;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;"><option value="Public">🌐 Public</option><option value="Private">🔒 Private</option><option value="Hidden">👻 Hidden</option></select>
+</div>
+<textarea id="grpRules" placeholder="Group rules (optional) e.g. No spam, Respect everyone..." rows="2" style="padding:10px;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;"></textarea>
+<label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;font-weight:600;"><input type="checkbox" id="grpApproval"> Require admin approval for posts/members</label>
+<label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;font-weight:600;"><input type="checkbox" id="grpAnonymous"> Allow anonymous posts</label>
+<button onclick="createGroup()" style="padding:12px;background:var(--blue);color:white;border:none;border-radius:10px;font-weight:800;cursor:pointer;"><i class="fas fa-plus"></i> Create Group</button>
+<div style="font-size:0.7rem;color:var(--text2);text-align:center;">By creating, you agree to DIU Nexus community standards. Department/Batch groups get auto-verified if you are Faculty.</div>
+</div>
+</div>
+</div>
+
+<div id="toast-container" style="position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;"></div>
+<script>
+const API = (typeof window.API !== 'undefined' ? window.API : (function(){ var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000/api'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin+'/api'; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin+'/api':'http://localhost:5000/api'; return 'http://localhost:5000/api'; } return window.location.origin+'/api'; })());, token=localStorage.getItem('token');
+if(!token) location.href='../index.html';
+if(localStorage.getItem('darkMode')==='1') document.body.setAttribute('data-theme','dark');
+async function apiFetch(p,o={}){
+  const h={...(o.headers||{})};
+  if(!(o.body instanceof FormData)) h['Content-Type']='application/json';
+  h['Authorization']='Bearer '+token;
+  const r=await fetch(API+p,{...o,headers:h});
+  if(!r.ok){ let m=''; try{m=(await r.json()).message}catch{} throw new Error(m||'Failed'); }
+  return r;
+}
+let allGroups=[], currentCat='all', currentFilter='all', searchQ='';
+function openCreateModal(){ document.getElementById('createGroupModal').style.display='flex'; }
+function closeCreateModal(){ document.getElementById('createGroupModal').style.display='none'; }
+function previewFile(input, imgId){ if(input.files[0]){ const url=URL.createObjectURL(input.files[0]); const img=document.getElementById(imgId); img.src=url; img.style.display='block'; } }
+function setFilter(f, btn){
+  currentFilter=f;
+  document.querySelectorAll('.filter-pill').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  render();
+}
+function setCat(c, btn){
+  currentCat=c;
+  document.querySelectorAll('.cat-tab').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  load();
+}
+function quickFilter(q){ document.getElementById('heroSearch').value=q; searchQ=q; load(); }
+function debounceSearch(v){ clearTimeout(window._t); window._t=setTimeout(()=>{ searchQ=v.trim(); load(); },400); }
+function doSearch(){ searchQ=document.getElementById('heroSearch').value.trim(); load(); }
+
+async function load(){
+  try{
+    const params=new URLSearchParams();
+    if(searchQ) params.set('q', searchQ);
+    if(currentCat && currentCat!=='all') params.set('category', currentCat);
+    // For department/batch quick filters, treat as q
+    let url='/groups';
+    if(currentFilter==='my') url='/groups/my';
+    else if(currentFilter==='official') params.set('privacy','Public');
+    // department/batch filter via q if needed
+    const qs=params.toString();
+    const res=await apiFetch(url + (qs?`?${qs}`:'')); 
+    const groups=await res.json();
+    allGroups=groups;
+    render();
+    loadRecommended();
+  }catch(e){ console.error(e); }
+}
+function render(){
+  // My Groups section
+  const myTitle=document.getElementById('myGroupsTitle');
+  const myGrid=document.getElementById('myGroupsGrid');
+  const myGroups=allGroups.filter(g=>g.myRole);
+  if(currentFilter==='my' || myGroups.length){
+    myTitle.style.display='flex'; myGrid.style.display='grid';
+    myGrid.innerHTML=myGroups.length? myGroups.map(g=>cardHtml(g,true)).join('') : '<div class="empty-state">No my groups</div>';
+  } else { myTitle.style.display='none'; myGrid.style.display='none'; }
+  // Discover
+  const el=document.getElementById('groupsGrid');
+  const discover=currentFilter==='my' ? [] : allGroups;
+  document.getElementById('discoverCount').textContent= discover.length?`(${discover.length})`:'';
+  if(!discover.length){ el.innerHTML='<div class="empty-state"><div style="font-size:2rem;margin-bottom:8px;">🔍</div>No groups found. Try another filter or create one!</div>'; return; }
+  el.innerHTML=discover.map(g=>cardHtml(g,false)).join('');
+}
+function cardHtml(g, isMy){
+  const cover=g.cover_image?`<img src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${g.cover_image}">`:`<div style="width:100%;height:100%;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);"></div>`;
+  const avatar=g.avatar_image?`<img src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${g.avatar_image}">`:`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-weight:800;color:white;background:linear-gradient(135deg,#0866ff,#7c3aed);">${(g.name[0]||'G').toUpperCase()}</div>`;
+  const catBadge=g.category && g.category!=='general' ? `<span class="group-category">${g.category}</span>` : '';
+  const verified=g.is_verified?'<i class="fas fa-check-circle verified" title="Verified"></i>':''; 
+  const official=g.is_official?'<span style="background:#fef3c7;color:#92400e;padding:1px 6px;border-radius:6px;font-size:0.65rem;font-weight:800;">Official</span>':'';
+  const memberText=`${g.memberCount||0} member${g.memberCount!==1?'s':''}`;
+  const privacyIcon=g.privacy==='Private'?'🔒':g.privacy==='Hidden'?'👻':'🌐';
+  const btn=g.myRole?`<button class="btn-join member" onclick="toggleJoin('${g.id}',true,this);event.stopPropagation();">✓ Joined</button>`:`<button class="btn-join primary" onclick="toggleJoin('${g.id}',false,this);event.stopPropagation();">Join</button>`;
+  const deptBatch=[g.department,g.batch,g.course_code].filter(Boolean).join(' • ');
+  return `<div class="group-card" onclick="openGroup('${g.id}')">
+    <div class="group-cover">${cover}<span class="privacy-badge">${privacyIcon} ${g.privacy}</span><span class="member-badge"><i class="fas fa-users"></i> ${memberText}</span><div class="group-avatar">${avatar}</div></div>
+    <div class="group-body">
+      <div class="group-name">${escapeHtml(g.name)} ${verified} ${official}</div>
+      ${catBadge} ${deptBatch?`<span style="font-size:0.7rem;color:var(--text2);"> • ${escapeHtml(deptBatch)}</span>`:''}
+      ${g.description?`<div class="group-desc">${escapeHtml(g.description)}</div>`:''}
+      <div class="group-stats"><span><i class="fas fa-file-alt"></i> ${g.post_count||0} posts</span><span><i class="fas fa-check"></i> ${g.category||'general'}</span></div>
+      <div class="group-actions">${btn}<button class="btn-view" onclick="openGroup('${g.id}');event.stopPropagation();"><i class="fas fa-eye"></i></button></div>
+    </div>
+  </div>`;
+}
+function openGroup(id){ location.href=`group.html?id=${id}`; }
+async function toggleJoin(id, isMember, btn){
+  try{
+    if(isMember){ const r=await apiFetch(`/groups/${id}/leave`,{method:'DELETE'}); if(r.ok){ btn.className='btn-join primary'; btn.textContent='Join'; showToast('Left'); load(); } }
+    else { const r=await apiFetch(`/groups/${id}/join`,{method:'POST',body:JSON.stringify({})}); const data=await r.json().catch(()=>({})); if(r.ok){ btn.className='btn-join member'; btn.textContent='✓ Joined'; showToast(data.status==='pending'?'Request sent':'Joined ✓'); load(); } else showToast(data.message||'Failed','error'); }
+  }catch(e){ showToast(e.message,'error'); }
+}
+async function createGroup(){
+  const name=document.getElementById('grpName').value.trim();
+  if(!name) return showToast('Name required','error');
+  const fd=new FormData();
+  fd.append('name',name);
+  fd.append('description',document.getElementById('grpDesc').value);
+  fd.append('category',document.getElementById('grpCategory').value);
+  fd.append('group_type',document.getElementById('grpType').value);
+  fd.append('department',document.getElementById('grpDept').value);
+  fd.append('batch',document.getElementById('grpBatch').value);
+  fd.append('course_code',document.getElementById('grpCourse').value);
+  fd.append('privacy',document.getElementById('grpPrivacy').value);
+  fd.append('rules',document.getElementById('grpRules').value);
+  if(document.getElementById('grpApproval').checked) fd.append('approval_required','1');
+  if(document.getElementById('grpAnonymous').checked) fd.append('allow_anonymous','1');
+  const cover=document.getElementById('coverInput').files[0];
+  if(cover) fd.append('cover_image',cover);
+  const avatar=document.getElementById('avatarInput').files[0];
+  if(avatar) fd.append('avatar_image',avatar);
+  try{
+    const res=await fetch(API+'/groups',{method:'POST',headers:{'Authorization':'Bearer '+token},body:fd});
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.message||'Failed');
+    closeCreateModal(); showToast('Group created ✓'); load();
+    setTimeout(()=>openGroup(data.id),800);
+  }catch(e){ showToast(e.message,'error'); }
+}
+async function loadRecommended(){
+  const el=document.getElementById('recommendedGrid');
+  // Simple: show department/batch based on user
+  try{
+    const meRes=await apiFetch('/auth/me'); const me=await meRes.json().catch(()=>({}));
+    const dept=me.department||'CSE';
+    const res=await apiFetch(`/groups?q=${encodeURIComponent(dept)}`); const groups=await res.json();
+    const rec=groups.filter(g=>!g.myRole).slice(0,3);
+    if(!rec.length){ el.innerHTML='<div class="empty-state" style="padding:20px;">No recommendations</div>'; return; }
+    el.innerHTML=rec.map(g=>cardHtml(g,false)).join('');
+  }catch{ document.getElementById('recommendedGrid').innerHTML=''; }
+}
+function escapeHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function showToast(m,type){ const t=document.createElement('div'); t.style.cssText=`background:${type==='error'?'#ef4444':'#111827'};color:white;padding:10px 14px;border-radius:8px;font-size:0.85rem;box-shadow:0 4px 12px rgba(0,0,0,0.15);`; t.textContent=m; document.getElementById('toast-container').appendChild(t); setTimeout(()=>t.remove(),3000); }
+load();
+</script>
+</body>
+</html>

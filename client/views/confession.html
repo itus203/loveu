@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Confessions | DIU Nexus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/home.css">
+    <style>
+        body{padding-top:64px;}
+        .hero{background:linear-gradient(135deg,#1c1e21,#2d2f31);padding:40px 24px;text-align:center;color:white;}
+        .hero h1{font-size:2rem;font-weight:800;margin-bottom:8px;}
+        .container{max-width:680px;margin:0 auto;padding:24px 16px;}
+        .confess-box{background:var(--surface,#fff);border-radius:16px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.08);margin-bottom:20px;}
+        .confess-textarea{width:100%;padding:14px;border:1.5px solid var(--border,#e4e6eb);border-radius:12px;font-family:inherit;font-size:0.92rem;resize:vertical;min-height:100px;outline:none;background:var(--bg,#f0f2f5);color:var(--text,#1c1e21);}
+        .confess-textarea:focus{border-color:#1c1e21;background:var(--surface,#fff);}
+        .btn-confess{padding:10px 24px;background:#1c1e21;color:white;border:none;border-radius:8px;font-family:inherit;font-size:0.9rem;font-weight:700;cursor:pointer;width:100%;margin-top:10px;transition:background 0.15s;}
+        .btn-confess:hover{background:#2d2f31;}
+        .confession-card{background:var(--surface,#fff);border-radius:14px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:12px;border-left:4px solid #1c1e21;}
+        .confession-number{font-size:0.75rem;font-weight:700;color:#65676b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;}
+        .confession-text{font-size:0.92rem;line-height:1.6;color:var(--text,#1c1e21);}
+        .confession-footer{display:flex;align-items:center;justify-content:space-between;margin-top:12px;}
+        .confession-time{font-size:0.75rem;color:#65676b;}
+        .like-btn{display:flex;align-items:center;gap:6px;background:none;border:1.5px solid var(--border,#e4e6eb);border-radius:8px;padding:5px 12px;font-size:0.82rem;font-weight:600;cursor:pointer;color:var(--text,#1c1e21);font-family:inherit;transition:all 0.15s;}
+        .like-btn:hover,.like-btn.liked{background:#fee2e2;border-color:#e41e3f;color:#e41e3f;}
+        .anonymous-badge{display:inline-flex;align-items:center;gap:4px;background:#1c1e2110;border-radius:6px;padding:3px 8px;font-size:0.72rem;font-weight:600;color:#65676b;margin-bottom:8px;}
+        #toast-container{position:fixed;bottom:24px;right:24px;z-index:9999;}
+    
+        /* Fix: Pill till missing + button blocked — ensure pills and following buttons are clickable */
+        .filter-bar, .category-tabs, .cats, .filter-tabs, .cat-tabs, .filter-pill, .cat-tab, .cat, .blood-type-grid, .search-bar {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 1;
+        }
+        .filter-chip, .cat-tab, .cat, .blood-btn, .btn-join, .btn-view, .btn-post, .btn-submit, .btn-sell, .contact-btn, .post-action, .member-row button, .file-row a {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 2;
+        }
+        /* Ensure no sticky pill blocks content */
+        .category-tabs, .filter-bar, .cats {
+            overflow-x: auto;
+            overflow-y: visible;
+            max-height: none;
+        }
+
+    </style>
+</head>
+<body>
+<script src="../js/config.js"></script>
+<script src="../js/shared.js"></script>
+<div class="hero">
+    <div style="font-size:2rem;margin-bottom:8px;">🎭</div>
+    <h1>DIU Confessions</h1>
+    <p style="opacity:0.7;font-size:0.9rem;">Your identity is completely anonymous. Be kind.</p>
+</div>
+<div class="container">
+    <div class="confess-box">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+            <div style="width:36px;height:36px;border-radius:50%;background:#1c1e21;color:white;display:flex;align-items:center;justify-content:center;font-size:1rem;"><i class="fas fa-mask"></i></div>
+            <div><div style="font-weight:700;font-size:0.9rem;">Anonymous</div><div style="font-size:0.75rem;color:#65676b;">Your confession is 100% anonymous</div></div>
+        </div>
+        <textarea class="confess-textarea" id="confessText" placeholder="Share your thoughts, feelings, experiences anonymously... 🤫"></textarea>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+            <span id="charCount" style="font-size:0.75rem;color:#65676b;">0 / 500</span>
+            <button class="btn-confess" style="width:auto;" onclick="submitConfession()"><i class="fas fa-paper-plane"></i> Confess Anonymously</button>
+        </div>
+    </div>
+    <div id="confessionList"><div style="text-align:center;padding:40px;color:#65676b;"><i class="fas fa-spinner fa-spin fa-2x"></i></div></div>
+</div>
+<div id="toast-container"></div>
+<script>
+const API = (typeof window.API !== 'undefined' ? window.API : (function(){ var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000/api'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin+'/api'; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin+'/api':'http://localhost:5000/api'; return 'http://localhost:5000/api'; } return window.location.origin+'/api'; })());,token=localStorage.getItem('token');
+const liked=new Set(JSON.parse(localStorage.getItem('liked_confessions')||'[]'));
+document.getElementById('confessText').addEventListener('input',function(){const n=this.value.length;document.getElementById('charCount').textContent=`${n}/500`;if(n>500)this.value=this.value.slice(0,500);});
+async function apiFetch(p,o={}) { return fetch(`${API}${p}`,{...o,headers:{...({'Content-Type':'application/json'}),'Authorization':`Bearer ${token}`}}); }
+async function load(){
+    const res=await apiFetch('/confessions'); const list=await res.json();
+    const el=document.getElementById('confessionList');
+    if(!list.length){el.innerHTML='<div style="text-align:center;padding:60px;color:#65676b;">🎭<br><br>No confessions yet.<br>Be the first to share anonymously!</div>';return;}
+    el.innerHTML=list.map((c,i)=>`<div class="confession-card"><div class="confession-number">Confession #${list.length-i}</div><div class="anonymous-badge"><i class="fas fa-mask"></i> Anonymous</div><div class="confession-text">${escHtml(c.content)}</div><div class="confession-footer"><span class="confession-time">${timeAgo(c.created_at)}</span><button class="like-btn ${liked.has(c.id)?'liked':''}" onclick="likeConfession(${c.id},this)" id="lbtn-${c.id}"><i class="fas fa-heart"></i> <span id="lcount-${c.id}">${c.likes||0}</span></button></div></div>`).join('');
+}
+async function submitConfession(){
+    const text=document.getElementById('confessText').value.trim();
+    if(!text){showToast('Write something first!');return;}
+    if(text.length<10){showToast('Too short — say more!');return;}
+    const res=await apiFetch('/confessions',{method:'POST',body:JSON.stringify({content:text})});
+    if(res.ok){document.getElementById('confessText').value='';document.getElementById('charCount').textContent='0/500';showToast('🎭 Confession posted anonymously!');load();}
+    else showToast('Failed to post');
+}
+async function likeConfession(id,btn){
+    if(liked.has(id)){showToast('Already liked!');return;}
+    liked.add(id);localStorage.setItem('liked_confessions',JSON.stringify([...liked]));
+    btn.classList.add('liked');
+    const countEl=document.getElementById(`lcount-${id}`);
+    countEl.textContent=parseInt(countEl.textContent)+1;
+    await apiFetch(`/confessions/${id}/like`,{method:'POST'}).catch(()=>{});
+}
+function timeAgo(d) {
+    if(!d) return '';
+    let dt = typeof d === 'string' && !d.includes('T') ? d.replace(' ', 'T') + 'Z' : d;
+    const s = Math.max(0, (Date.now() - new Date(dt).getTime()) / 1000);
+    if(s < 60) return 'Just now';
+    if(s < 3600) return Math.floor(s/60) + 'm ago';
+    if(s < 86400) return Math.floor(s/3600) + 'h ago';
+    return Math.floor(s/86400) + 'd ago';
+}
+function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function showToast(msg){const t=document.createElement('div');t.style.cssText='background:#1c1e21;color:white;padding:12px 18px;border-radius:8px;font-size:0.88rem;font-family:Inter,sans-serif;';t.textContent=msg;document.getElementById('toast-container').appendChild(t);setTimeout(()=>t.remove(),3100);}
+load();
+</script>
+</body></html>

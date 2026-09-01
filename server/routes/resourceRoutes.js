@@ -1,0 +1,11 @@
+const router = require('express').Router();
+const auth = require('../middleware/authMiddleware');
+const upload = require('../middleware/uploadMiddleware');
+const { getResources, uploadResource, downloadResource, updateResource, deleteResource, toggleLike } = require('../controllers/resourceController');
+router.get('/', auth, getResources);
+router.post('/', auth, upload.single('file'), uploadResource);
+router.get('/:id/download', auth, downloadResource);
+router.put('/:id', auth, upload.single('file'), updateResource);
+router.delete('/:id', auth, deleteResource);
+router.post('/:id/like', auth, toggleLike);
+module.exports = router;

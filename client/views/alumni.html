@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Alumni | DIU Nexus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/home.css">
+    <style>
+        body { padding-top: 64px; }
+        .alumni-wrap { max-width: 1000px; margin: 0 auto; padding: 24px 16px 60px; }
+        .page-hero { background: linear-gradient(135deg, #7c3aed, #4f46e5); border-radius: 20px; padding: 40px; color: white; margin-bottom: 28px; position: relative; overflow: hidden; }
+        .page-hero::before { content:''; position:absolute; top:-40px; right:-40px; width:200px; height:200px; background:rgba(255,255,255,0.07); border-radius:50%; }
+        .page-hero h1 { font-size: 1.8rem; font-weight: 800; }
+        .page-hero p { font-size: 0.92rem; opacity: 0.88; margin-top: 6px; }
+
+        .alumni-grid { display: grid; grid-template-columns: 340px 1fr; gap: 20px; align-items: start; }
+        @media(max-width:700px){ .alumni-grid { grid-template-columns:1fr; } }
+
+        .form-card { background: var(--surface); border-radius: 16px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .form-card h3 { font-weight: 800; font-size: 1rem; margin-bottom: 16px; display:flex; align-items:center; gap:8px; color:#7c3aed; }
+        .form-group { margin-bottom: 12px; }
+        .form-label { display:block; font-size:0.78rem; font-weight:600; color:var(--text-secondary); margin-bottom:4px; }
+        .form-input { width:100%; padding:10px 14px; border:1.5px solid var(--border); border-radius:8px; font-family:inherit; font-size:0.88rem; background:var(--surface); color:var(--text); outline:none; }
+        .form-input:focus { border-color:#7c3aed; }
+        .btn-submit { width:100%; padding:12px; background:linear-gradient(135deg,#7c3aed,#4f46e5); color:white; border:none; border-radius:10px; font-family:inherit; font-size:0.95rem; font-weight:700; cursor:pointer; margin-top:8px; }
+
+        .alumni-cards { display: flex; flex-direction: column; gap: 14px; }
+        .alumni-card { background: var(--surface); border-radius: 14px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); display:flex; align-items:center; gap:14px; transition: transform 0.15s; }
+        .alumni-card:hover { transform: translateY(-2px); }
+        .alumni-av { width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg,#7c3aed,#4f46e5); color:white; display:flex; align-items:center; justify-content:center; font-size:1.2rem; font-weight:700; flex-shrink:0; overflow:hidden; }
+        .alumni-av img { width:100%; height:100%; object-fit:cover; }
+        .alumni-info { flex:1; }
+        .alumni-name { font-weight:700; font-size:0.95rem; }
+        .alumni-meta { font-size:0.8rem; color:var(--text-secondary); margin-top:3px; }
+        .alumni-badge { display:inline-flex; align-items:center; gap:4px; background:#fdf4ff; color:#7c3aed; padding:2px 10px; border-radius:20px; font-size:0.72rem; font-weight:700; }
+        .alumni-links { display:flex; gap:8px; margin-top:8px; }
+        .alumni-link { display:flex; align-items:center; gap:4px; font-size:0.78rem; color:#0866ff; text-decoration:none; font-weight:600; }
+        .alumni-link:hover { text-decoration:underline; }
+
+        .search-bar { background:var(--surface); border-radius:12px; padding:12px 16px; margin-bottom:16px; display:flex; align-items:center; gap:8px; border:1.5px solid var(--border); }
+        .search-bar input { flex:1; border:none; background:none; outline:none; font-family:inherit; font-size:0.9rem; color:var(--text); }
+        .filter-row { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+        .filter-btn { padding:6px 16px; border-radius:20px; border:1.5px solid var(--border); background:var(--surface); font-family:inherit; font-size:0.82rem; font-weight:600; cursor:pointer; transition:all 0.15s; }
+        .filter-btn.active { background:#7c3aed; color:white; border-color:#7c3aed; }
+        .spinner { text-align:center; padding:40px; color:var(--text-secondary); }
+    
+        /* Fix: Pill till missing + button blocked — ensure pills and following buttons are clickable */
+        .filter-bar, .category-tabs, .cats, .filter-tabs, .cat-tabs, .filter-pill, .cat-tab, .cat, .blood-type-grid, .search-bar {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 1;
+        }
+        .filter-chip, .cat-tab, .cat, .blood-btn, .btn-join, .btn-view, .btn-post, .btn-submit, .btn-sell, .contact-btn, .post-action, .member-row button, .file-row a {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 2;
+        }
+        /* Ensure no sticky pill blocks content */
+        .category-tabs, .filter-bar, .cats {
+            overflow-x: auto;
+            overflow-y: visible;
+            max-height: none;
+        }
+
+    </style>
+</head>
+<body>
+<script src="../js/config.js"></script>
+<script src="../js/shared.js"></script>
+
+<div class="alumni-wrap">
+    <div class="page-hero">
+        <h1>🎓 DIU Alumni Network</h1>
+        <p>Connect with Daffodil International University graduates worldwide</p>
+    </div>
+
+    <div class="alumni-grid">
+        <!-- Registration Form -->
+        <div class="form-card">
+            <h3><i class="fas fa-user-graduate"></i> Update Alumni Profile</h3>
+            <div class="form-group">
+                <label class="form-label">Graduation Year *</label>
+                <select class="form-input" id="gradYear">
+                    <option value="">Select Year</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Department</label>
+                <select class="form-input" id="alumniDept">
+                    <option value="">Select Department</option>
+                    <option>CSE</option><option>EEE</option><option>BBA</option><option>English</option>
+                    <option>Law</option><option>Pharmacy</option><option>Architecture</option>
+                    <option>Civil Engineering</option><option>Textile</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Current Job Title</label>
+                <input class="form-input" id="jobTitle" placeholder="e.g., Software Engineer">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Company / Organization</label>
+                <input class="form-input" id="company" placeholder="e.g., Google, BRAC Bank">
+            </div>
+            <div class="form-group">
+                <label class="form-label">LinkedIn Profile URL</label>
+                <input class="form-input" id="linkedin" placeholder="https://linkedin.com/in/username">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Country / Location</label>
+                <input class="form-input" id="country" placeholder="e.g., Bangladesh, USA">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Bio / Message to Juniors</label>
+                <textarea class="form-input" id="alumniBio" rows="3" placeholder="Share your journey..."></textarea>
+            </div>
+            <button class="btn-submit" onclick="saveAlumniProfile()"><i class="fas fa-save"></i> Save Profile</button>
+        </div>
+
+        <!-- Alumni Directory -->
+        <div>
+            <div class="search-bar">
+                <i class="fas fa-search" style="color:#65676b;"></i>
+                <input id="alumniSearch" placeholder="Search alumni by name, company..." oninput="filterAlumni(this.value)">
+            </div>
+            <div class="filter-row" id="yearFilters">
+                <button class="filter-btn active" onclick="filterYear('all', this)">All Years</button>
+            </div>
+            <div id="alumniList"><div class="spinner"><i class="fas fa-spinner fa-spin fa-2x"></i></div></div>
+        </div>
+    </div>
+</div>
+
+<div id="toast-container" style="position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column-reverse;gap:8px;"></div>
+
+<script>
+const API = (typeof window.API !== 'undefined' ? window.API : (function(){ var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000/api'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin+'/api'; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin+'/api':'http://localhost:5000/api'; return 'http://localhost:5000/api'; } return window.location.origin+'/api'; })());
+const token = localStorage.getItem('token');
+const myUser = JSON.parse(localStorage.getItem('user') || 'null');
+if (!token) window.location.href = '../index.html';
+if (localStorage.getItem('darkMode') === '1') document.body.setAttribute('data-theme', 'dark');
+
+// Populate years
+const yearSel = document.getElementById('gradYear');
+for (let y = new Date().getFullYear(); y >= 2002; y--) {
+    yearSel.innerHTML += `<option value="${y}">${y}</option>`;
+}
+
+let allAlumni = [];
+
+async function api(path, opts={}) {
+    const h={'Content-Type':'application/json','Authorization':`Bearer ${token}`,...(opts.headers||{})};
+    return fetch(`${API}${path}`,{...opts,headers:h});
+}
+
+async function loadAlumni() {
+    try {
+        const res = await api('/alumni');
+        allAlumni = await res.json();
+        renderAlumni(allAlumni);
+        buildYearFilters(allAlumni);
+    } catch { document.getElementById('alumniList').innerHTML = '<div class="spinner">Failed to load</div>'; }
+}
+
+function buildYearFilters(alumni) {
+    const years = [...new Set(alumni.map(a=>a.graduationYear).filter(Boolean))].sort((a,b)=>b-a);
+    const fil = document.getElementById('yearFilters');
+    fil.innerHTML = '<button class="filter-btn active" onclick="filterYear(\'all\', this)">All Years</button>';
+    years.forEach(y => fil.innerHTML += `<button class="filter-btn" onclick="filterYear('${y}', this)">${y}</button>`);
+}
+
+function filterYear(year, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderAlumni(year === 'all' ? allAlumni : allAlumni.filter(a => String(a.graduationYear) === String(year)));
+}
+
+function filterAlumni(q) {
+    renderAlumni(!q ? allAlumni : allAlumni.filter(a =>
+        a.fullName?.toLowerCase().includes(q.toLowerCase()) ||
+        a.company?.toLowerCase().includes(q.toLowerCase()) ||
+        a.department?.toLowerCase().includes(q.toLowerCase())
+    ));
+}
+
+function renderAlumni(list) {
+    const el = document.getElementById('alumniList');
+    if (!list.length) { el.innerHTML = '<div class="spinner">No alumni found</div>'; return; }
+    el.innerHTML = list.map(a => {
+        const initials = (a.fullName||'?').trim().split(' ').slice(0,2).map(n=>n[0]?.toUpperCase()).join('');
+        const av = a.profilePicture
+            ? `<img src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${a.profilePicture}" alt="">`
+            : initials;
+        return `<div class="alumni-card">
+            <div class="alumni-av">${a.profilePicture ? `<img src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${a.profilePicture}">` : initials}</div>
+            <div class="alumni-info">
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                    <div class="alumni-name">${esc(a.fullName)}</div>
+                    <span class="alumni-badge"><i class="fas fa-graduation-cap"></i> Alumni ${a.graduationYear||''}</span>
+                </div>
+                <div class="alumni-meta">
+                    ${a.department ? `<span><i class="fas fa-building"></i> ${esc(a.department)}</span> · ` : ''}
+                    ${a.jobTitle ? `<span><i class="fas fa-briefcase"></i> ${esc(a.jobTitle)}</span>` : ''}
+                    ${a.company ? ` @ <strong>${esc(a.company)}</strong>` : ''}
+                    ${a.country ? ` · 📍${esc(a.country)}` : ''}
+                </div>
+                ${a.bio ? `<div style="font-size:0.8rem;color:var(--text-secondary);margin-top:4px;font-style:italic;">${esc(a.bio)}</div>` : ''}
+                <div class="alumni-links">
+                    <a class="alumni-link" href="profile.html?id=${a._id||a.id}"><i class="fas fa-user"></i> Profile</a>
+                    ${a.linkedin ? `<a class="alumni-link" href="${a.linkedin}" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>` : ''}
+                    <a class="alumni-link" href="messenger.html?userId=${a._id||a.id}"><i class="fas fa-comment"></i> Message</a>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+async function saveAlumniProfile() {
+    const body = {
+        graduationYear: document.getElementById('gradYear').value,
+        department: document.getElementById('alumniDept').value,
+        jobTitle: document.getElementById('jobTitle').value,
+        company: document.getElementById('company').value,
+        linkedin: document.getElementById('linkedin').value,
+        country: document.getElementById('country').value,
+        bio: document.getElementById('alumniBio').value,
+        role: 'Alumni'
+    };
+    if (!body.graduationYear) { showToast('Please select graduation year', 'error'); return; }
+    try {
+        const res = await api('/alumni/profile', { method:'PUT', body: JSON.stringify(body) });
+        if (res.ok) { showToast('✅ Alumni profile saved!'); loadAlumni(); }
+        else { const d=await res.json(); showToast(d.message||'Failed','error'); }
+    } catch { showToast('Error saving profile','error'); }
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function showToast(msg) { const t=document.createElement('div'); t.style.cssText='background:#1c1e21;color:white;padding:12px 18px;border-radius:10px;font-family:Inter,sans-serif;font-size:0.88rem;'; t.textContent=msg; document.getElementById('toast-container').appendChild(t); setTimeout(()=>t.remove(),3200); }
+
+loadAlumni();
+</script>
+</body>
+</html>

@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Notifications | DIU Nexus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/home.css">
+    <style>
+        body { padding-top: 64px; }
+        .notif-page { max-width: 680px; margin: 0 auto; padding: 24px 16px 60px; }
+        .notif-page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        .notif-page-header h2 { font-weight: 800; font-size: 1.4rem; }
+        .mark-all-btn { background: none; border: none; color: var(--blue,#0866ff); font-size: 0.85rem; font-weight: 600; cursor: pointer; font-family: inherit; padding: 6px 12px; border-radius: 8px; transition: background 0.15s; }
+        .mark-all-btn:hover { background: #e7f0ff; }
+        .section-label { font-weight: 700; font-size: 0.82rem; color: var(--text-secondary,#65676b); text-transform: uppercase; letter-spacing: 0.6px; margin: 20px 0 8px; }
+
+        .notif-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 14px; border-radius: 14px; cursor: pointer;
+            transition: background 0.15s; margin-bottom: 4px;
+            position: relative;
+        }
+        .notif-item:hover { background: var(--bg,#f0f2f5); }
+        .notif-item.unread { background: #e7f0ff; }
+        .notif-item.unread:hover { background: #d0e3ff; }
+
+        .notif-av {
+            width: 52px; height: 52px; border-radius: 50%;
+            object-fit: cover; flex-shrink: 0;
+        }
+        .notif-ap {
+            width: 52px; height: 52px; border-radius: 50%;
+            background: linear-gradient(135deg, #0866ff, #0550c1);
+            color: white; display: flex; align-items: center;
+            justify-content: center; font-weight: 700; font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+        .notif-icon-badge {
+            position: absolute; left: 46px; top: 44px;
+            width: 22px; height: 22px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.65rem; border: 2px solid var(--surface,#fff);
+        }
+        .notif-body { flex: 1; min-width: 0; }
+        .notif-msg { font-size: 0.9rem; line-height: 1.4; }
+        .notif-msg strong { font-weight: 700; }
+        .notif-time { font-size: 0.78rem; margin-top: 3px; }
+        .notif-time.unread { color: var(--blue,#0866ff); font-weight: 700; }
+        .notif-time.read { color: var(--text-secondary,#65676b); }
+        .unread-dot {
+            width: 10px; height: 10px; border-radius: 50%;
+            background: var(--blue,#0866ff); flex-shrink: 0;
+        }
+
+        /* Friend Request Buttons */
+        .fr-btns { display: flex; gap: 8px; margin-top: 10px; }
+        .fr-btn {
+            flex: 1; padding: 8px 12px; border: none; border-radius: 8px;
+            font-family: inherit; font-size: 0.85rem; font-weight: 700;
+            cursor: pointer; transition: all 0.15s; display: flex;
+            align-items: center; justify-content: center; gap: 6px;
+        }
+        .fr-btn-accept { background: var(--blue,#0866ff); color: white; }
+        .fr-btn-accept:hover { background: #0550c1; }
+        .fr-btn-decline { background: var(--bg,#f0f2f5); color: var(--text,#1c1e21); }
+        .fr-btn-decline:hover { background: #e4e6eb; }
+        .fr-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .empty-state { text-align: center; padding: 60px 20px; color: var(--text-secondary,#65676b); }
+        .empty-state i { font-size: 3.5rem; opacity: 0.2; display: block; margin-bottom: 12px; }
+        .empty-state h3 { font-weight: 700; font-size: 1rem; margin-bottom: 6px; color: var(--text,#1c1e21); }
+    
+        /* Fix: Pill till missing + button blocked — ensure pills and following buttons are clickable */
+        .filter-bar, .category-tabs, .cats, .filter-tabs, .cat-tabs, .filter-pill, .cat-tab, .cat, .blood-type-grid, .search-bar {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 1;
+        }
+        .filter-chip, .cat-tab, .cat, .blood-btn, .btn-join, .btn-view, .btn-post, .btn-submit, .btn-sell, .contact-btn, .post-action, .member-row button, .file-row a {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 2;
+        }
+        /* Ensure no sticky pill blocks content */
+        .category-tabs, .filter-bar, .cats {
+            overflow-x: auto;
+            overflow-y: visible;
+            max-height: none;
+        }
+
+    </style>
+</head>
+<body>
+<script src="../js/config.js"></script>
+<script src="../js/shared.js"></script>
+
+<div class="notif-page">
+    <div class="notif-page-header">
+        <h2>Notifications</h2>
+        <button class="mark-all-btn" onclick="markAllRead()">
+            <i class="fas fa-check-double"></i> Mark all as read
+        </button>
+    </div>
+
+    <!-- Friend Requests Section -->
+    <div id="frSection" style="display:none;">
+        <div class="section-label">Friend Requests</div>
+        <div id="frContainer"></div>
+    </div>
+
+    <!-- All Notifications -->
+    <div id="todaySection" style="display:none;">
+        <div class="section-label">Today</div>
+        <div id="todayContainer"></div>
+    </div>
+    <div id="weekSection" style="display:none;">
+        <div class="section-label">This Week</div>
+        <div id="weekContainer"></div>
+    </div>
+    <div id="olderSection" style="display:none;">
+        <div class="section-label">Earlier</div>
+        <div id="olderContainer"></div>
+    </div>
+
+    <div id="emptyState" style="display:none;">
+        <div class="empty-state">
+            <i class="fas fa-bell"></i>
+            <h3>No notifications yet</h3>
+            <p>When someone likes, comments or sends you a friend request, you'll see it here.</p>
+        </div>
+    </div>
+
+    <div id="loadingState" style="text-align:center;padding:60px;color:#65676b;">
+        <i class="fas fa-spinner fa-spin fa-2x"></i>
+    </div>
+</div>
+
+<script>
+const API = (typeof window.API !== 'undefined' ? window.API : (function(){ var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000/api'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin+'/api'; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin+'/api':'http://localhost:5000/api'; return 'http://localhost:5000/api'; } return window.location.origin+'/api'; })());
+const token = localStorage.getItem('token');
+const myUser = JSON.parse(localStorage.getItem('user') || 'null');
+if (!token) window.location.href = '../index.html';
+if (localStorage.getItem('darkMode') === '1') document.body.setAttribute('data-theme', 'dark');
+
+const TYPE_ICONS = {
+    friend_request: { icon: 'fa-user-plus', bg: '#0866ff' },
+    friend_accept:  { icon: 'fa-user-check', bg: '#31a24c' },
+    like:           { icon: 'fa-thumbs-up', bg: '#0866ff' },
+    comment:        { icon: 'fa-comment', bg: '#0866ff' },
+    reaction:       { icon: 'fa-heart', bg: '#e41e3f' },
+    message:        { icon: 'fa-comment-dots', bg: '#0866ff' },
+    default:        { icon: 'fa-bell', bg: '#65676b' },
+};
+
+async function apiFetch(path, opts = {}) {
+    const h = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, ...(opts.headers || {}) };
+    return fetch(`${API}${path}`, { ...opts, headers: h });
+}
+
+async function loadAll() {
+    try {
+        // Load notifications and pending friend requests in parallel
+        const [notifRes, frRes] = await Promise.all([
+            apiFetch('/notifications'),
+            apiFetch('/friends/requests')
+        ]);
+        const notifs = await notifRes.json();
+        let frReqs = [];
+        if (frRes.ok) frReqs = await frRes.json();
+
+        document.getElementById('loadingState').style.display = 'none';
+
+        // Render pending friend requests
+        if (frReqs.length > 0) {
+            document.getElementById('frSection').style.display = 'block';
+            document.getElementById('frContainer').innerHTML = frReqs.map(r => buildFrCard(r)).join('');
+        }
+
+        if (!notifs.length && !frReqs.length) {
+            document.getElementById('emptyState').style.display = 'block';
+            return;
+        }
+
+        // Group by time
+        const now = Date.now();
+        const today = [], week = [], older = [];
+        notifs.forEach(n => {
+            const d = now - new Date(n.created_at).getTime();
+            if (d < 86400000) today.push(n);
+            else if (d < 604800000) week.push(n);
+            else older.push(n);
+        });
+
+        renderGroup('todaySection', 'todayContainer', today);
+        renderGroup('weekSection', 'weekContainer', week);
+        renderGroup('olderSection', 'olderContainer', older);
+    } catch (e) {
+        document.getElementById('loadingState').innerHTML = '<div style="color:#e41e3f;padding:40px;text-align:center;">Failed to load notifications</div>';
+    }
+}
+
+function renderGroup(sectionId, containerId, items) {
+    if (!items.length) return;
+    document.getElementById(sectionId).style.display = 'block';
+    document.getElementById(containerId).innerHTML = items.map(n => buildNotifCard(n)).join('');
+}
+
+function buildFrCard(req) {
+    const name = req.fullName || req.senderName || 'Someone';
+    const pic = req.profilePicture || req.senderPic;
+    const senderId = req._id || req.sender_id || req.id;
+    const av = pic
+        ? `<img class="notif-av" src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${pic}" onerror="this.style.display='none'">`
+        : `<div class="notif-ap">${getInit(name)}</div>`;
+    return `
+    <div class="notif-item unread" id="fr-${senderId}">
+        <div style="position:relative;flex-shrink:0;">
+            ${av}
+            <div class="notif-icon-badge" style="background:#0866ff;">
+                <i class="fas fa-user-plus" style="color:white;font-size:0.6rem;"></i>
+            </div>
+        </div>
+        <div class="notif-body">
+            <div class="notif-msg"><strong>${esc(name)}</strong> sent you a friend request</div>
+            <div class="notif-time unread">${req.batch || req.department || ''}</div>
+            <div class="fr-btns">
+                <button class="fr-btn fr-btn-accept" onclick="acceptFR('${senderId}',this)">
+                    <i class="fas fa-check"></i> Confirm
+                </button>
+                <button class="fr-btn fr-btn-decline" onclick="declineFR('${senderId}',this)">
+                    <i class="fas fa-times"></i> Delete
+                </button>
+            </div>
+        </div>
+    </div>`;
+}
+
+function buildNotifCard(n) {
+    const typeInfo = TYPE_ICONS[n.type] || TYPE_ICONS.default;
+    const pic = n.senderPic;
+    const name = n.senderName || 'Someone';
+    const av = pic
+        ? `<img class="notif-av" src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${pic}" onerror="this.style.display='none'">`
+        : `<div class="notif-ap">${getInit(name)}</div>`;
+    const safeLink = (n.link||'').replace(/'/g,"\\'");
+    return `
+    <div class="notif-item ${n.isRead ? '' : 'unread'}" id="notif-${n.id}"
+        onclick="handleNotifClick('${n.id}','${safeLink}','${n.type}','${n.sender_id || ''}',this)" style="cursor:pointer;">
+        <div style="position:relative;flex-shrink:0;">
+            ${av}
+            <div class="notif-icon-badge" style="background:${typeInfo.bg};">
+                <i class="fas ${typeInfo.icon}" style="color:white;font-size:0.6rem;"></i>
+            </div>
+        </div>
+        <div class="notif-body">
+            <div class="notif-msg">${esc(n.message)}</div>
+            <div class="notif-time ${n.isRead ? 'read' : 'unread'}">${timeAgo(n.created_at)}</div>
+        </div>
+        ${n.isRead ? '' : '<div class="unread-dot"></div>'}
+    </div>`;
+}
+
+async function acceptFR(senderId, btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    try {
+        const res = await apiFetch(`/friends/accept/${senderId}`, { method: 'PUT' });
+        const data = await res.json();
+        if (res.ok) {
+            const card = document.getElementById(`fr-${senderId}`);
+            card.innerHTML = `
+                <div class="notif-ap">${card.querySelector('.notif-ap,.notif-av')?.textContent || '?'}</div>
+                <div class="notif-body">
+                    <div class="notif-msg">✅ You are now friends!</div>
+                    <div class="notif-time read">Just now</div>
+                    <div style="margin-top:8px;">
+                        <a href="profile.html?id=${senderId}" style="display:inline-flex;align-items:center;gap:6px;background:#e7f0ff;color:#0866ff;padding:7px 14px;border-radius:8px;font-size:0.83rem;font-weight:700;text-decoration:none;">
+                            <i class="fas fa-user"></i> View Profile
+                        </a>
+                    </div>
+                </div>`;
+            card.classList.remove('unread');
+            showToast('✅ Friend request accepted!');
+        } else {
+            showToast(data.message || 'Failed');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-check"></i> Confirm';
+        }
+    } catch {
+        showToast('Error accepting request');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check"></i> Confirm';
+    }
+}
+
+async function declineFR(senderId, btn) {
+    btn.disabled = true;
+    try {
+        await apiFetch(`/friends/decline/${senderId}`, { method: 'DELETE' });
+        const card = document.getElementById(`fr-${senderId}`);
+        card.style.opacity = '0';
+        card.style.transition = 'opacity 0.3s';
+        setTimeout(() => card.remove(), 300);
+        showToast('Friend request removed');
+    } catch {
+        showToast('Error');
+        btn.disabled = false;
+    }
+}
+
+async function handleNotifClick(id, link, type, senderId, el) {
+    // Mark read
+    if(el){
+        el.classList.remove('unread');
+        el.querySelector('.unread-dot')?.remove();
+        el.querySelector('.notif-time')?.classList.replace('unread', 'read');
+    }
+    await apiFetch(`/notifications/${id}/read`, { method: 'PUT' }).catch(() => {});
+    // Tap → post for comment/reaction, profile for friend
+    let target = null;
+    if(type==='comment' || type==='reaction' || type==='like'){
+        target = link || `../home.html`;
+    } else if(senderId) target = `profile.html?id=${senderId}`;
+    else if(link) target = link;
+    // Fallback to link if no sender
+    if(!target && link) target = link;
+    if(target){
+        // Normalize: profile.html from views is correct, from home views/profile.html
+        if(target.startsWith('views/') && window.location.pathname.includes('/views/')) target=target.replace('views/','');
+        else if(target.startsWith('home.html') && window.location.pathname.includes('/views/')) target='../'+target;
+        else if(target.startsWith('../home.html') && !window.location.pathname.includes('/views/')) target=target.replace('../','');
+        // Handle post hash scrolling
+        if(target.includes('#post-')){
+            const isHome = window.location.pathname.includes('home.html');
+                const hash=target.split('#')[1];
+                const pe=document.getElementById(hash);
+                if(pe){ pe.scrollIntoView({behavior:'smooth', block:'center'}); pe.style.outline='2px solid var(--blue)'; setTimeout(()=>pe.style.outline='',2500); return; }
+            }
+            // If not on home, go to home with hash
+            window.location.href = target.includes('home.html') ? target : `../home.html#post-${id}`;
+            return;
+        }
+        window.location.href = target;
+    }
+}
+
+async function markAllRead() {
+    await apiFetch('/notifications/mark-all-read', { method: 'PUT' }).catch(() => {});
+    document.querySelectorAll('.notif-item.unread').forEach(el => {
+        el.classList.remove('unread');
+        el.querySelector('.unread-dot')?.remove();
+        el.querySelectorAll('.notif-time').forEach(t => { t.classList.remove('unread'); t.classList.add('read'); });
+    });
+    showToast('All marked as read');
+}
+
+function getInit(n) { return n.trim().split(' ').slice(0,2).map(x=>x[0]?.toUpperCase()).join(''); }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function timeAgo(d) {
+    if(!d) return '';
+    let dt = typeof d === 'string' && !d.includes('T') ? d.replace(' ', 'T') + 'Z' : d;
+    const s = Math.max(0, (Date.now() - new Date(dt).getTime()) / 1000);
+    if(s < 60) return 'Just now';
+    if(s < 3600) return Math.floor(s/60) + 'm ago';
+    if(s < 86400) return Math.floor(s/3600) + 'h ago';
+    return Math.floor(s/86400) + 'd ago';
+}
+function showToast(msg) { const t=document.createElement('div'); t.style.cssText='position:fixed;bottom:24px;right:24px;background:#1c1e21;color:white;padding:12px 18px;border-radius:10px;font-size:0.88rem;font-family:Inter,sans-serif;z-index:9999;'; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),3000); }
+
+loadAll();
+</script>
+</body>
+</html>

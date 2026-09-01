@@ -1,0 +1,52 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Env - NEVER push real secrets (.env.example is ok)
+.env
+.env.local
+.env.development.local
+.env.production.local
+.env.*.local
+
+# Database & Uploads
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.db
+server/uploads/
+uploads/
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# Android - Capacitor
+android/app/build/
+android/.gradle/
+android/build/
+android/capacitor-cordova-android-plugins/
+android/app/release/
+*.jks
+*.keystore
+*.aab
+*.apk
+local.properties
+
+# Logs
+*.log
+logs/
+server.log
+server.err
+
+# OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo

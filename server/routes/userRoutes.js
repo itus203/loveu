@@ -1,0 +1,10 @@
+const router = require('express').Router();
+const auth = require('../middleware/authMiddleware');
+const upload = require('../middleware/uploadMiddleware');
+const { getUsers, getProfile, updateProfile, getUserSuggestions } = require('../controllers/userController');
+router.get('/', auth, getUsers);
+router.get('/suggestions', auth, getUserSuggestions);
+router.get('/profile', auth, getProfile);
+router.get('/profile/:id', auth, getProfile);
+router.put('/profile', auth, upload.fields([{ name: 'profilePicture', maxCount: 1 }, { name: 'coverPicture', maxCount: 1 }]), updateProfile);
+module.exports = router;

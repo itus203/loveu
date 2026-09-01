@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Lost & Found | DIU Nexus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/home.css">
+    <style>
+        body{padding-top:64px;}
+        .hero{background:linear-gradient(135deg,#f97316,#ea580c);padding:40px 24px;text-align:center;color:white;}
+        .hero h1{font-size:2rem;font-weight:800;margin-bottom:8px;}
+        .container{max-width:860px;margin:0 auto;padding:24px 16px;}
+        .filter-tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
+        .tab{padding:8px 20px;border-radius:20px;border:1.5px solid var(--border,#e4e6eb);font-family:inherit;font-size:0.85rem;font-weight:600;cursor:pointer;background:var(--surface,#fff);color:var(--text,#1c1e21);transition:all 0.15s;}
+        .tab.active,.tab:hover{background:#f97316;color:white;border-color:#f97316;}
+        .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;}
+        .card{background:var(--surface,#fff);border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);transition:transform 0.2s;}
+        .card:hover{transform:translateY(-3px);}
+        .card-badge{padding:6px 12px;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;}
+        .badge-lost{background:#fee2e2;color:#dc2626;}
+        .badge-found{background:#d1fae5;color:#059669;}
+        .card-body{padding:14px;}
+        .card-title{font-weight:700;font-size:0.95rem;margin-bottom:4px;}
+        .card-meta{font-size:0.78rem;color:#65676b;margin-bottom:8px;}
+        .card-contact{font-size:0.82rem;color:#0866ff;font-weight:600;}
+        .btn-post{background:#f97316;color:white;border:none;border-radius:10px;padding:10px 20px;font-family:inherit;font-size:0.88rem;font-weight:700;cursor:pointer;margin-left:auto;display:flex;align-items:center;gap:6px;}
+        .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;align-items:center;justify-content:center;}
+        .modal-overlay.show{display:flex;}
+        .modal{background:var(--surface,#fff);border-radius:16px;padding:24px;width:100%;max-width:440px;max-height:90vh;overflow-y:auto;}
+        .modal h2{font-size:1.1rem;font-weight:800;margin-bottom:16px;}
+        .form-group{margin-bottom:12px;}
+        .form-group label{display:block;font-size:0.82rem;font-weight:600;margin-bottom:4px;color:#65676b;}
+        .form-group input,.form-group textarea,.form-group select{width:100%;padding:10px 12px;border:1.5px solid var(--border,#e4e6eb);border-radius:8px;font-family:inherit;font-size:0.88rem;background:var(--surface,#fff);color:var(--text,#1c1e21);outline:none;}
+        .form-group input:focus,.form-group textarea:focus,.form-group select:focus{border-color:#f97316;}
+        .btn-submit{width:100%;padding:12px;background:#f97316;color:white;border:none;border-radius:8px;font-family:inherit;font-size:0.95rem;font-weight:700;cursor:pointer;margin-top:8px;}
+        #toast-container{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+    
+        /* Fix: Pill till missing + button blocked — ensure pills and following buttons are clickable */
+        .filter-bar, .category-tabs, .cats, .filter-tabs, .cat-tabs, .filter-pill, .cat-tab, .cat, .blood-type-grid, .search-bar {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 1;
+        }
+        .filter-chip, .cat-tab, .cat, .blood-btn, .btn-join, .btn-view, .btn-post, .btn-submit, .btn-sell, .contact-btn, .post-action, .member-row button, .file-row a {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 2;
+        }
+        /* Ensure no sticky pill blocks content */
+        .category-tabs, .filter-bar, .cats {
+            overflow-x: auto;
+            overflow-y: visible;
+            max-height: none;
+        }
+
+    </style>
+</head>
+<body>
+<script src="../js/config.js"></script>
+<script src="../js/shared.js"></script>
+<div class="hero"><h1><i class="fas fa-search-location"></i> Lost & Found</h1><p style="opacity:0.85;">Lost something on campus? Found something? Post here!</p></div>
+<div class="container">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+        <div class="filter-tabs">
+            <button class="tab active" onclick="setFilter('all',this)">All</button>
+            <button class="tab" onclick="setFilter('lost',this)">Lost</button>
+            <button class="tab" onclick="setFilter('found',this)">Found</button>
+        </div>
+        <button class="btn-post" onclick="document.getElementById('postModal').classList.add('show')"><i class="fas fa-plus"></i> Post</button>
+    </div>
+    <div class="cards" id="cards"><div style="grid-column:1/-1;text-align:center;padding:40px;color:#65676b;"><i class="fas fa-spinner fa-spin fa-2x"></i></div></div>
+</div>
+
+<div class="modal-overlay" id="postModal">
+    <div class="modal">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <h2>Post Item</h2>
+            <button onclick="document.getElementById('postModal').classList.remove('show')" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:#65676b;"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="form-group"><label>Type</label>
+            <select id="itemType"><option value="lost">I Lost Something</option><option value="found">I Found Something</option></select>
+        </div>
+        <div class="form-group"><label>Title *</label><input id="itemTitle" placeholder="e.g., Blue water bottle, Student ID card"></div>
+        <div class="form-group"><label>Description</label><textarea id="itemDesc" rows="3" placeholder="Where did you lose/find it? Any details..."></textarea></div>
+        <div class="form-group"><label>Location</label><input id="itemLocation" placeholder="e.g., DIU Library, Block D Cafeteria"></div>
+        <div class="form-group"><label>Contact</label><input id="itemContact" placeholder="Phone or Messenger link"></div>
+        <!-- IMAGE UPLOAD -->
+        <div class="form-group">
+            <label>Photo (optional)</label>
+            <div id="imgDropZone" onclick="document.getElementById('lfImage').click()"
+                style="border:2px dashed #e4e6eb;border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:all 0.2s;background:#f9fafb;">
+                <i class="fas fa-camera" style="font-size:1.5rem;color:#65676b;display:block;margin-bottom:6px;"></i>
+                <span style="font-size:0.82rem;color:#65676b;">Click to upload photo</span>
+                <input type="file" id="lfImage" accept="image/*" style="display:none;" onchange="previewLFImage(this)">
+            </div>
+            <div id="lfPreview" style="display:none;margin-top:10px;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;overflow:hidden;position:relative;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                <img id="lfPreviewImg" style="width:100%;max-height:220px;object-fit:cover;display:block;">
+                <div id="lfPreviewInfo" style="padding:8px 10px;font-size:0.78rem;color:#65676b;display:flex;justify-content:space-between;align-items:center;background:var(--bg);">
+                    <span id="lfPreviewName" style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></span>
+                    <span id="lfPreviewSize" style="opacity:0.7;flex-shrink:0;margin-left:8px;"></span>
+                </div>
+                <button type="button" onclick="clearLFImage()" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.65);color:white;border:none;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:0.9rem;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+        <button type="button" class="btn-submit" onclick="submitItem()">Post Item</button>
+    </div>
+</div>
+<div id="toast-container"></div>
+<script>
+const API = (typeof window.API !== 'undefined' ? window.API : (function(){ var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000/api'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin+'/api'; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin+'/api':'http://localhost:5000/api'; return 'http://localhost:5000/api'; } return window.location.origin+'/api'; })());
+function getToken(){ return localStorage.getItem('token'); }
+function getCurrentUser(){ try{ return JSON.parse(localStorage.getItem('user')||'null'); }catch{ return null; } }
+let currentFilter='all';
+let editingId=null;
+async function apiFetch(p,o={}) { const h={'Content-Type':'application/json','Authorization':`Bearer ${getToken()}`}; const hdr={...h, ...(o.headers||{})}; if(o.body instanceof FormData) delete hdr['Content-Type']; return fetch(`${API}${p}`,{...o,headers:hdr}); }
+function setFilter(f,btn) { currentFilter=f; document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); btn.classList.add('active'); load(); }
+async function load() {
+    const url = currentFilter==='all' ? '/lostfound' : `/lostfound?type=${currentFilter}`;
+    try {
+        const res=await apiFetch(url); const items=await res.json();
+        const el=document.getElementById('cards');
+        if(!items.length){el.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:60px;color:#65676b;"><i class="fas fa-search" style="font-size:3rem;opacity:0.3;display:block;margin-bottom:12px;"></i>No items posted yet</div>';return;}
+        el.innerHTML=items.map(i=>{
+            const img = i.imageUrl || i.image_url;
+            const cu = getCurrentUser();
+            const isOwner = String(i.user_id)===String(cu?.id||cu?._id);
+            const isAdmin = cu?.role==='Admin';
+            const canEdit = isOwner || isAdmin;
+            return `<div class="card">
+            ${img ? `<img src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${img}" style="width:100%;height:180px;object-fit:cover;">` : ''}
+            <div class="card-badge badge-${i.type}">${i.type==='lost'?'🔴 Lost':'🟢 Found'}</div>
+            <div class="card-body">
+                <div class="card-title">${i.title}</div>
+                <div class="card-meta">${i.location||'Location not specified'} · ${timeAgo(i.created_at)} · by ${i.fullName||'DIU Student'}</div>
+                ${i.description?`<div style="font-size:0.82rem;margin-bottom:8px;line-height:1.4;">${i.description.slice(0,120)}</div>`:''}
+                <div class="card-contact"><i class="fas fa-phone-alt"></i> ${i.contact||'Contact not provided'}</div>
+                ${canEdit ? `<div style="display:flex;gap:8px;margin-top:10px;">
+                    <button onclick="editItem('${i.id}')" style="flex:1;background:#e7f0ff;color:#0866ff;border:none;padding:7px;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.78rem;"><i class="fas fa-pen"></i> Edit</button>
+                    <button onclick="deleteItem('${i.id}')" style="flex:1;background:#fee2e2;color:#e41e3f;border:none;padding:7px;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.78rem;"><i class="fas fa-trash"></i> ${isAdmin && !isOwner ? 'Admin Delete' : 'Delete'}</button>
+                </div>` : ''}
+            </div>
+        </div>`}).join('');
+    } catch { document.getElementById('cards').innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:#e41e3f;">Failed to load</div>'; }
+}
+function previewLFImage(input) {
+    const file = input.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { showToast('Only images allowed'); input.value=''; return; }
+    const reader = new FileReader();
+    reader.onload = e => {
+        document.getElementById('lfPreviewImg').src = e.target.result;
+        document.getElementById('lfPreviewName').textContent = file.name;
+        document.getElementById('lfPreviewSize').textContent = file.size<1024 ? file.size+' B' : file.size<1048576 ? (file.size/1024).toFixed(1)+' KB' : (file.size/1048576).toFixed(1)+' MB';
+        document.getElementById('lfPreview').style.display = 'block';
+        document.getElementById('imgDropZone').style.borderColor = '#f97316';
+        document.getElementById('imgDropZone').style.background = '#fff7ed';
+        document.querySelector('#imgDropZone span').textContent = '✓ Photo selected — click to change';
+    };
+    reader.readAsDataURL(file);
+}
+function clearLFImage() {
+    document.getElementById('lfImage').value = '';
+    document.getElementById('lfPreview').style.display = 'none';
+    document.getElementById('imgDropZone').style.borderColor = '#e4e6eb';
+    document.getElementById('imgDropZone').style.background = '#f9fafb';
+    document.querySelector('#imgDropZone span').textContent = 'Click to upload photo';
+}
+async function submitItem() {
+    const liveToken = getToken();
+    console.log('[LF] submit click, token:', liveToken? liveToken.slice(0,10)+'...' : 'NULL', 'API:', API);
+    if(!liveToken){ showToast('⚠️ Please login first'); setTimeout(()=>location.href='../index.html',800); return; }
+    const title = document.getElementById('itemTitle').value.trim();
+    if (!title) { showToast('Title required'); return; }
+    const btn=document.querySelector('.btn-submit'); const oldTxt=btn.textContent; btn.textContent='Posting...'; btn.disabled=true;
+    const formData = new FormData();
+    formData.append('type', document.getElementById('itemType').value);
+    formData.append('title', title);
+    formData.append('description', document.getElementById('itemDesc').value);
+    formData.append('location', document.getElementById('itemLocation').value);
+    formData.append('contact', document.getElementById('itemContact').value);
+    const imgFile = document.getElementById('lfImage').files[0];
+    if (imgFile) formData.append('image', imgFile);
+    try {
+        const url = editingId ? `${API}/lostfound/${editingId}` : `${API}/lostfound`;
+        const method = editingId ? 'PUT' : 'POST';
+        console.log('[LF] fetch', method, url);
+        const res = await fetch(url, {
+            method,
+            headers: { 'Authorization': `Bearer ${getToken()}` },
+            body: formData
+        });
+        console.log('[LF] res', res.status);
+        const d = await res.json().catch(()=>({}));
+        console.log('[LF] body', d);
+        if (res.ok) {
+            document.getElementById('postModal').classList.remove('show');
+            showToast(editingId ? '✅ Updated!' : '✅ Posted successfully!');
+            clearLFImage();
+            ['itemTitle','itemDesc','itemLocation','itemContact'].forEach(id => document.getElementById(id).value = '');
+            editingId=null;
+            btn.textContent='Post Item';
+            load();
+        } else {
+            showToast(d.message || ('Failed: '+res.status));
+        }
+    } catch(e){ console.error('[LF] network', e); showToast('Network error: '+e.message); }
+    finally{ btn.textContent=editingId?'Update Item':'Post Item'; btn.disabled=false; }
+}
+async function editItem(id){
+    try{
+        const res=await apiFetch(`/lostfound`);
+        const items=await res.json();
+        const it=items.find(x=>String(x.id)===String(id));
+        if(!it) return showToast('Not found');
+        editingId=id;
+        document.getElementById('itemType').value=it.type;
+        document.getElementById('itemTitle').value=it.title;
+        document.getElementById('itemDesc').value=it.description||'';
+        document.getElementById('itemLocation').value=it.location||'';
+        document.getElementById('itemContact').value=it.contact||'';
+        document.querySelector('.btn-submit').textContent='Update Item';
+        document.getElementById('postModal').classList.add('show');
+    }catch{ showToast('Failed to load'); }
+}
+async function deleteItem(id){
+    const cu = getCurrentUser();
+    const isAdmin = cu?.role==='Admin';
+    if(!confirm(isAdmin ? 'Admin delete this post? This will notify the owner.' : 'Delete your post?')) return;
+    try{
+        const res=await apiFetch(`/lostfound/${id}`,{method:'DELETE'});
+        const d=await res.json().catch(()=>({}));
+        if(!res.ok) throw new Error(d.message||'Failed');
+        showToast('🗑️ Deleted');
+        load();
+    }catch(e){ showToast(e.message||'Failed'); }
+}
+// Reset editing on modal close
+document.getElementById('postModal').addEventListener('click', e=>{ if(e.target===document.getElementById('postModal')){ editingId=null; document.querySelector('.btn-submit').textContent='Post Item'; }});
+document.querySelector('#postModal .fa-times').closest('button').addEventListener('click', ()=>{ editingId=null; document.querySelector('.btn-submit').textContent='Post Item'; });
+function timeAgo(d) {
+    if(!d) return '';
+    let dt = typeof d === 'string' && !d.includes('T') ? d.replace(' ', 'T') + 'Z' : d;
+    const s = Math.max(0, (Date.now() - new Date(dt).getTime()) / 1000);
+    if(s < 60) return 'Just now';
+    if(s < 3600) return Math.floor(s/60) + 'm ago';
+    if(s < 86400) return Math.floor(s/3600) + 'h ago';
+    return Math.floor(s/86400) + 'd ago';
+}
+function showToast(msg){const t=document.createElement('div');t.style.cssText='background:#1c1e21;color:white;padding:12px 18px;border-radius:8px;font-size:0.88rem;font-family:Inter,sans-serif;';t.textContent=msg;document.getElementById('toast-container').appendChild(t);setTimeout(()=>t.remove(),3100);}
+load();
+</script>
+</body></html>

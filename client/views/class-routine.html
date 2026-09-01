@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Class Routine | DIU Nexus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/home.css">
+    <style>
+        body { padding-top: 64px; background: var(--bg); }
+        .routine-wrap { max-width: 960px; margin: 0 auto; padding: 24px 16px 80px; }
+        .page-hero { background: linear-gradient(135deg, #0866ff, #0550c1); border-radius: 16px; padding: 28px 24px; color: white; margin-bottom: 24px; display: flex; align-items: center; gap: 16px; }
+        .page-hero i { font-size: 2.5rem; opacity: 0.9; }
+        .page-hero h1 { font-size: 1.5rem; font-weight: 800; margin: 0; }
+        .page-hero p { margin: 4px 0 0; opacity: 0.85; font-size: 0.88rem; }
+
+        .day-tabs { display: flex; gap: 6px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 4px; }
+        .day-tab { padding: 9px 18px; border-radius: 10px; border: 1.5px solid var(--border); background: var(--surface); color: var(--text-secondary); font-family: inherit; font-size: 0.85rem; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+        .day-tab.active { background: #0866ff; color: white; border-color: #0866ff; }
+        .day-tab:hover:not(.active) { border-color: #0866ff; color: #0866ff; }
+
+        .day-panel { display: none; }
+        .day-panel.active { display: block; }
+
+        .routine-card { background: var(--surface); border-radius: 14px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .routine-card h3 { font-size: 1rem; font-weight: 800; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
+
+        .class-slot { display: grid; grid-template-columns: 100px 1fr 120px 100px 60px; gap: 8px; align-items: center; margin-bottom: 8px; padding: 10px 12px; background: var(--bg); border-radius: 10px; border: 1.5px solid var(--border); transition: border-color 0.15s; }
+        .class-slot:hover { border-color: #0866ff; }
+        .class-slot input, .class-slot select { border: none; background: none; font-family: inherit; font-size: 0.85rem; color: var(--text); outline: none; width: 100%; padding: 2px 4px; }
+        .class-slot .time-badge { font-size: 0.75rem; font-weight: 700; color: #0866ff; white-space: nowrap; }
+        .class-slot .subject-input { font-weight: 600; }
+        .class-slot .delete-btn { background: none; border: none; color: #e41e3f; cursor: pointer; font-size: 1rem; padding: 4px; border-radius: 6px; opacity: 0.6; transition: opacity 0.15s; }
+        .class-slot .delete-btn:hover { opacity: 1; background: #fee2e2; }
+
+        .type-badge { padding: 3px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; text-align: center; }
+        .type-theory { background: #e7f0ff; color: #0866ff; }
+        .type-lab { background: #d1fae5; color: #059669; }
+        .type-tutorial { background: #fff7ed; color: #f97316; }
+
+        .add-slot-btn { display: flex; align-items: center; gap: 8px; padding: 10px 16px; background: none; border: 1.5px dashed var(--border); border-radius: 10px; color: var(--text-secondary); font-family: inherit; font-size: 0.85rem; font-weight: 600; cursor: pointer; margin-top: 8px; width: 100%; justify-content: center; transition: all 0.15s; }
+        .add-slot-btn:hover { border-color: #0866ff; color: #0866ff; background: #f0f4ff; }
+
+        .save-btn { position: fixed; bottom: 80px; right: 24px; background: #0866ff; color: white; border: none; border-radius: 14px; padding: 14px 24px; font-family: inherit; font-size: 0.92rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 16px rgba(8,102,255,0.35); display: flex; align-items: center; gap: 8px; transition: transform 0.15s; z-index: 100; }
+        .save-btn:hover { transform: translateY(-2px); }
+
+        .no-class { text-align: center; padding: 40px; color: var(--text-secondary); }
+        .slot-header { display: grid; grid-template-columns: 100px 1fr 120px 100px 60px; gap: 8px; padding: 0 12px; margin-bottom: 6px; }
+        .slot-header span { font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; }
+
+        @media(max-width:640px) {
+            .class-slot { grid-template-columns: 1fr; }
+            .slot-header { display: none; }
+        }
+    
+        /* Fix: Pill till missing + button blocked — ensure pills and following buttons are clickable */
+        .filter-bar, .category-tabs, .cats, .filter-tabs, .cat-tabs, .filter-pill, .cat-tab, .cat, .blood-type-grid, .search-bar {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 1;
+        }
+        .filter-chip, .cat-tab, .cat, .blood-btn, .btn-join, .btn-view, .btn-post, .btn-submit, .btn-sell, .contact-btn, .post-action, .member-row button, .file-row a {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 2;
+        }
+        /* Ensure no sticky pill blocks content */
+        .category-tabs, .filter-bar, .cats {
+            overflow-x: auto;
+            overflow-y: visible;
+            max-height: none;
+        }
+
+    </style>
+</head>
+<body>
+<script src="../js/config.js"></script>
+<script src="../js/shared.js"></script>
+
+<div class="routine-wrap">
+    <div class="page-hero" style="justify-content:space-between;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:16px;">
+            <i class="fas fa-calendar-week"></i>
+            <div>
+                <h1>📅 My Class Routine & Schedule</h1>
+                <p>Personalized day-wise class schedule, routine slots & room tracking</p>
+            </div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <a href="campus-map.html" style="padding:9px 16px;background:rgba(255,255,255,0.2);color:white;border:1px solid rgba(255,255,255,0.4);border-radius:20px;font-weight:800;font-size:0.84rem;text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
+                <i class="fas fa-search-location"></i> Room Decoder
+            </a>
+        </div>
+    </div>
+
+    <div class="day-tabs" id="dayTabs">
+        <button class="day-tab active" onclick="switchDay(0,this)">Sunday</button>
+        <button class="day-tab" onclick="switchDay(1,this)">Monday</button>
+        <button class="day-tab" onclick="switchDay(2,this)">Tuesday</button>
+        <button class="day-tab" onclick="switchDay(3,this)">Wednesday</button>
+        <button class="day-tab" onclick="switchDay(4,this)">Thursday</button>
+        <button class="day-tab" onclick="switchDay(5,this)">Friday</button>
+        <button class="day-tab" onclick="switchDay(6,this)">Saturday</button>
+    </div>
+
+    <div id="dayPanels"></div>
+</div>
+
+<button class="save-btn" onclick="saveRoutine()"><i class="fas fa-save"></i> Save Routine</button>
+<div id="toast-container" style="position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column-reverse;gap:8px;"></div>
+
+    <script>
+    const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const TYPES = ['Theory','Lab','Tutorial'];
+    const COLORS = { Theory: 'type-theory', Lab: 'type-lab', Tutorial: 'type-tutorial' };
+
+    const token = localStorage.getItem('token');
+    const myUser = JSON.parse(localStorage.getItem('user') || 'null');
+    if (!token) window.location.href = '../index.html';
+    if (localStorage.getItem('darkMode') === '1') document.body.setAttribute('data-theme','dark');
+
+    // Load from localStorage
+    let routine = JSON.parse(localStorage.getItem(`routine_${myUser?._id || myUser?.id}`) || 'null') || DAYS.map(() => []);
+    let currentDay = 0;
+
+    function renderAllPanels() {
+        const container = document.getElementById('dayPanels');
+        container.innerHTML = DAYS.map((day, di) => `
+            <div class="day-panel ${di===0?'active':''}" id="panel-${di}">
+                <div class="routine-card">
+                    <h3>
+                        <span><i class="fas fa-calendar-day" style="color:#0866ff;margin-right:8px;"></i>${day}</span>
+                        <button onclick="clearDay(${di})" style="background:#fee2e2;color:#e41e3f;border:none;border-radius:8px;padding:6px 12px;font-family:inherit;font-size:0.78rem;font-weight:700;cursor:pointer;"><i class="fas fa-trash"></i> Clear Day</button>
+                    </h3>
+                    <div class="slot-header">
+                        <span>Time</span><span>Subject</span><span>Room / Teacher</span><span>Type</span><span></span>
+                    </div>
+                    <div id="slots-${di}">${renderSlots(di)}</div>
+                    <button class="add-slot-btn" onclick="addSlot(${di})"><i class="fas fa-plus"></i> Add Class</button>
+                </div>
+            </div>`).join('');
+    }
+
+function renderSlots(di) {
+    const slots = routine[di];
+    if (!slots.length) return `<div class="no-class"><i class="fas fa-coffee" style="font-size:2rem;opacity:0.3;display:block;margin-bottom:8px;"></i>No classes — Enjoy your day! 😊</div>`;
+    return slots.map((s, si) => `
+        <div class="class-slot" id="slot-${di}-${si}">
+            <input class="time-badge" type="time" value="${s.time||'08:00'}" onchange="updateSlot(${di},${si},'time',this.value)">
+            <input class="subject-input" placeholder="Subject name" value="${esc(s.subject||'')}" onchange="updateSlot(${di},${si},'subject',this.value)">
+            <input placeholder="Room / Teacher" value="${esc(s.room||'')}" onchange="updateSlot(${di},${si},'room',this.value)" style="font-size:0.82rem;">
+            <select onchange="updateSlot(${di},${si},'type',this.value)" style="border:none;background:none;font-family:inherit;font-size:0.8rem;font-weight:700;color:#0866ff;cursor:pointer;">
+                ${TYPES.map(t=>`<option value="${t}" ${s.type===t?'selected':''}>${t}</option>`).join('')}
+            </select>
+            <button class="delete-btn" onclick="removeSlot(${di},${si})"><i class="fas fa-times"></i></button>
+        </div>`).join('');
+}
+
+function switchDay(di, btn) {
+    currentDay = di;
+    document.querySelectorAll('.day-tab').forEach(t=>t.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.day-panel').forEach(p=>p.classList.remove('active'));
+    document.getElementById(`panel-${di}`).classList.add('active');
+}
+
+function addSlot(di) {
+    routine[di].push({ time: '08:00', subject: '', room: '', type: 'Theory' });
+    document.getElementById(`slots-${di}`).innerHTML = renderSlots(di);
+}
+
+function removeSlot(di, si) {
+    routine[di].splice(si, 1);
+    document.getElementById(`slots-${di}`).innerHTML = renderSlots(di);
+}
+
+function updateSlot(di, si, key, val) {
+    if (!routine[di][si]) return;
+    routine[di][si][key] = val;
+}
+
+function clearDay(di) {
+    if (!confirm(`${DAYS[di]} Delete this class?`)) return;
+    routine[di] = [];
+    document.getElementById(`slots-${di}`).innerHTML = renderSlots(di);
+}
+
+function saveRoutine() {
+    localStorage.setItem(`routine_${myUser?._id || myUser?.id}`, JSON.stringify(routine));
+    showToast('✅ Routine saved!');
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function showToast(msg) { const t=document.createElement('div'); t.style.cssText='background:#1c1e21;color:white;padding:12px 18px;border-radius:10px;font-family:Inter,sans-serif;font-size:0.88rem;'; t.textContent=msg; document.getElementById('toast-container').appendChild(t); setTimeout(()=>t.remove(),2800); }
+
+
+renderAllPanels();
+</script>
+</body>
+</html>

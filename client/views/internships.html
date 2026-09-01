@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>DIU Career & Internship Hub | DIU Nexus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/home.css">
+    <style>
+        body { padding-top: 64px; background: var(--bg); font-family: 'Inter', sans-serif; }
+        .job-wrap { max-width: 1040px; margin: 0 auto; padding: 24px 16px 80px; }
+        
+        .page-hero {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            border-radius: 16px;
+            padding: 32px 24px;
+            color: white;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 4px 20px rgba(37, 99, 235, 0.25);
+        }
+        .page-hero i { font-size: 3rem; opacity: 0.95; }
+        .page-hero h1 { font-size: 1.6rem; font-weight: 800; margin: 0; }
+        .page-hero p { opacity: 0.9; margin: 6px 0 0; font-size: 0.92rem; }
+
+        .job-layout { display: grid; grid-template-columns: 320px 1fr; gap: 20px; align-items: start; }
+        @media(max-width:768px) { .job-layout { grid-template-columns: 1fr; } }
+
+        .form-card {
+            background: var(--surface);
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+            position: sticky;
+            top: 76px;
+            border: 1px solid var(--border);
+        }
+        .form-card h3 { font-weight: 800; color: #2563eb; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; font-size: 1.05rem; }
+        .form-group { margin-bottom: 12px; }
+        .form-label { display: block; font-size: 0.76rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; text-transform: uppercase; }
+        .form-input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.88rem;
+            background: var(--surface);
+            color: var(--text);
+            outline: none;
+        }
+        .form-input:focus { border-color: #2563eb; }
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.92rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        /* Job Card */
+        .job-card {
+            background: var(--surface);
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+            transition: transform 0.15s;
+        }
+        .job-card:hover { transform: translateY(-2px); }
+        .job-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+        .job-title { font-size: 1.15rem; font-weight: 800; color: var(--text); }
+        .job-company { font-size: 0.9rem; font-weight: 700; color: #2563eb; margin-bottom: 8px; }
+        .job-meta { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 12px; }
+        .job-desc { font-size: 0.88rem; line-height: 1.5; color: var(--text); margin-bottom: 14px; }
+        
+        .job-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+        .job-tag { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+        .tag-intern { background: #dbeafe; color: #1e40af; }
+        .tag-remote { background: #dcfce7; color: #15803d; }
+        .tag-stipend { background: #fef3c7; color: #92400e; }
+
+        .job-actions { display: flex; gap: 8px; border-top: 1px solid var(--border); padding-top: 12px; align-items: center; }
+        .jbtn { padding: 8px 16px; border-radius: 8px; font-family: inherit; font-size: 0.84rem; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-apply { background: #2563eb; color: white; border: none; }
+        .btn-ref { background: #f1f5f9; color: var(--text); border: 1px solid var(--border); }
+    
+        /* Fix: Pill till missing + button blocked — ensure pills and following buttons are clickable */
+        .filter-bar, .category-tabs, .cats, .filter-tabs, .cat-tabs, .filter-pill, .cat-tab, .cat, .blood-type-grid, .search-bar {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 1;
+        }
+        .filter-chip, .cat-tab, .cat, .blood-btn, .btn-join, .btn-view, .btn-post, .btn-submit, .btn-sell, .contact-btn, .post-action, .member-row button, .file-row a {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 2;
+        }
+        /* Ensure no sticky pill blocks content */
+        .category-tabs, .filter-bar, .cats {
+            overflow-x: auto;
+            overflow-y: visible;
+            max-height: none;
+        }
+
+    </style>
+</head>
+<body>
+<script src="../js/config.js"></script>
+<script src="../js/shared.js"></script>
+<div class="job-wrap">
+    <div class="page-hero">
+        <i class="fas fa-briefcase"></i>
+        <div>
+            <h1>💼 DIU Internship & Job Fair Portal</h1>
+            <p>Find internships and part-time jobs for DIU students — From on-campus to top companies. Apply with one click.</p>
+        </div>
+    </div>
+
+    <div class="job-layout">
+        <!-- Post Opportunity Form -->
+        <div class="form-card">
+            <h3><i class="fas fa-plus-circle"></i> Post Internship / Job</h3>
+            <div class="form-group">
+                <label class="form-label">Job Title *</label>
+                <input class="form-input" id="jTitle" placeholder="e.g., Junior Frontend Developer (React)">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Company Name *</label>
+                <input class="form-input" id="jCompany" placeholder="e.g., Brain Station 23 / Optimizely">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Job Type</label>
+                <select class="form-input" id="jType">
+                    <option value="Internship">Paid Internship</option>
+                    <option value="Full-time">Full-time (Entry Level)</option>
+                    <option value="Part-time">Part-time</option>
+                    <option value="Remote">Remote</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Salary / Stipend</label>
+                <input class="form-input" id="jSalary" placeholder="e.g., BDT 15,000 - BDT 25,000 / month">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Location</label>
+                <input class="form-input" id="jLocation" placeholder="e.g., Banani, Dhaka / Remote">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Apply Link / Email *</label>
+                <input class="form-input" id="jApply" placeholder="hr@company.com or URL">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Requirements & Details *</label>
+                <textarea class="form-input" id="jDesc" rows="3" placeholder="e.g., Web development intern needed, 3 months, Stipend 10k, Requirements: React, Node..."></textarea>
+            </div>
+            <button class="btn-submit" onclick="postJob()"><i class="fas fa-paper-plane"></i> Post Job Circular</button>
+        </div>
+
+        <!-- Jobs List -->
+        <div id="jobList"></div>
+    </div>
+</div>
+
+<div id="toast-container" style="position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column-reverse;gap:8px;"></div>
+
+<script>
+const myUser = JSON.parse(localStorage.getItem('user') || 'null');
+const token = localStorage.getItem('token');
+if (!token) window.location.href = '../index.html';
+if (localStorage.getItem('darkMode') === '1') document.body.setAttribute('data-theme','dark');
+
+let allJobs = JSON.parse(localStorage.getItem('diu_jobs') || '[]');
+const myId = String(myUser?._id || myUser?.id || 'guest');
+
+if (!allJobs.length) {
+    allJobs = [
+        {
+            id: 101,
+            title: "React.js & Node.js Software Engineer Intern",
+            company: "TechNova Solutions (Alumni Founded)",
+            type: "Internship",
+            salary: "BDT 18,000 / month",
+            location: "Gulshan-1, Dhaka (Hybrid)",
+            apply: "careers@technova.com",
+            desc: "DIU CSE/SWE final year or fresh graduates preferred. Experience with JavaScript, React, and REST APIs is required.",
+            postedBy: "Tanvir Ahmed (CSE Alum)"
+        },
+        {
+            id: 102,
+            title: "Digital Marketing & Content Associate",
+            company: "Pathao Ltd",
+            type: "Full-time",
+            salary: "BDT 28,000 - BDT 35,000",
+            location: "Dhanmondi, Dhaka",
+            apply: "https://pathao.com/careers",
+            desc: "BBA / Journalism graduates with strong copy writing, social media ad management, and communication skills.",
+            postedBy: "HR Recruiter"
+        }
+    ];
+    saveJobs();
+}
+
+function saveJobs() { localStorage.setItem('diu_jobs', JSON.stringify(allJobs)); }
+
+function postJob() {
+    const title = document.getElementById('jTitle').value.trim();
+    const company = document.getElementById('jCompany').value.trim();
+    const apply = document.getElementById('jApply').value.trim();
+    const desc = document.getElementById('jDesc').value.trim();
+    const type = document.getElementById('jType').value;
+    const salary = document.getElementById('jSalary').value.trim();
+    const location = document.getElementById('jLocation').value.trim();
+
+    if (!title || !company || !apply || !desc) {
+        showToast('Please fill in all required fields');
+        return;
+    }
+
+    const newJob = {
+        id: Date.now(),
+        title, company, type, salary, location, apply, desc,
+        postedBy: myUser?.fullName || 'Alumni / Recruiter'
+    };
+
+    allJobs.unshift(newJob);
+    saveJobs();
+    renderJobs();
+    showToast('💼 Job Circular Posted!');
+
+    ['jTitle','jCompany','jApply','jDesc','jSalary','jLocation'].forEach(id => document.getElementById(id).value = '');
+}
+
+function renderJobs() {
+    const el = document.getElementById('jobList');
+    if (!allJobs.length) {
+        el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-secondary);">No job circulars posted yet</div>';
+        return;
+    }
+
+    el.innerHTML = allJobs.map(j => `
+        <div class="job-card">
+            <div class="job-header">
+                <div>
+                    <div class="job-title">${esc(j.title)}</div>
+                    <div class="job-company"><i class="fas fa-building"></i> ${esc(j.company)}</div>
+                </div>
+            </div>
+            <div class="job-meta">
+                <span><i class="fas fa-map-marker-alt" style="color:#ef4444;"></i> ${esc(j.location || 'Dhaka')}</span>
+                ${j.salary ? `<span><i class="fas fa-money-bill-wave" style="color:#10b981;"></i> ${esc(j.salary)}</span>` : ''}
+                <span><i class="fas fa-user-tie"></i> Posted by ${esc(j.postedBy)}</span>
+            </div>
+            <div class="job-tags">
+                <span class="job-tag tag-intern">${esc(j.type)}</span>
+                ${j.salary ? `<span class="job-tag tag-stipend">Paid Opportunity</span>` : ''}
+            </div>
+            <div class="job-desc">${esc(j.desc)}</div>
+            
+            <div class="job-actions">
+                <a href="${j.apply.includes('@') ? 'mailto:' + esc(j.apply) : esc(j.apply)}" target="_blank" class="jbtn btn-apply">
+                    <i class="fas fa-paper-plane"></i> Apply / Send CV (${esc(j.apply)})
+                </a>
+                <a href="messenger.html" class="jbtn btn-ref"><i class="fas fa-user-friends"></i> Ask for Referral</a>
+            </div>
+        </div>
+    `).join('');
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function showToast(msg) { const t=document.createElement('div'); t.style.cssText='background:#1c1e21;color:white;padding:12px 18px;border-radius:10px;font-family:Inter,sans-serif;font-size:0.88rem;'; t.textContent=msg; document.getElementById('toast-container').appendChild(t); setTimeout(()=>t.remove(),2800); }
+
+renderJobs();
+</script>
+</body>
+</html>

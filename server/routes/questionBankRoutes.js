@@ -1,0 +1,10 @@
+const router = require('express').Router();
+const auth = require('../middleware/authMiddleware');
+const { uploadQuestion, getQuestions, downloadQuestion, likeQuestion, deleteQuestion, updateQuestion } = require('../controllers/questionBankController');
+router.get('/', auth, getQuestions);
+router.post('/', auth, uploadQuestion);
+router.get('/:id/download', auth, downloadQuestion);
+router.post('/:id/like', auth, likeQuestion);
+router.put('/:id', auth, updateQuestion);
+router.delete('/:id', auth, deleteQuestion);
+module.exports = router;

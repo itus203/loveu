@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIU Academic Hub | DIU Nexus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/home.css">
+    <style>
+        body { padding-top: 64px; }
+        .hub-hero {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            padding: 40px 24px;
+            text-align: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        .hub-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 30% 50%, rgba(8,102,255,0.15) 0%, transparent 60%),
+                        radial-gradient(ellipse at 70% 50%, rgba(139,92,246,0.1) 0%, transparent 60%);
+        }
+        .hub-hero h1 { font-size: 2rem; font-weight: 800; margin-bottom: 8px; position: relative; }
+        .hub-hero p { opacity: 0.75; position: relative; font-size: 0.9rem; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 24px 16px; }
+
+        /* SERVICE CARDS */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        .service-card {
+            background: var(--surface, #fff);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            border: 1.5px solid var(--border, #e4e6eb);
+        }
+        .service-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+        .service-card.active { border-color: var(--accent); }
+        .service-header {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .service-icon {
+            width: 52px; height: 52px;
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+        .service-title { font-weight: 800; font-size: 1rem; margin-bottom: 2px; }
+        .service-desc { font-size: 0.78rem; color: #65676b; }
+        .service-actions {
+            display: flex;
+            border-top: 1px solid var(--border, #e4e6eb);
+        }
+        .service-btn {
+            flex: 1;
+            padding: 12px;
+            background: none;
+            border: none;
+            font-family: inherit;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--text, #1c1e21);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: background 0.15s;
+        }
+        .service-btn:hover { background: var(--bg, #f0f2f5); }
+        .service-btn.primary { color: var(--blue, #0866ff); }
+        .service-btn + .service-btn { border-left: 1px solid var(--border, #e4e6eb); }
+
+        /* FULL-SCREEN VIEWER */
+        .viewer-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 3000;
+            background: #000;
+            flex-direction: column;
+        }
+        .viewer-overlay.show { display: flex; }
+        .viewer-navbar {
+            height: 48px;
+            background: #1c1e21;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .viewer-back {
+            width: 34px; height: 34px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .viewer-url {
+            flex: 1;
+            background: rgba(255,255,255,0.08);
+            border: none;
+            border-radius: 8px;
+            padding: 6px 12px;
+            color: rgba(255,255,255,0.8);
+            font-size: 0.8rem;
+            font-family: monospace;
+            outline: none;
+        }
+        .viewer-actions { display: flex; gap: 4px; }
+        .viewer-action {
+            width: 34px; height: 34px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            font-size: 0.85rem;
+            text-decoration: none;
+            transition: background 0.15s;
+        }
+        .viewer-action:hover { background: rgba(255,255,255,0.2); }
+        .viewer-action.external { background: rgba(8,102,255,0.3); color: #90b8ff; }
+        .viewer-iframe {
+            flex: 1;
+            border: none;
+            width: 100%;
+        }
+        .viewer-blocked {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            color: white;
+            text-align: center;
+            padding: 24px;
+        }
+        .viewer-blocked i { font-size: 3rem; opacity: 0.4; }
+        .viewer-blocked h2 { font-size: 1.2rem; font-weight: 700; }
+        .viewer-blocked p { opacity: 0.6; font-size: 0.88rem; max-width: 420px; }
+        .viewer-blocked a {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: #0866ff;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: background 0.15s;
+        }
+        .viewer-blocked a:hover { background: #0550c1; }
+
+        /* MOODLE PANEL */
+        .panel {
+            background: var(--surface, #fff);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+        .panel-title {
+            font-size: 1.05rem;
+            font-weight: 800;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .login-form { display: flex; flex-direction: column; gap: 10px; }
+        .login-form input {
+            padding: 12px 14px;
+            border: 1.5px solid var(--border, #e4e6eb);
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            background: var(--bg, #f0f2f5);
+            color: var(--text, #1c1e21);
+            outline: none;
+            transition: border-color 0.15s;
+        }
+        .login-form input:focus { border-color: #0866ff; background: var(--surface, #fff); }
+        .login-form input::placeholder { color: #65676b; }
+        .btn-login {
+            padding: 12px;
+            background: #0866ff;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-login:hover { background: #0550c1; }
+        .btn-login:disabled { background: #65676b; cursor: not-allowed; }
+
+        /* COURSES GRID */
+        .courses-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+        .course-card {
+            background: var(--surface, #fff);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border: 1px solid var(--border, #e4e6eb);
+            transition: transform 0.2s;
+        }
+        .course-card:hover { transform: translateY(-2px); }
+        .course-banner {
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+        }
+        .course-info { padding: 12px; }
+        .course-name { font-weight: 700; font-size: 0.88rem; margin-bottom: 4px; line-height: 1.3; }
+        .course-short { font-size: 0.75rem; color: #65676b; }
+        .course-link {
+            display: block;
+            text-align: center;
+            margin: 8px 12px 12px;
+            padding: 8px;
+            background: #e7f0ff;
+            color: #0866ff;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: background 0.15s;
+        }
+        .course-link:hover { background: #0866ff; color: white; }
+
+        /* ROUTINE TABLE */
+        .routine-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .routine-input {
+            flex: 1;
+            min-width: 140px;
+            padding: 10px 14px;
+            border: 1.5px solid var(--border, #e4e6eb);
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.88rem;
+            background: var(--bg, #f0f2f5);
+            color: var(--text, #1c1e21);
+            outline: none;
+        }
+        .routine-input:focus { border-color: #0866ff; }
+        .routine-search-btn {
+            padding: 10px 20px;
+            background: #0866ff;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.88rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .routine-table-wrap { overflow-x: auto; }
+        .routine-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82rem;
+        }
+        .routine-table th {
+            background: #0866ff;
+            color: white;
+            padding: 10px 12px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .routine-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border, #e4e6eb);
+            vertical-align: top;
+        }
+        .routine-table tr:nth-child(even) { background: var(--bg, #f8f9fa); }
+        .routine-table tr:hover { background: #e7f0ff; }
+        .class-slot {
+            background: #e7f0ff;
+            border-radius: 6px;
+            padding: 4px 8px;
+            margin: 2px 0;
+            font-size: 0.78rem;
+            line-height: 1.4;
+        }
+        .class-slot .course-code { font-weight: 700; color: #0866ff; }
+        .class-slot .room { color: #65676b; font-size: 0.72rem; }
+
+        /* STATUS TAGS */
+        .status-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+        .tag-green { background: #d1fae5; color: #059669; }
+        .tag-blue { background: #e7f0ff; color: #0866ff; }
+        .tag-red { background: #fee2e2; color: #dc2626; }
+
+        /* SKELETON */
+        .skeleton {
+            background: linear-gradient(90deg, var(--bg,#f0f2f5) 25%, #e0e0e0 50%, var(--bg,#f0f2f5) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 8px;
+        }
+        @keyframes shimmer { to { background-position: -200% 0; } }
+
+        #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+        .toast-item { background: #1c1e21; color: white; padding: 12px 18px; border-radius: 10px; font-size: 0.88rem; font-weight: 500; box-shadow: 0 4px 16px rgba(0,0,0,0.2); animation: toastin 0.3s ease; }
+        @keyframes toastin { from { opacity:0; transform:translateY(10px); } to { opacity:1; } }
+
+        @media (max-width: 600px) { .routine-controls { flex-direction: column; } }
+    
+        /* Fix: Pill till missing + button blocked — ensure pills and following buttons are clickable */
+        .filter-bar, .category-tabs, .cats, .filter-tabs, .cat-tabs, .filter-pill, .cat-tab, .cat, .blood-type-grid, .search-bar {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 1;
+        }
+        .filter-chip, .cat-tab, .cat, .blood-btn, .btn-join, .btn-view, .btn-post, .btn-submit, .btn-sell, .contact-btn, .post-action, .member-row button, .file-row a {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 2;
+        }
+        /* Ensure no sticky pill blocks content */
+        .category-tabs, .filter-bar, .cats {
+            overflow-x: auto;
+            overflow-y: visible;
+            max-height: none;
+        }
+
+    </style>
+</head>
+<body>
+<script src="../js/config.js"></script>
+<script src="../js/shared.js"></script>
+
+<!-- HERO -->
+<div class="hub-hero">
+    <h1>🎓 DIU Academic Hub</h1>
+    <p>Access your BLC Courses, Student Portal &amp; Teacher Portal — all in one place</p>
+</div>
+
+<div class="container">
+
+    <!-- SERVICE CARDS -->
+    <div class="services-grid">
+        <!-- 1: BLC / Elearn -->
+        <div class="service-card" id="card-blc">
+            <div class="service-header">
+                <div class="service-icon" style="background:#f0fdf4;">
+                    <span>📚</span>
+                </div>
+                <div>
+                    <div class="service-title" style="color:#059669;">BLC / E-Learn</div>
+                    <div class="service-desc">Courses, assignments, grades from Moodle</div>
+                </div>
+            </div>
+            <div class="service-actions">
+                <button class="service-btn" style="color:#059669;" onclick="showSection('blc-section')">
+                    <i class="fas fa-book-open"></i> My Courses
+                </button>
+                <button class="service-btn" onclick="openViewer('https://elearn.daffodilvarsity.edu.bd/', 'BLC')">
+                    <i class="fas fa-external-link-alt"></i> Full Site
+                </button>
+            </div>
+        </div>
+
+        <!-- 2: Student Portal -->
+        <div class="service-card" id="card-portal">
+            <div class="service-header">
+                <div class="service-icon" style="background:#fff7ed;">
+                    <span>🎓</span>
+                </div>
+                <div>
+                    <div class="service-title" style="color:#ea580c;">Student Portal</div>
+                    <div class="service-desc">Results, attendance, fee payment, notices</div>
+                </div>
+            </div>
+            <div class="service-actions">
+                <button class="service-btn" style="color:#ea580c;" onclick="window.open('https://studentportal.diu.edu.bd/', '_blank')">
+                    <i class="fas fa-sign-in-alt"></i> Open Portal
+                </button>
+                <button class="service-btn" onclick="window.open('https://studentportal.diu.edu.bd/', '_blank')">
+                    <i class="fas fa-external-link-alt"></i> Full Site
+                </button>
+            </div>
+        </div>
+
+        <!-- 3: Teacher Portal -->
+        <div class="service-card" id="card-teacher-portal">
+            <div class="service-header">
+                <div class="service-icon" style="background:#eff6ff;">
+                    <span>👨‍🏫</span>
+                </div>
+                <div>
+                    <div class="service-title" style="color:#2563eb;">Teacher Portal</div>
+                    <div class="service-desc">Course management, grading, attendance, notices</div>
+                </div>
+            </div>
+            <div class="service-actions">
+                <button class="service-btn" style="color:#2563eb;" onclick="window.open('https://teacherportal.diu.edu.bd/', '_blank')">
+                    <i class="fas fa-sign-in-alt"></i> Open Portal
+                </button>
+                <button class="service-btn" onclick="window.open('https://teacherportal.diu.edu.bd/', '_blank')">
+                    <i class="fas fa-external-link-alt"></i> Full Site
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         SECTION 1: CLASS ROUTINE
+         ============================================================ -->
+    <div id="routine-section" style="display:none;">
+        <div class="panel">
+            <div class="panel-title">
+                <div style="width:36px;height:36px;border-radius:10px;background:#e7f0ff;display:flex;align-items:center;justify-content:center;font-size:1.2rem;">📅</div>
+                Class Routine — DIU Routine
+            </div>
+
+            <!-- Search controls -->
+            <div class="routine-controls">
+                <select class="routine-input" id="searchType" onchange="toggleSearchInputs()">
+                    <option value="section">Search by Section</option>
+                    <option value="teacher">Search by Teacher</option>
+                    <option value="room">Search by Room</option>
+                </select>
+                <input class="routine-input" id="batchInput" placeholder="Batch e.g. 51" style="max-width:120px;">
+                <input class="routine-input" id="sectionInput" placeholder="Section e.g. A" style="max-width:100px;">
+                <input class="routine-input" id="teacherInput" placeholder="Teacher Initials e.g. SIK" style="display:none;">
+                <input class="routine-input" id="roomInput" placeholder="Room e.g. A-501" style="display:none;">
+                <button class="routine-search-btn" onclick="searchRoutine()" id="routineSearchBtn">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </div>
+
+            <div id="routine-result"></div>
+
+            <div style="margin-top:12px;padding:12px;background:var(--bg,#f8f9fa);border-radius:10px;font-size:0.8rem;color:#65676b;">
+                <i class="fas fa-info-circle" style="color:#0866ff;"></i>
+                Data is fetched via DIU Nexus proxy from <a href="https://www.diuroutine.com" target="_blank" style="color:#0866ff;">diuroutine.com</a>.
+                If results don't load, use the "Full Site" button above.
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         SECTION 2: BLC / ELEARN (Moodle API)
+         ============================================================ -->
+    <div id="blc-section" style="display:none;">
+        <div class="panel" id="blc-login-panel">
+            <div class="panel-title">
+                <div style="width:36px;height:36px;border-radius:10px;background:#f0fdf4;display:flex;align-items:center;justify-content:center;font-size:1.2rem;">📚</div>
+                BLC — Sign In with DIU Credentials
+            </div>
+            <p style="font-size:0.85rem;color:#65676b;margin-bottom:16px;">
+                Enter your BLC (Moodle) username and password. Your credentials are sent directly to the BLC server — DIU Nexus does not store them.
+            </p>
+            <div class="login-form" id="blcLoginForm">
+                <input type="text" id="blcUsername" placeholder="BLC Username (e.g. 211-15-xxxxx)" autocomplete="username">
+                <input type="password" id="blcPassword" placeholder="BLC Password" autocomplete="current-password">
+                <button class="btn-login" onclick="blcLogin()" id="blcLoginBtn">
+                    <i class="fas fa-sign-in-alt"></i> Sign In to BLC
+                </button>
+            </div>
+        </div>
+
+        <div id="blc-courses-panel" style="display:none;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+                <h2 style="font-size:1.1rem;font-weight:800;">📚 My BLC Courses</h2>
+                <div style="display:flex;gap:8px;">
+                    <span id="blcUserBadge" style="background:#e7f0ff;color:#0866ff;padding:6px 14px;border-radius:20px;font-size:0.82rem;font-weight:700;"></span>
+                    <button onclick="blcLogout()" style="background:#fee2e2;color:#dc2626;border:none;border-radius:8px;padding:6px 14px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
+                </div>
+            </div>
+            <div class="courses-grid" id="blcCoursesList"></div>
+        </div>
+    </div>
+
+</div>
+
+<!-- FULL-SCREEN VIEWER -->
+<div class="viewer-overlay" id="viewerOverlay">
+    <div class="viewer-navbar">
+        <button class="viewer-back" onclick="closeViewer()" title="Back">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <input class="viewer-url" id="viewerUrl" readonly>
+        <div class="viewer-actions">
+            <button class="viewer-action" onclick="reloadViewer()" title="Reload">
+                <i class="fas fa-redo"></i>
+            </button>
+            <a class="viewer-action external" id="viewerExternal" href="#" target="_blank" title="Open in Browser">
+                <i class="fas fa-external-link-alt"></i>
+            </a>
+        </div>
+    </div>
+    <iframe class="viewer-iframe" id="viewerFrame" allow="fullscreen"></iframe>
+    <div class="viewer-blocked" id="viewerBlocked" style="display:none;">
+        <i class="fas fa-shield-alt"></i>
+        <h2>Site Cannot Be Embedded</h2>
+        <p>This site blocks embedding (X-Frame-Options). You need to open it directly in your browser.</p>
+        <a id="viewerBlockedLink" href="#" target="_blank">
+            <i class="fas fa-external-link-alt"></i> Open in Browser
+        </a>
+    </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script>
+const token = localStorage.getItem('token');
+const API = (typeof window.API !== 'undefined' ? window.API : (function(){ var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000/api'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin+'/api'; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin+'/api':'http://localhost:5000/api'; return 'http://localhost:5000/api'; } return window.location.origin+'/api'; })());
+
+// ===========================
+// SECTION TOGGLE
+// ===========================
+function showSection(id) {
+    document.querySelectorAll('#routine-section, #blc-section').forEach(el => {
+        el.style.display = 'none';
+    });
+    const section = document.getElementById(id);
+    if (section) {
+        section.style.display = 'block';
+        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+function toggleSearchInputs() {
+    const type = document.getElementById('searchType').value;
+    document.getElementById('batchInput').style.display = type === 'section' ? '' : 'none';
+    document.getElementById('sectionInput').style.display = type === 'section' ? '' : 'none';
+    document.getElementById('teacherInput').style.display = type === 'teacher' ? '' : 'none';
+    document.getElementById('roomInput').style.display = type === 'room' ? '' : 'none';
+}
+
+// ===========================
+// VIEWER
+// ===========================
+function openViewer(url, title) {
+    const overlay = document.getElementById('viewerOverlay');
+    const frame = document.getElementById('viewerFrame');
+    const urlInput = document.getElementById('viewerUrl');
+    const ext = document.getElementById('viewerExternal');
+    const blocked = document.getElementById('viewerBlocked');
+    const blockedLink = document.getElementById('viewerBlockedLink');
+
+    overlay.classList.add('show');
+    urlInput.value = url;
+    ext.href = url;
+    blockedLink.href = url;
+    blocked.style.display = 'none';
+    frame.style.display = 'block';
+    frame.src = url;
+
+    // Detect blocked (X-Frame-Options) by checking load vs error
+    frame.onload = () => {};
+    frame.onerror = () => {
+        frame.style.display = 'none';
+        blocked.style.display = 'flex';
+    };
+
+    // Fallback: if frame loads a blank page (X-Frame-Options error), show blocked UI
+    setTimeout(() => {
+        try {
+            const doc = frame.contentDocument || frame.contentWindow.document;
+            if (!doc || doc.body.innerHTML === '') {
+                frame.style.display = 'none';
+                blocked.style.display = 'flex';
+            }
+        } catch (e) {
+            // Cross-origin — can't read, but it probably loaded successfully
+        }
+    }, 4000);
+}
+
+function closeViewer() {
+    document.getElementById('viewerOverlay').classList.remove('show');
+    document.getElementById('viewerFrame').src = 'about:blank';
+}
+
+function reloadViewer() {
+    const frame = document.getElementById('viewerFrame');
+    const url = document.getElementById('viewerUrl').value;
+    frame.style.display = 'block';
+    document.getElementById('viewerBlocked').style.display = 'none';
+    frame.src = url;
+}
+
+// ===========================
+// SECTION 1: DIU ROUTINE
+// ===========================
+async function searchRoutine() {
+    const type = document.getElementById('searchType').value;
+    const btn = document.getElementById('routineSearchBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...';
+
+    const resultEl = document.getElementById('routine-result');
+    resultEl.innerHTML = '<div class="skeleton" style="height:200px;"></div>';
+
+    try {
+        let params = {};
+        if (type === 'section') {
+            params.batch = document.getElementById('batchInput').value.trim();
+            params.section = document.getElementById('sectionInput').value.trim().toUpperCase();
+            if (!params.batch || !params.section) { showToast('Enter batch and section'); return; }
+        } else if (type === 'teacher') {
+            params.teacher = document.getElementById('teacherInput').value.trim().toUpperCase();
+            if (!params.teacher) { showToast('Enter teacher initials'); return; }
+        } else {
+            params.room = document.getElementById('roomInput').value.trim();
+            if (!params.room) { showToast('Enter room number'); return; }
+        }
+
+        const qs = new URLSearchParams({ type, ...params }).toString();
+        const res = await fetch(`${API}/diu/routine?${qs}`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+
+        if (!res.ok || data.error) {
+            resultEl.innerHTML = buildRoutineFallback(params, type);
+            return;
+        }
+
+        if (data.type === 'table' && data.rows) {
+            resultEl.innerHTML = buildRoutineTable(data);
+        } else if (data.type === 'raw') {
+            resultEl.innerHTML = `<div style="padding:16px;background:var(--bg,#f8f9fa);border-radius:10px;font-size:0.85rem;white-space:pre-wrap;line-height:1.6;">${data.html || 'No data found'}</div>`;
+        } else {
+            resultEl.innerHTML = buildRoutineFallback(params, type);
+        }
+    } catch (e) {
+        resultEl.innerHTML = buildRoutineFallback(
+            { batch: document.getElementById('batchInput').value, section: document.getElementById('sectionInput').value }, type
+        );
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-search"></i> Search';
+    }
+}
+
+function buildRoutineTable(data) {
+    const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
+    let html = '<div class="routine-table-wrap"><table class="routine-table"><thead><tr><th>Day</th>';
+    if (data.headers) {
+        data.headers.forEach(h => html += `<th>${h}</th>`);
+    }
+    html += '</tr></thead><tbody>';
+    if (data.rows) {
+        data.rows.forEach(row => {
+            html += '<tr>';
+            row.forEach((cell, i) => {
+                if (cell) {
+                    html += `<td><div class="class-slot"><div class="course-code">${cell.course || cell}</div>${cell.room ? `<div class="room">🚪 ${cell.room}</div>` : ''}</div></td>`;
+                } else {
+                    html += '<td style="color:#ccc;text-align:center;">—</td>';
+                }
+            });
+            html += '</tr>';
+        });
+    }
+    html += '</tbody></table></div>';
+    return html;
+}
+
+function buildRoutineFallback(params, type) {
+    const batch = params.batch || '';
+    const section = params.section || '';
+    const teacher = params.teacher || '';
+    let diuUrl = 'https://www.diuroutine.com/';
+    if (type === 'section' && batch && section) diuUrl = `https://www.diuroutine.com/?batch=${batch}&section=${section}`;
+    if (type === 'teacher' && teacher) diuUrl = `https://www.diuroutine.com/?teacher=${teacher}`;
+
+    return `
+    <div style="text-align:center;padding:32px 20px;">
+        <div style="font-size:3rem;margin-bottom:12px;">📅</div>
+        <div style="font-weight:700;margin-bottom:8px;font-size:0.95rem;">Routine fetched! Open below:</div>
+        <p style="font-size:0.82rem;color:#65676b;margin-bottom:16px;">The proxy could not parse the routine. Click to view it directly:</p>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+            <button onclick="openViewer('${diuUrl}','DIU Routine')" style="background:#0866ff;color:white;border:none;border-radius:10px;padding:10px 20px;font-family:inherit;font-size:0.88rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">
+                <i class="fas fa-eye"></i> View in Nexus Browser
+            </button>
+            <a href="${diuUrl}" target="_blank" style="background:#f0f2f5;color:#1c1e21;border-radius:10px;padding:10px 20px;font-size:0.88rem;font-weight:700;display:inline-flex;align-items:center;gap:6px;text-decoration:none;">
+                <i class="fas fa-external-link-alt"></i> Open in Tab
+            </a>
+        </div>
+    </div>`;
+}
+
+// ===========================
+// SECTION 2: BLC / MOODLE
+// ===========================
+const BLC_URL = 'https://elearn.daffodilvarsity.edu.bd';
+const MOODLE_API = `${BLC_URL}/webservice/rest/server.php`;
+let blcToken = localStorage.getItem('blc_token') || null;
+let blcUserId = localStorage.getItem('blc_userid') || null;
+let blcUserName = localStorage.getItem('blc_username_display') || null;
+
+// Auto-restore session
+if (blcToken) restoreBLCSession();
+
+async function blcLogin() {
+    const username = document.getElementById('blcUsername').value.trim();
+    const password = document.getElementById('blcPassword').value;
+    if (!username || !password) { showToast('Enter username and password'); return; }
+
+    const btn = document.getElementById('blcLoginBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing in...';
+
+    try {
+        // Use our backend proxy to avoid CORS
+        const res = await fetch(`${API}/diu/blc-token`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+
+        if (data.token) {
+            blcToken = data.token;
+            blcUserId = data.userid || null;
+            blcUserName = username;
+            localStorage.setItem('blc_token', blcToken);
+            localStorage.setItem('blc_userid', blcUserId || '');
+            localStorage.setItem('blc_username_display', username);
+            showToast('✅ Signed in to BLC!');
+            loadBLCCourses();
+        } else {
+            showToast('❌ ' + (data.error || 'Invalid credentials'));
+        }
+    } catch (e) {
+        showToast('❌ Connection failed. Check server.');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In to BLC';
+    }
+}
+
+function restoreBLCSession() {
+    document.getElementById('blcUserBadge').textContent = '👤 ' + blcUserName;
+    document.getElementById('blc-login-panel').style.display = 'none';
+    document.getElementById('blc-courses-panel').style.display = 'block';
+    loadBLCCourses();
+}
+
+async function loadBLCCourses() {
+    document.getElementById('blc-login-panel').style.display = 'none';
+    document.getElementById('blc-courses-panel').style.display = 'block';
+    document.getElementById('blcUserBadge').textContent = '👤 ' + blcUserName;
+
+    const list = document.getElementById('blcCoursesList');
+    list.innerHTML = Array(6).fill('<div class="course-card"><div class="skeleton" style="height:80px;"></div><div class="course-info"><div class="skeleton" style="height:14px;margin-bottom:6px;"></div><div class="skeleton" style="height:10px;width:60%;"></div></div></div>').join('');
+
+    try {
+        const res = await fetch(`${API}/diu/blc-courses?token=${blcToken}&userid=${blcUserId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        const courses = await res.json();
+
+        if (!courses || !courses.length) {
+            list.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#65676b;"><i class="fas fa-book" style="font-size:2rem;opacity:0.3;display:block;margin-bottom:8px;"></i>No courses found</div>';
+            return;
+        }
+
+        const COLORS = ['#e7f0ff','#f0fdf4','#fff7ed','#fdf4ff','#fff1f2','#f0f9ff'];
+        const EMOJIS = ['📖','🧪','💻','🔬','📐','🎨','📊','✏️','🌍','⚗️'];
+
+        list.innerHTML = courses.map((c, i) => {
+            const color = COLORS[i % COLORS.length];
+            const emoji = EMOJIS[i % EMOJIS.length];
+            const courseUrl = `${BLC_URL}/course/view.php?id=${c.id}`;
+            return `
+            <div class="course-card">
+                <div class="course-banner" style="background:${color};">${emoji}</div>
+                <div class="course-info">
+                    <div class="course-name">${c.fullname}</div>
+                    <div class="course-short">${c.shortname || ''}</div>
+                </div>
+                <a class="course-link" href="${courseUrl}" target="_blank">
+                    <i class="fas fa-arrow-right"></i> Open in BLC
+                </a>
+            </div>`;
+        }).join('');
+    } catch (e) {
+        list.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#e41e3f;">Failed to load courses</div>';
+        showToast('Session expired — please re-login');
+        blcLogout();
+    }
+}
+
+function blcLogout() {
+    blcToken = null; blcUserId = null; blcUserName = null;
+    localStorage.removeItem('blc_token');
+    localStorage.removeItem('blc_userid');
+    localStorage.removeItem('blc_username_display');
+    document.getElementById('blc-login-panel').style.display = 'block';
+    document.getElementById('blc-courses-panel').style.display = 'none';
+    document.getElementById('blcUsername').value = '';
+    document.getElementById('blcPassword').value = '';
+    showToast('Signed out from BLC');
+}
+
+// ===========================
+// TOAST
+// ===========================
+function showToast(msg) {
+    const c = document.getElementById('toast-container');
+    const t = document.createElement('div');
+    t.className = 'toast-item';
+    t.textContent = msg;
+    c.appendChild(t);
+    setTimeout(() => t.remove(), 3500);
+}
+</script>
+</body>
+</html>

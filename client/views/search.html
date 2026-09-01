@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Search | DIU Nexus</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="../css/home.css">
+<style>
+body{padding-top:64px;background:var(--bg);font-family:Inter,sans-serif;}
+.search-wrap{max-width:720px;margin:24px auto;padding:0 16px;}
+.search-box{display:flex;gap:8px;margin-bottom:16px;}
+.search-box input{flex:1;padding:12px 16px;border-radius:12px;border:1.5px solid var(--border);font-family:inherit;font-size:0.95rem;outline:none;background:var(--surface);}
+.search-box input:focus{border-color:var(--blue);}
+.search-box button{padding:12px 20px;border-radius:12px;border:none;background:var(--blue);color:white;font-weight:700;cursor:pointer;}
+.result-section{background:var(--surface);border-radius:12px;padding:16px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
+.result-section h3{font-size:1rem;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.result-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;cursor:pointer;transition:background 0.15s;}
+.result-item:hover{background:var(--bg);}
+.result-item img{width:44px;height:44px;border-radius:50%;object-fit:cover;}
+.result-item .ph{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#0866ff,#0550c1);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;}
+.result-item .info{flex:1;min-width:0;}
+.result-item .name{font-weight:700;font-size:0.92rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.result-item .meta{font-size:0.78rem;color:var(--text-secondary);}
+</style>
+</head>
+<body>
+<script src="../js/config.js"></script>
+<script src="../js/shared.js"></script>
+<div class="search-wrap">
+<h2 style="font-weight:800;margin-bottom:12px;"><i class="fas fa-search" style="color:var(--blue)"></i> Search DIU Nexus</h2>
+<div class="search-box">
+<input id="q" placeholder="Search people, posts, departments..." onkeydown="if(event.key==='Enter') doSearch()">
+<button onclick="doSearch()"><i class="fas fa-search"></i> Search</button>
+</div>
+<div id="results"></div>
+</div>
+<script>
+const API = (typeof window.API !== 'undefined' ? window.API : (function(){ var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000/api'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin+'/api'; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin+'/api':'http://localhost:5000/api'; return 'http://localhost:5000/api'; } return window.location.origin+'/api'; })());
+const token=localStorage.getItem('token');
+if(!token) location.href='../index.html';
+async function apiFetch(p,o={}){const h={'Authorization':'Bearer '+token, ...(o.headers||{})}; if(!(o.body instanceof FormData)) h['Content-Type']='application/json'; return fetch(API+p,{...o,headers:h});}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function getInit(n){return (n||'?').trim().split(' ').slice(0,2).map(x=>x[0]).join('').toUpperCase();}
+async function doSearch(){
+ const q=document.getElementById('q').value.trim();
+ if(!q || q.length<2) return;
+ const el=document.getElementById('results');
+ el.innerHTML='<div style="text-align:center;padding:30px;color:#65676b;"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
+ try{
+  const res=await apiFetch(`/search?q=${encodeURIComponent(q)}`);
+  const data=await res.json();
+  let html='';
+  if(data.users && data.users.length){
+    html+=`<div class="result-section"><h3><i class="fas fa-users" style="color:#0866ff"></i> People (${data.users.length})</h3>`+
+          data.users.map(u=>{
+            const avatar = u.profilePicture ? `<img src="${((window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })()))+u.profilePicture}">` : `<div class="ph">${getInit(u.fullName)}</div>`;
+            return `<div class="result-item" onclick="location.href='profile.html?id=${u._id}'">${avatar}<div class="info"><div class="name">${esc(u.fullName)}</div><div class="meta">${esc(u.department||'') } ${esc(u.role||'')} ${esc(u.batch||'')}</div></div><i class="fas fa-chevron-right" style="color:#b0b3b8"></i></div>`;
+          }).join('')+`</div>`;
+  }
+  if(data.posts && data.posts.length){
+    html+=`<div class="result-section"><h3><i class="fas fa-file-alt" style="color:#7c3aed"></i> Posts (${data.posts.length})</h3>`+
+          data.posts.map(p=>`
+            <div class="result-item" onclick="location.href='../home.html#post-${p._id}'">
+              <div style="width:44px;height:44px;border-radius:10px;background:#f0f2f5;display:flex;align-items:center;justify-content:center;color:#65676b;"><i class="fas fa-file-alt"></i></div>
+              <div class="info"><div class="name">${esc((p.content||'').slice(0,70))}...</div><div class="meta">by ${esc(p.fullName||'')} • ${new Date(p.created_at).toLocaleDateString()}</div></div>
+              <i class="fas fa-chevron-right" style="color:#b0b3b8"></i>
+            </div>`).join('')+`</div>`;
+  }
+  if(!html) html='<div class="result-section" style="text-align:center;padding:40px;color:#65676b;">No results found for "'+esc(q)+'"</div>';
+  el.innerHTML=html;
+ }catch(e){ el.innerHTML='<div style="color:#e41e3f;padding:20px;text-align:center;">Failed to search</div>'; }
+}
+(function(){
+ const params=new URLSearchParams(location.search);
+ const q=params.get('q');
+ if(q){ document.getElementById('q').value=q; doSearch(); }
+})();
+</script>
+</body>
+</html>

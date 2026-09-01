@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Past Question Bank & Solutions | DIU Nexus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/home.css">
+    <style>
+        body { padding-top: 64px; background: var(--bg); font-family: 'Inter', sans-serif; }
+        .qbank-wrap { max-width: 1040px; margin: 0 auto; padding: 24px 16px 80px; }
+        
+        .page-hero {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            border-radius: 16px;
+            padding: 32px 24px;
+            color: white;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.25);
+        }
+        .page-hero i { font-size: 3rem; opacity: 0.95; }
+        .page-hero h1 { font-size: 1.6rem; font-weight: 800; margin: 0; }
+        .page-hero p { opacity: 0.9; margin: 6px 0 0; font-size: 0.92rem; }
+
+        .filter-section {
+            background: var(--surface);
+            border-radius: 14px;
+            padding: 16px 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .finput {
+            padding: 9px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.85rem;
+            background: var(--bg);
+            color: var(--text);
+            outline: none;
+        }
+        .finput:focus { border-color: #3b82f6; }
+
+        /* Questions Grid */
+        .q-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 16px; }
+        .q-card {
+            background: var(--surface);
+            border-radius: 14px;
+            padding: 18px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border: 1px solid var(--border);
+            transition: transform 0.15s, box-shadow 0.15s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .q-card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.09); }
+        .q-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+        .q-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; }
+        .badge-mid { background: #dbeafe; color: #1e40af; }
+        .badge-final { background: #fee2e2; color: #b91c1c; }
+        .q-course-code { font-size: 1.05rem; font-weight: 800; color: var(--text); }
+        .q-title { font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 12px; }
+        .q-meta { font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 14px; display: flex; flex-wrap: wrap; gap: 10px; }
+        
+        .q-actions { display: flex; gap: 8px; border-top: 1px solid var(--border); padding-top: 12px; }
+        .qbtn {
+            flex: 1;
+            padding: 8px;
+            border-radius: 8px;
+            border: none;
+            font-family: inherit;
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .btn-pdf { background: #3b82f6; color: white; }
+        .btn-sol { background: #10b981; color: white; }
+
+        /* Upload Modal */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 3000; align-items: center; justify-content: center; }
+        .modal-overlay.show { display: flex; }
+        .modal { background: var(--surface); border-radius: 16px; padding: 24px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; }
+    
+        /* Fix: Pill till missing + button blocked — ensure pills and following buttons are clickable */
+        .filter-bar, .category-tabs, .cats, .filter-tabs, .cat-tabs, .filter-pill, .cat-tab, .cat, .blood-type-grid, .search-bar {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 1;
+        }
+        .filter-chip, .cat-tab, .cat, .blood-btn, .btn-join, .btn-view, .btn-post, .btn-submit, .btn-sell, .contact-btn, .post-action, .member-row button, .file-row a {
+            pointer-events: auto !important;
+            position: relative;
+            z-index: 2;
+        }
+        /* Ensure no sticky pill blocks content */
+        .category-tabs, .filter-bar, .cats {
+            overflow-x: auto;
+            overflow-y: visible;
+            max-height: none;
+        }
+
+    </style>
+</head>
+<body>
+<script src="../js/config.js"></script>
+<script src="../js/shared.js"></script>
+<div class="qbank-wrap">
+    <div class="page-hero">
+        <i class="fas fa-file-invoice"></i>
+        <div style="flex:1;">
+            <h1>📚 DIU Past Question Bank & Solutions</h1>
+            <p>Download previous questions — Search by course, department, and semester. Upload to help juniors.</p>
+        </div>
+        <button onclick="document.getElementById('uploadModal').classList.add('show')" style="background:white;color:#1d4ed8;border:none;border-radius:10px;padding:12px 20px;font-weight:800;font-family:inherit;cursor:pointer;white-space:nowrap;">
+            <i class="fas fa-upload"></i> Upload Question
+        </button>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-section">
+        <input class="finput" id="searchCourse" placeholder="🔍 Course Code / Title..." style="flex:1;min-width:180px;" oninput="filterQuestions()">
+        <select class="finput" id="deptSelect" onchange="filterQuestions()">
+            <option value="all">All Departments</option>
+            <option value="CSE">CSE</option><option value="SWE">SWE</option><option value="ITM">ITM</option><option value="CIS">CIS</option><option value="EEE">EEE</option><option value="ETE">ETE</option><option value="Civil Engineering">Civil Engineering</option><option value="Textile Engineering">Textile Engineering</option><option value="Architecture">Architecture</option><option value="BBA">BBA</option><option value="Innovation & Entrepreneurship">Innovation & Entrepreneurship</option><option value="Real Estate">Real Estate</option><option value="Tourism & Hospitality">Tourism & Hospitality</option><option value="Pharmacy">Pharmacy</option><option value="Public Health">Public Health</option><option value="Nutrition & Food Engineering">Nutrition & Food Engineering</option><option value="Genetic Engineering & Biotech">Genetic Engineering & Biotech</option><option value="English">English</option><option value="Law">Law (LLB)</option><option value="Journalism & Media">Journalism & Media</option><option value="Development Studies">Development Studies</option>
+        </select>
+        <select class="finput" id="examSelect" onchange="filterQuestions()">
+            <option value="all">All Exams</option>
+            <option value="Midterm">Midterm</option>
+            <option value="Final">Final</option>
+        </select>
+    </div>
+
+    <!-- Questions Grid -->
+    <div class="q-grid" id="qGrid"></div>
+</div>
+
+<!-- Upload Question Modal -->
+<div class="modal-overlay" id="uploadModal">
+    <div class="modal">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <h2 style="font-size:1.15rem;font-weight:800;">📤 Upload Question Paper</h2>
+            <button onclick="document.getElementById('uploadModal').classList.remove('show')" style="background:none;border:none;font-size:1.2rem;cursor:pointer;">&times;</button>
+        </div>
+        <div style="margin-bottom:12px;">
+            <label style="display:block;font-size:0.75rem;font-weight:700;color:var(--text-secondary);margin-bottom:4px;">COURSE CODE *</label>
+            <input class="finput" id="uCode" placeholder="e.g., CSE115" style="width:100%;">
+        </div>
+        <div style="margin-bottom:12px;">
+            <label style="display:block;font-size:0.75rem;font-weight:700;color:var(--text-secondary);margin-bottom:4px;">COURSE TITLE *</label>
+            <input class="finput" id="uTitle" placeholder="e.g., Structured Programming" style="width:100%;">
+        </div>
+        <div style="margin-bottom:12px;">
+            <label style="display:block;font-size:0.75rem;font-weight:700;color:var(--text-secondary);margin-bottom:4px;">DEPARTMENT</label>
+            <select class="finput" id="uDept" style="width:100%;">
+                <option value="CSE">CSE</option><option value="SWE">SWE</option><option value="ITM">ITM</option><option value="CIS">CIS</option><option value="EEE">EEE</option><option value="ETE">ETE</option><option value="Civil Engineering">Civil Engineering</option><option value="Textile Engineering">Textile Engineering</option><option value="Architecture">Architecture</option><option value="BBA">BBA</option><option value="Innovation & Entrepreneurship">Innovation & Entrepreneurship</option><option value="Real Estate">Real Estate</option><option value="Tourism & Hospitality">Tourism & Hospitality</option><option value="Pharmacy">Pharmacy</option><option value="Public Health">Public Health</option><option value="Nutrition & Food Engineering">Nutrition & Food Engineering</option><option value="Genetic Engineering & Biotech">Genetic Engineering & Biotech</option><option value="English">English</option><option value="Law">Law (LLB)</option><option value="Journalism & Media">Journalism & Media</option><option value="Development Studies">Development Studies</option>
+            </select>
+        </div>
+        <div style="margin-bottom:12px;">
+            <label style="display:block;font-size:0.75rem;font-weight:700;color:var(--text-secondary);margin-bottom:4px;">EXAM TYPE & SEMESTER</label>
+            <div style="display:flex;gap:8px;">
+                <select class="finput" id="uExam" style="flex:1;">
+                    <option value="Midterm">Midterm</option><option value="Final">Final</option>
+                </select>
+                <input class="finput" id="uSemester" placeholder="e.g., Fall 2024" style="flex:1;">
+            </div>
+        </div>
+        <div style="margin-bottom:16px;">
+            <label style="display:block;font-size:0.75rem;font-weight:700;color:var(--text-secondary);margin-bottom:4px;">PDF DRIVE / DOWNLOAD LINK *</label>
+            <input class="finput" id="uLink" placeholder="https://drive.google.com/..." style="width:100%;">
+        </div>
+        <button onclick="submitQuestion()" style="width:100%;padding:12px;background:#3b82f6;color:white;border:none;border-radius:10px;font-weight:700;cursor:pointer;">
+            Submit Question Paper
+        </button>
+    </div>
+</div>
+
+<div id="toast-container" style="position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column-reverse;gap:8px;"></div>
+
+<script>
+const API = (typeof window.API !== 'undefined' ? window.API : (function(){ var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000/api'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin+'/api'; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin+'/api':'http://localhost:5000/api'; return 'http://localhost:5000/api'; } return window.location.origin+'/api'; })());
+const myUser = JSON.parse(localStorage.getItem('user') || 'null');
+const token = localStorage.getItem('token');
+if (!token) window.location.href = '../index.html';
+if (localStorage.getItem('darkMode') === '1') document.body.setAttribute('data-theme','dark');
+
+let allQuestions = [];
+
+async function loadQuestions() {
+    try {
+        const res = await fetch(`${API}/question-bank`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!res.ok) throw new Error('Failed to load questions');
+        allQuestions = await res.json();
+        renderQuestions();
+    } catch (e) {
+        showToast('Error loading questions: ' + e.message);
+    }
+}
+
+async function submitQuestion() {
+    const code = document.getElementById('uCode').value.trim().toUpperCase();
+    const title = document.getElementById('uTitle').value.trim();
+    const dept = document.getElementById('uDept').value;
+    const exam = document.getElementById('uExam').value;
+    const semester = document.getElementById('uSemester').value.trim() || '2024-2025';
+    const link = document.getElementById('uLink').value.trim();
+
+    if (!code || !title || !link) {
+        showToast('Please fill in all required fields');
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API}/question-bank`, {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                course_code: code,
+                course_name: title,
+                department: dept,
+                semester: semester,
+                year: null,
+                exam_type: exam,
+                file_url: link,
+                file_name: code + '.pdf'
+            })
+        });
+        if (!res.ok) {
+            const data = await res.json();
+            throw new Error(data.message || 'Failed to upload');
+        }
+        document.getElementById('uploadModal').classList.remove('show');
+        showToast('✅ Question Paper Uploaded!');
+        ['uCode','uTitle','uSemester','uLink'].forEach(id => document.getElementById(id).value = '');
+        await loadQuestions();
+    } catch (e) {
+        showToast('Error uploading question: ' + e.message);
+    }
+}
+
+function renderQuestions() {
+    let list = allQuestions;
+    const q = document.getElementById('searchCourse').value.toLowerCase().trim();
+    const dept = document.getElementById('deptSelect').value;
+    const exam = document.getElementById('examSelect').value;
+
+    if (dept !== 'all') list = list.filter(item => item.department === dept);
+    if (exam !== 'all') list = list.filter(item => item.exam_type === exam);
+    if (q) list = list.filter(item => (item.course_code || '').toLowerCase().includes(q) || (item.course_name || '').toLowerCase().includes(q));
+
+    const el = document.getElementById('qGrid');
+    if (!list.length) {
+        el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-secondary);grid-column:1/-1;">No questions found matching your filter</div>';
+        return;
+    }
+
+    el.innerHTML = list.map(item => `
+        <div class="q-card">
+            <div>
+                <div class="q-header">
+                    <div class="q-course-code">${esc(item.course_code)}</div>
+                    <span class="q-badge ${item.exam_type === 'Final' ? 'badge-final' : 'badge-mid'}">${esc(item.exam_type)}</span>
+                </div>
+                <div class="q-title">${esc(item.course_name)}</div>
+                <div class="q-meta">
+                    <span><i class="fas fa-university"></i> ${esc(item.department)}</span>
+                    <span><i class="fas fa-calendar-alt"></i> ${esc(item.semester || '')}</span>
+                </div>
+            </div>
+            <div class="q-actions">
+                <a href="${esc(item.file_url)}" target="_blank" class="qbtn btn-pdf"><i class="fas fa-file-pdf"></i> View Question</a>
+                <a href="${esc(item.file_url)}" target="_blank" class="qbtn btn-sol"><i class="fas fa-check-circle"></i> Solution</a>
+            </div>
+        </div>
+    `).join('');
+}
+
+function filterQuestions() { renderQuestions(); }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function showToast(msg) { const t=document.createElement('div'); t.style.cssText='background:#1c1e21;color:white;padding:12px 18px;border-radius:10px;font-family:Inter,sans-serif;font-size:0.88rem;'; t.textContent=msg; document.getElementById('toast-container').appendChild(t); setTimeout(()=>t.remove(),2800); }
+
+loadQuestions();
+</script>
+</body>
+</html>
