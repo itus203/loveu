@@ -7,6 +7,7 @@ const rateLimiter = rateLimit({
     max: 500,
     standardHeaders: true,
     legacyHeaders: false,
+    validate: false,
     skip: (req) => {
         // Skip rate-limit for polling endpoints in demo to prevent 429 on refresh
         if (req.path.includes('/stories/feed') || req.path.includes('/stories/explore') || req.path.includes('/stories/nexus-now') || req.path.includes('/stories/campus')) return true;
@@ -22,6 +23,7 @@ const authLimiter = rateLimit({
     max: 5,
     standardHeaders: true,
     legacyHeaders: false,
+    validate: false,
     skipSuccessfulRequests: true,  // Only count failed attempts
     message: { message: 'Too many failed login attempts. Please wait 15 minutes before trying again.' }
 });
@@ -31,6 +33,7 @@ const authLimiter = rateLimit({
 const uploadLimiter = rateLimit({
     windowMs: 10 * 60 * 1000,
     max: 20,
+    validate: false,
     message: { message: 'Upload limit reached. Please wait before uploading more files.' }
 });
 
