@@ -26,7 +26,7 @@ exports.uploadResource = async (req, res) => {
         if (!title) return res.status(400).json({ message: 'Title required' });
         const result = await global.db.run(
             'INSERT INTO resources (user_id, title, description, fileUrl, fileType, department, batch, subject) VALUES (?,?,?,?,?,?,?,?)',
-            [req.user.id, title, description || null, `/uploads/${req.file.filename}`, req.file.mimetype, department || null, batch || null, subject || null]
+            [req.user.id, title, description || null, req.file.path || req.file.secure_url || req.file.url || `/uploads/${req.file.filename}`, req.file.mimetype, department || null, batch || null, subject || null]
         );
         res.status(201).json({ message: 'Resource uploaded', id: result.lastID });
     } catch (e) { res.status(500).json({ message: e.message }); }
@@ -90,7 +90,7 @@ exports.updateResource = async (req, res) => {
         if (department !== undefined) { fields.push('department=?'); params.push(department); }
         if (batch !== undefined) { fields.push('batch=?'); params.push(batch); }
         if (subject !== undefined) { fields.push('subject=?'); params.push(subject); }
-        if (req.file) { fields.push('fileUrl=?'); params.push(`/uploads/${req.file.filename}`); fields.push('fileType=?'); params.push(req.file.mimetype); }
+        if (req.file) { fields.push('fileUrl=?'); params.push(req.file.path || req.file.secure_url || req.file.url || `/uploads/${req.file.filename}`); fields.push('fileType=?'); params.push(req.file.mimetype); }
         if (!fields.length) return res.status(400).json({ message: 'No updates provided' });
         params.push(req.params.id);
         await global.db.run(`UPDATE resources SET ${fields.join(', ')} WHERE id=?`, params);

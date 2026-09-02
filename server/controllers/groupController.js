@@ -362,7 +362,7 @@ exports.createGroupPost = async (req,res)=>{
     if(is_anonymous && !group.allow_anonymous && !isAdminRole(member.role)) return res.status(403).json({message:'Anonymous not allowed'});
     let media_url=null, media_type=null;
     if(req.file){
-      media_url=`/uploads/${req.file.filename}`;
+      media_url=req.file.path || req.file.secure_url || req.file.url || `/uploads/${req.file.filename}`;
       if(req.file.mimetype.startsWith('image/')) media_type='image';
       else if(req.file.mimetype.startsWith('video/')) media_type='video';
       else media_type='file';
@@ -508,7 +508,7 @@ exports.sendGroupMessage = async (req,res)=>{
     const { content } = req.body;
     if(!content && !req.file) return res.status(400).json({message:'Content required'});
     let mediaUrl=null;
-    if(req.file) mediaUrl=`/uploads/${req.file.filename}`;
+    if(req.file) mediaUrl=req.file.path || req.file.secure_url || req.file.url || `/uploads/${req.file.filename}`;
     const r=await global.db.run(`INSERT INTO group_messages (group_id, sender_id, content, mediaUrl) VALUES (?,?,?,?)`,[groupId, me, content||'', mediaUrl]);
     const msg=await global.db.get(`SELECT gm.*, u.fullName, u.profilePicture FROM group_messages gm JOIN users u ON gm.sender_id=u.id WHERE gm.id=?`,[r.lastID]);
     const members=await global.db.all(`SELECT user_id FROM group_members WHERE group_id=? AND status='active'`,[groupId]);
@@ -535,7 +535,7 @@ exports.createGroupEvent = async (req,res)=>{
     const { title, description, venue, event_date, end_date, is_online } = req.body;
     if(!title || !event_date) return res.status(400).json({message:'Title and date required'});
     let cover_image=null;
-    if(req.file) cover_image=`/uploads/${req.file.filename}`;
+    if(req.file) cover_image=req.file.path || req.file.secure_url || req.file.url || `/uploads/${req.file.filename}`;
     const r=await global.db.run(`INSERT INTO group_events (group_id, creator_id, title, description, venue, is_online, event_date, end_date, cover_image) VALUES (?,?,?,?,?,?,?,?,?)`,[groupId, req.user.id, title, description||null, venue||null, is_online?1:0, event_date, end_date||null, cover_image]);
     await logActivity(groupId, req.user.id, 'create_event', 'event', r.lastID, title);
     res.status(201).json({id:r.lastID, message:'Event created'});
@@ -569,7 +569,7 @@ exports.uploadGroupFile = async (req,res)=>{
     if(!isMember) return res.status(403).json({message:'Not member'});
     if(!req.file) return res.status(400).json({message:'File required'});
     const { category='general', description } = req.body;
-    const file_url=`/uploads/${req.file.filename}`;
+    const file_url=req.file.path || req.file.secure_url || req.file.url || `/uploads/${req.file.filename}`;
     const r=await global.db.run(`INSERT INTO group_files (group_id, user_id, file_name, file_url, file_type, category, description) VALUES (?,?,?,?,?,?,?)`,[groupId, req.user.id, req.file.originalname, file_url, req.file.mimetype, category, description||null]);
     await logActivity(groupId, req.user.id, 'upload_file', 'file', r.lastID, req.file.originalname);
     res.status(201).json({id:r.lastID, file_url});

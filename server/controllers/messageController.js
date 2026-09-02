@@ -787,7 +787,7 @@ exports.sendImageMessage = async (req, res) => {
         const me=req.user.id;
         const { receiverId, isGroup } = req.body;
         if (!receiverId || !req.file) return res.status(400).json({ message: 'Receiver and image required' });
-        const mediaUrl = `/uploads/${req.file.filename}`;
+        const mediaUrl = req.file.path || req.file.secure_url || req.file.url || `/uploads/${req.file.filename}`;
         let mType='image';
         let prefix='[IMAGE]:';
         if (req.file.mimetype.startsWith('audio/')) { prefix='[VOICE]:'; mType='voice'; }

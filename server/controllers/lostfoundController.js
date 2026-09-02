@@ -17,7 +17,7 @@ exports.postItem = async (req, res) => {
     try {
         const { type, title, description, location, contact } = req.body;
         if (!title) return res.status(400).json({ message: 'Title required' });
-        const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
+        const imageUrl = req.file ? (req.file.path || req.file.secure_url || req.file.url || `/uploads/${req.file.filename}`) : null;
         // DB uses imageUrl (camel) in existing sqlite, but also support image_url for new installs
         const cols = await global.db.all(`PRAGMA table_info(lost_found)`).then(r=>r.map(c=>c.name)).catch(()=>[]);
         const imgCol = cols.includes('imageUrl') ? 'imageUrl' : (cols.includes('image_url') ? 'image_url' : 'imageUrl');
@@ -76,7 +76,7 @@ exports.updateItem = async (req, res) => {
         if (req.file) {
             const cols = await global.db.all(`PRAGMA table_info(lost_found)`).then(r=>r.map(c=>c.name)).catch(()=>[]);
             const imgCol = cols.includes('imageUrl') ? 'imageUrl' : 'image_url';
-            fields.push(`${imgCol}=?`); params.push(`/uploads/${req.file.filename}`);
+            fields.push(`${imgCol}=?`); params.push(req.file.path || req.file.secure_url || req.file.url || `/uploads/${req.file.filename}`);
         }
         if (!fields.length) return res.status(400).json({ message: 'No updates provided' });
         params.push(req.params.id);

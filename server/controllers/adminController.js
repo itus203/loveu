@@ -46,7 +46,7 @@ exports.getAllUsers = async (req, res) => {
     } catch(e) { res.status(500).json({ message: e.message }); }
 };
 
-const NEXUS_WHITELIST = ['codingwithsalman11@gmail.com','mehedirohan2002@gmail.com','mehedihasanrohan2002@gmail.com','codingwithsifat@gmail.com'];
+const NEXUS_WHITELIST = ['codingwithsalman11@gmail.com','mehedirohan2002@gmail.com','mehedihasanrohan2002@gmail.com','codingwithsifat@gmail.com','jannatulnaima221116@gmail.com','nsumaiya205398@gmail.com','www.rudul@gmail.com'];
 exports.updateUserRole = async (req, res) => {
     try {
         const { role } = req.body;

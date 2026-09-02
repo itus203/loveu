@@ -15,7 +15,7 @@ exports.postHouse = async (req, res) => {
         const { title, category, price, location, contact, facilities, description } = req.body;
         if(!title||!price||!location||!contact) return res.status(400).json({message:'Title, price, location and contact are required'});
         let imageUrl=null;
-        if(req.file) imageUrl=`/uploads/${req.file.filename}`;
+        if(req.file) imageUrl=req.file.path || req.file.secure_url || req.file.url || `/uploads/${req.file.filename}`;
         else if(req.body.image) imageUrl=req.body.image;
         // Try to handle base64 image from client (data URL)
         if(!imageUrl && req.body.imageData){
@@ -66,7 +66,7 @@ exports.updateHouse = async (req, res) => {
         if(contact!==undefined){ fields.push('contact=?'); params.push(contact); }
         if(facilities!==undefined){ fields.push('facilities=?'); params.push(facilities); }
         if(description!==undefined){ fields.push('description=?'); params.push(description); }
-        if(req.file){ fields.push('image=?'); params.push(`/uploads/${req.file.filename}`); }
+        if(req.file){ fields.push('image=?'); params.push(req.file.path || req.file.secure_url || req.file.url || `/uploads/${req.file.filename}`); }
         if(!fields.length) return res.status(400).json({message:'No updates provided'});
         params.push(req.params.id);
         await global.db.run(`UPDATE housing_posts SET ${fields.join(', ')} WHERE id=?`, params);

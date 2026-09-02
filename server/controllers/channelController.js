@@ -1,7 +1,7 @@
 exports.createChannel = async (req, res) => {
     try {
         const { name, description } = req.body;
-        const cover_image = req.file ? `/uploads/${req.file.filename}` : null;
+        const cover_image = req.file ? (req.file.path || req.file.secure_url || req.file.url || `/uploads/${req.file.filename}`) : null;
         
         if (!name) return res.status(400).json({ message: 'Channel name required' });
         
@@ -50,7 +50,7 @@ exports.getChannelPosts = async (req, res) => {
 exports.createPost = async (req, res) => {
     try {
         const { channel_id, content } = req.body;
-        const mediaUrl = req.file ? `/uploads/${req.file.filename}` : null;
+        const mediaUrl = req.file ? (req.file.path || req.file.secure_url || req.file.url || `/uploads/${req.file.filename}`) : null;
         
         const member = await global.db.get('SELECT role FROM channel_members WHERE channel_id=? AND user_id=?', [channel_id, req.user.id]);
         if (!member || (member.role !== 'owner' && member.role !== 'admin')) {
@@ -91,7 +91,7 @@ exports.updateChannel = async (req, res) => {
         const fields=[], params=[];
         if(name!==undefined){ fields.push('name=?'); params.push(name); }
         if(description!==undefined){ fields.push('description=?'); params.push(description); }
-        if(req.file){ fields.push('cover_image=?'); params.push(`/uploads/${req.file.filename}`); }
+        if(req.file){ fields.push('cover_image=?'); params.push(req.file.path || req.file.secure_url || req.file.url || `/uploads/${req.file.filename}`); }
         if(!fields.length) return res.status(400).json({ message: 'No updates' });
         params.push(req.params.id);
         await global.db.run(`UPDATE channels SET ${fields.join(', ')} WHERE id=?`, params);

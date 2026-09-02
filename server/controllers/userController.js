@@ -30,8 +30,8 @@ exports.getProfile = async (req, res) => {
 exports.updateProfile = async (req, res) => {
     try {
         const { fullName, bio, department, batch, gender } = req.body;
-        let profilePicture = req.files && req.files.profilePicture ? `/uploads/${req.files.profilePicture[0].filename}` : undefined;
-        let coverPicture = req.files && req.files.coverPicture ? `/uploads/${req.files.coverPicture[0].filename}` : undefined;
+        let profilePicture = req.files?.profilePicture ? (req.files.profilePicture[0].path || req.files.profilePicture[0].secure_url || req.files.profilePicture[0].url || `/uploads/${req.files.profilePicture[0].filename}`) : undefined;
+        let coverPicture = req.files?.coverPicture ? (req.files.coverPicture[0].path || req.files.coverPicture[0].secure_url || req.files.coverPicture[0].url || `/uploads/${req.files.coverPicture[0].filename}`) : undefined;
 
         const current = await global.db.get('SELECT profilePicture, coverPicture FROM users WHERE id=?', [req.user.id]);
 

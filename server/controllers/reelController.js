@@ -18,7 +18,7 @@ exports.createReel = async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ message: 'Video file required' });
         const { caption } = req.body;
-        const videoUrl = `/uploads/${req.file.filename}`;
+        const videoUrl = req.file.path || req.file.secure_url || req.file.url || `/uploads/${req.file.filename}`;
         const result = await global.db.run(
             'INSERT INTO reels (user_id, videoUrl, caption) VALUES (?,?,?)',
             [req.user.id, videoUrl, caption || '']

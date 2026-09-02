@@ -135,7 +135,7 @@ exports.addVendor = async (req, res) => {
         if(dup) return res.status(409).json({ message: 'Already Exists — a vendor with this name already exists' });
         // Direct pic upload support (multipart) — req.file has image
         let finalImageUrl = image_url || null;
-        if(req.file) finalImageUrl = `/uploads/${req.file.filename}`;
+        if(req.file) finalImageUrl = req.file.path || req.file.secure_url || req.file.url || `/uploads/${req.file.filename}`;
         const result = await global.db.run(
             'INSERT INTO food_vendors (name,location,category,description,opening_time,closing_time,image_url,user_id,created_by) VALUES (?,?,?,?,?,?,?,?,?)',
             [cleanName, location||null, category||null, description||null, opening_time||null, closing_time||null, finalImageUrl, req.user.id, req.user.id]
@@ -168,7 +168,7 @@ exports.updateVendor = async (req, res) => {
         if(!isAdmin && !vendor.user_id) { /* old vendor without owner — allow any user to claim edit? restrict to Admin */ }
         const { name, location, category, description, opening_time, closing_time, image_url } = req.body;
         let finalImageUrl = image_url;
-        if(req.file) finalImageUrl = `/uploads/${req.file.filename}`;
+        if(req.file) finalImageUrl = req.file.path || req.file.secure_url || req.file.url || `/uploads/${req.file.filename}`;
         if(finalImageUrl!==undefined) { /* will handle below */ }
         if(name!==undefined && name.trim()){
             const dup = await global.db.get(`SELECT id FROM food_vendors WHERE LOWER(TRIM(name))=LOWER(TRIM(?)) AND id<>? AND is_active=1`, [name.trim(), req.params.id]);

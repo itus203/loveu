@@ -105,8 +105,39 @@ async function initDatabase() {
 
 function convertSqlToPg(sql) {
     let index = 1;
+    const hasOrIgnore = /INSERT OR IGNORE/i.test(sql);
+    const hasOrReplace = /INSERT OR REPLACE/i.test(sql);
     let converted = sql.replace(/\?/g, () => `$${index++}`);
+    // ── SQLite → Postgres runtime compatibility ──────────────────────────
+    // datetime('now') and variants → NOW() / NOW() + INTERVAL
+    // Must handle interval first, then plain
+    converted = converted.replace(/datetime\s*\(\s*'now'\s*,\s*'([^']+)'\s*\)/gi, (m, interval) => `NOW() + INTERVAL '${interval}'`);
+    converted = converted.replace(/datetime\s*\(\s*'now'\s*\)/gi, 'NOW()');
+    // datetime(col) > datetime('now',...) patterns already covered via above, but keep generic
+    converted = converted.replace(/datetime\s*\(\s*created_at\s*\)/gi, 'created_at');
+    // date('now') variants → CURRENT_DATE / CURRENT_DATE + INTERVAL
+    converted = converted.replace(/date\s*\(\s*'now'\s*,\s*'([^']+)'\s*,\s*'([^']+)'\s*\)/gi, (m, a, b) => `CURRENT_DATE + INTERVAL '${a}' + INTERVAL '${b}'`);
+    converted = converted.replace(/date\s*\(\s*'now'\s*,\s*'([^']+)'\s*\)/gi, (m, interval) => `CURRENT_DATE + INTERVAL '${interval}'`);
+    converted = converted.replace(/date\s*\(\s*'now'\s*\)/gi, 'CURRENT_DATE');
+    // date(col) → DATE(col) for PG
+    converted = converted.replace(/date\s*\(\s*created_at\s*\)/gi, 'DATE(created_at)');
+    // expires_at / joined_at / etc. already handled via datetime('now') → NOW()
     converted = converted.replace(/ORDER BY RANDOM\(\)/gi, 'ORDER BY RANDOM()');
+    // INSERT OR IGNORE / OR REPLACE → strip OR (central fallback; controllers ideally use ON CONFLICT)
+    converted = converted.replace(/INSERT OR IGNORE INTO/gi, 'INSERT INTO');
+    converted = converted.replace(/INSERT OR REPLACE INTO/gi, 'INSERT INTO');
+    // Double-quoted string literals → single quotes (PG treats " as identifier)
+    converted = converted.replace(/"pending"/g, "'pending'").replace(/"accepted"/g,"'accepted'").replace(/"declined"/g,"'declined'").replace(/"active"/g,"'active'").replace(/"available"/g,"'available'").replace(/"Student"/g,"'Student'").replace(/"Alumni"/g,"'Alumni'").replace(/"Faculty"/g,"'Faculty'").replace(/"Admin"/g,"'Admin'").replace(/"seen"/g,"'seen'").replace(/"ended"/g,"'ended'").replace(/"closed"/g,"'closed'").replace(/"resolved"/g,"'resolved'").replace(/"sent"/g,"'sent'").replace(/"going"/g,"'going'");
+    // Scalar MAX(0, …) → GREATEST(0, …) — MAX is aggregate only in PG
+    converted = converted.replace(/MAX\s*\(\s*0\s*,/gi, 'GREATEST(0,');
+    // PRAGMA table_info(table) → information_schema for PG (fallback)
+    converted = converted.replace(/PRAGMA\s+table_info\s*\(\s*(\w+)\s*\)/gi, "SELECT column_name as name FROM information_schema.columns WHERE table_name='$1'");
+    // Generic fallback for INSERT OR IGNORE/REPLACE → ON CONFLICT DO NOTHING (prevents 42601, keeps idempotent)
+    // Specific controllers should use proper ON CONFLICT (col) DO UPDATE where needed
+    if ((hasOrIgnore || hasOrReplace) && !/ON CONFLICT/i.test(converted)) {
+        // Insert before trailing semicolon / whitespace
+        converted = converted.replace(/;?\s*$/, ' ON CONFLICT DO NOTHING');
+    }
     return converted;
 }
 
@@ -1253,11 +1284,24 @@ async function createTables(db) {
     async function addColIfMissing(table, colDef){
         const colName = colDef.split(' ')[0];
         try{
-            const info = await db.all(`PRAGMA table_info(${table})`);
-            if(!info.some(c=>c.name===colName)){
-                await db.exec(`ALTER TABLE ${table} ADD COLUMN ${colDef}`);
+            let info;
+            if (db.isPostgres) {
+                // Postgres: use information_schema
+                info = await db.all(`SELECT column_name as name FROM information_schema.columns WHERE table_name=$1`, [table]);
+            } else {
+                info = await db.all(`PRAGMA table_info(${table})`);
             }
-        }catch{}
+            if(!info.some(c=>c.name===colName)){
+                if (db.isPostgres) {
+                    await db.exec(`ALTER TABLE ${table} ADD COLUMN IF NOT EXISTS ${colDef}`);
+                } else {
+                    await db.exec(`ALTER TABLE ${table} ADD COLUMN ${colDef}`);
+                }
+            }
+        }catch(e){
+            // Fallback: try adding with IF NOT EXISTS for Postgres directly
+            try { if (db.isPostgres) await db.exec(`ALTER TABLE ${table} ADD COLUMN IF NOT EXISTS ${colDef}`); } catch {}
+        }
     }
     const msgCols = [
         "message_type TEXT DEFAULT 'text'", "status TEXT DEFAULT 'sent'", "reply_to_id INTEGER",

@@ -51,7 +51,7 @@ router.put('/:id', auth, upload.single('cover_image'), async (req, res) => {
         if(venue!==undefined){ fields.push('venue=?'); params.push(venue); }
         if(event_date!==undefined){ fields.push('event_date=?'); params.push(event_date); }
         if(department!==undefined){ fields.push('department=?'); params.push(department); }
-        if(req.file){ fields.push('cover_image=?'); params.push(`/uploads/${req.file.filename}`); }
+        if(req.file){ fields.push('cover_image=?'); params.push(req.file.path || req.file.secure_url || req.file.url || `/uploads/${req.file.filename}`); }
         if(!fields.length) return res.status(400).json({ message: 'No updates provided' });
         params.push(req.params.id);
         await global.db.run(`UPDATE events SET ${fields.join(', ')} WHERE id=?`, params);

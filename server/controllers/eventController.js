@@ -17,7 +17,7 @@ exports.createEvent = async (req, res) => {
     try {
         const { title, description, venue, event_date, department } = req.body;
         if (!title || !event_date) return res.status(400).json({ message: 'Title and date are required' });
-        let cover_image = req.file ? `/uploads/${req.file.filename}` : null;
+        let cover_image = req.file ? (req.file.path || req.file.secure_url || req.file.url || `/uploads/${req.file.filename}`) : null;
         const result = await global.db.run(
             'INSERT INTO events (creator_id, title, description, venue, event_date, cover_image, department) VALUES (?,?,?,?,?,?,?)',
             [req.user.id, title, description || null, venue || null, event_date, cover_image, department || null]

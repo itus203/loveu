@@ -4,7 +4,7 @@ exports.createPost = async (req, res) => {
         if (!content && !req.file) return res.status(400).json({ message: 'Post content or media is required' });
         let mediaUrl = null, mediaType = null;
         if (req.file) {
-            mediaUrl = `/uploads/${req.file.filename}`;
+            mediaUrl = req.file.path || req.file.secure_url || req.file.url || `/uploads/${req.file.filename}`;
             mediaType = req.file.mimetype.startsWith('video') ? 'video' : 'image';
         }
         let mentionsJson = null;

@@ -14,7 +14,7 @@ exports.postItem = async (req, res) => {
         const { title, category, price, description, phone, address, studentId } = req.body;
         if (!title || price === undefined) return res.status(400).json({ message: 'Title and price required' });
         // phone/address/studentId are now required for global visibility — but allow legacy
-        const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
+        const imageUrl = req.file ? (req.file.path || req.file.secure_url || req.file.url || `/uploads/${req.file.filename}`) : null;
         // Get user studentId as fallback
         const user = await global.db.get('SELECT studentId, email FROM users WHERE id=?', [req.user.id]);
         const finalPhone = phone || user?.phone || '';
@@ -66,7 +66,7 @@ exports.updateItem = async (req, res) => {
         if (description !== undefined) { fields.push('description=?'); params.push(description); }
         if (phone !== undefined) { fields.push('phone=?'); params.push(phone); }
         if (address !== undefined) { fields.push('address=?'); params.push(address); }
-        if (req.file) { fields.push('image_url=?'); params.push(`/uploads/${req.file.filename}`); }
+        if (req.file) { fields.push('image_url=?'); params.push(req.file.path || req.file.secure_url || req.file.url || `/uploads/${req.file.filename}`); }
         if (!fields.length) return res.status(400).json({ message: 'No updates provided' });
         params.push(req.params.id);
         await global.db.run(`UPDATE marketplace SET ${fields.join(', ')} WHERE id=?`, params);

@@ -87,7 +87,9 @@
     </style>
 </head>
 <body>
-<script src="../js/shared.js">
+<script src="../js/config.js"></script>
+<script src="../js/shared.js"></script>
+<script>
 let isSubscribed = false;
 async function checkSubscriptionStatus(uid) {
     if (uid === currentUser.id) return;

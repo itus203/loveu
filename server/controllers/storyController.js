@@ -45,7 +45,7 @@ exports.createStory = async (req, res) => {
     let finalContent = content;
     let finalMediaUrl = null;
     if(req.file){
-      finalMediaUrl = `/uploads/${req.file.filename}`;
+      finalMediaUrl = req.file.path || req.file.secure_url || req.file.url || `/uploads/${req.file.filename}`;
       finalContent = finalMediaUrl; // store path as content for image/video
       if(finalType==='image' && req.file.mimetype.startsWith('video/')) finalType='video';
       if(req.file.mimetype.startsWith('audio/')) finalType='voice';
@@ -765,7 +765,7 @@ exports.createVoiceStory = async (req,res)=>{
   try{
     if(!req.file) return res.status(400).json({message:'Voice file required'});
     req.body.type='voice';
-    req.body.voice_url=`/uploads/${req.file.filename}`;
+    req.body.voice_url=req.file.path || req.file.secure_url || req.file.url || `/uploads/${req.file.filename}`;
     req.body.content=req.body.caption || 'Voice Story';
     return exports.createStory(req,res);
   }catch(e){ res.status(500).json({message:e.message}); }

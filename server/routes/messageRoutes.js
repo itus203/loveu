@@ -1,30 +1,6 @@
 const router = require('express').Router();
 const auth = require('../middleware/authMiddleware');
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-
-const uploadDir = path.join(__dirname, '../uploads');
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, uploadDir),
-    filename: (req, file, cb) => {
-        const safeName = file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
-        cb(null, `msg_${Date.now()}_${safeName}`);
-    }
-});
-
-const upload = multer({
-    storage,
-    limits: { fileSize: 25 * 1024 * 1024 },
-    fileFilter: (req, file, cb) => {
-        const allowed = /jpeg|jpg|png|gif|webp|pdf|pptx|ppt|docx|doc|xlsx|xls|txt|zip|rar|webm|mp3|wav|ogg|mp4|mov/i;
-        const ext = path.extname(file.originalname).replace('.', '');
-        if (allowed.test(ext) || file.mimetype.startsWith('image/') || file.mimetype.startsWith('audio/') || file.mimetype.startsWith('video/')) cb(null, true);
-        else cb(new Error('File type not allowed'));
-    }
-});
+const upload = require('../middleware/uploadMiddleware');
 
 const c = require('../controllers/messageController');
 
@@ -70,7 +46,7 @@ router.post('/file', auth, upload.single('file'), async (req, res) => {
         if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
         const { receiverId, isGroup } = req.body;
         if (!receiverId) return res.status(400).json({ message: 'receiverId required' });
-        const mediaUrl = `/uploads/${req.file.filename}`;
+        const mediaUrl = req.file.path || req.file.secure_url || req.file.url || `/uploads/${req.file.filename}`;
         const fileName = req.file.originalname;
         const fileSize = req.file.size > 1024*1024 ? (req.file.size/1024/1024).toFixed(1)+'MB' : Math.round(req.file.size/1024)+'KB';
         const content = `[FILE]:${mediaUrl}|${fileName}|${fileSize}`;
