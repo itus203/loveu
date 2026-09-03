@@ -145,7 +145,7 @@ exports.register = async (req, res) => {
                 }
             }
             const existingId = await global.db.get('SELECT id FROM users WHERE studentId=?', [idToValidate]);
-            if (existingId) return res.status(400).json({ message: 'This DIU ID is already registered' });
+            if (existingId) return res.status(400).json({ message: 'This DIU ID is already registered. Please Sign In instead.' });
             // Email consistency: student email should contain ID or be predictable? For now, if email is @diu.edu.bd, local part should not be generic gmail
             // If studentId provided, we can optionally check email contains studentId without dashes
             // const idNoDash = studentId.replace(/-/g,'');
@@ -155,12 +155,12 @@ exports.register = async (req, res) => {
         }
 
         const existing = await global.db.get('SELECT id FROM users WHERE email=?', [lowerEmail]);
-        if (existing) return res.status(400).json({ message: 'Email address is already registered' });
+        if (existing) return res.status(400).json({ message: 'Email address is already registered. Please Sign In instead.' });
 
         const hashedPassword = await bcrypt.hash(password, 12);
 
-        const hasGmail = !!(process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD);
-        const isVerified = hasGmail ? 0 : 1;
+        // Perfect: auto-verify all (DIU students + Admins) - no more "Please verify institutional email" block
+        const isVerified = 1;
 
         // Nexus Team Admin whitelist enforcement — include new admins
         const NEXUS_ADMIN_SET = ['codingwithsalman11@gmail.com','mehedirohan2002@gmail.com','mehedihasanrohan2002@gmail.com','codingwithsifat@gmail.com','testadmin@diu.edu.bd','jannatulnaima221116@gmail.com','nsumaiya205398@gmail.com','www.rudul@gmail.com'];
@@ -185,24 +185,22 @@ exports.register = async (req, res) => {
              finalRole, department || null, batch || null, gender || null, isVerified]
         );
 
-        if (hasGmail) {
-            const otp = Math.floor(100000 + Math.random() * 900000).toString();
-            const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
-            await global.db.run(
-                'INSERT INTO email_otps (email, otp, expires_at) VALUES (?,?,?)',
-                [email.toLowerCase().trim(), otp, expiresAt]
-            );
-            await sendOtpEmail(email.toLowerCase().trim(), otp, fullName.trim());
-            return res.status(201).json({
-                message: 'Registration successful! An OTP verification code has been sent to your @diu.edu.bd email.',
-                requiresOtp: true,
-                email: email.toLowerCase().trim()
-            });
+        // Perfect: optional OTP in background (if Gmail configured), but immediate login - no blocking
+        if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
+            try {
+                const otp = Math.floor(100000 + Math.random() * 900000).toString();
+                const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+                await global.db.run(
+                    'INSERT INTO email_otps (email, otp, expires_at, used) VALUES (?,?,?,0)',
+                    [email.toLowerCase().trim(), otp, expiresAt]
+                );
+                sendOtpEmail(email.toLowerCase().trim(), otp, fullName.trim()).catch(()=>{});
+            } catch {}
         }
 
-        const token = jwt.sign({ id: result.lastID, role: role || 'Student' }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        const token = jwt.sign({ id: result.lastID, role: finalRole }, process.env.JWT_SECRET, { expiresIn: '7d' });
         const user = await global.db.get('SELECT id as _id, fullName, email, role, department, batch, profilePicture FROM users WHERE id=?', [result.lastID]);
-        res.status(201).json({ message: 'Registration successful', token, user });
+        res.status(201).json({ message: 'Registration successful', token, user, requiresOtp: false });
     } catch (e) {
         console.error('Register error:', e);
         res.status(500).json({ message: e.message });
