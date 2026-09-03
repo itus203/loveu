@@ -216,7 +216,9 @@ exports.login = async (req, res) => {
 
         const user = await global.db.get('SELECT * FROM users WHERE email=?', [email.toLowerCase().trim()]);
         if (!user) return res.status(401).json({ message: 'Invalid email or password' });
-        if (!user.isVerified) return res.status(401).json({
+        const isVerifiedVal = user.isVerified ?? user.isverified ?? user.is_verified ?? user.isVerified;
+        // Postgres lowercases column to isverified, so check all variants — 1/true means verified
+        if (!isVerifiedVal || Number(isVerifiedVal) === 0) return res.status(401).json({
             message: 'Please verify your institutional email first.',
             requiresOtp: true,
             email: user.email
@@ -279,7 +281,8 @@ exports.resendOtp = async (req, res) => {
 
         const user = await global.db.get('SELECT * FROM users WHERE email=?', [email.toLowerCase().trim()]);
         if (!user) return res.status(404).json({ message: 'User not found' });
-        if (user.isVerified) return res.status(400).json({ message: 'Email is already verified' });
+        const alreadyVerified = user.isVerified ?? user.isverified ?? user.is_verified;
+        if (alreadyVerified && Number(alreadyVerified) !== 0) return res.status(400).json({ message: 'Email is already verified' });
 
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
         const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();

@@ -78,6 +78,8 @@ async function initDatabase() {
             };
 
             await createTables(pgAdapter);
+            // Migration: ensure email_otps has 'used' column (old deployments missing it)
+            try { await pool.query('ALTER TABLE email_otps ADD COLUMN IF NOT EXISTS used INTEGER DEFAULT 0'); } catch {}
             console.log('✅ Cloud PostgreSQL Database initialized and connected successfully!');
             dbInstance = pgAdapter;
             return pgAdapter;
@@ -98,6 +100,8 @@ async function initDatabase() {
     await localDb.exec('PRAGMA foreign_keys=ON;');
 
     await createTables(localDb);
+    // Migration for existing SQLite DBs
+    try { await localDb.exec('ALTER TABLE email_otps ADD COLUMN used INTEGER DEFAULT 0'); } catch {}
     console.log('✅ Local SQLite Database initialized successfully!');
     dbInstance = localDb;
     return localDb;
@@ -740,6 +744,7 @@ async function createTables(db) {
             email TEXT NOT NULL,
             otp TEXT NOT NULL,
             expires_at DATETIME NOT NULL,
+            used INTEGER DEFAULT 0,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );
 
