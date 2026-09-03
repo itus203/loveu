@@ -488,18 +488,25 @@ function createMessageElement(msg, isOwn){
             // Could be url|name|size or name|size|url etc. Heuristics:
             // If first part starts with /uploads -> url
             if(parts[0].startsWith('/uploads') || parts[0].startsWith('http')){
-                fileUrl=parts[0].startsWith('http')?parts[0]:`${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${parts[0]}`;
+                fileUrl=parts[0].startsWith('http')?parts[0]: (window.mediaUrl ? window.mediaUrl(parts[0]) : `${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${parts[0]}`);
                 fileName=parts[1]||'file';
                 fileSize=parts[2]||'';
             } else {
                 fileName=parts[0]||'file';
                 fileSize=parts[1]||'';
-                if(parts[2] && parts[2]!=='pending') fileUrl= parts[2].startsWith('http')?parts[2]:`${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${parts[2]}`;
+                if(parts[2] && parts[2]!=='pending') fileUrl= parts[2].startsWith('http')?parts[2]: (window.mediaUrl ? window.mediaUrl(parts[2]) : `${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${parts[2]}`);
             }
         } else {
-            fileUrl=raw.startsWith('http')?raw:`${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${raw}`;
-            fileName=fileUrl.split('/').pop();
+            fileUrl=raw.startsWith('http')?raw: (window.mediaUrl ? window.mediaUrl(raw) : `${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${raw}`);
+            fileName=fileUrl.split('/').pop().split('?')[0];
         }
+        // If file is actually an image (even if sent as file), show image preview globally visible
+        const isImageFile = /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(fileName) || /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(fileUrl||'') || (fileUrl && fileUrl.includes('res.cloudinary.com'));
+        if(isImageFile && fileUrl){
+            const imgSrc = fileUrl;
+            bubbleContent=`${forwardedHtml}${replyHtml}<img src="${imgSrc}" onclick="openLightbox('${imgSrc}')" alt="${escHtml(fileName)}" style="max-width:220px;max-height:220px;border-radius:10px;cursor:zoom-in;display:block;"><div style="font-size:0.72rem;opacity:0.7;margin-top:4px;display:flex;justify-content:space-between;align-items:center;"><span>${escHtml(fileName)}${fileSize?' · '+fileSize:''}</span><a href="${fileUrl}" download="${escHtml(fileName)}" target="_blank" style="color:inherit;text-decoration:underline;">Download</a></div>`;
+            extraClass=' img-msg';
+        } else {
         const icon=getFileIcon(fileName);
         const ext=(fileName.split('.').pop()||'').toUpperCase();
         bubbleContent=`${forwardedHtml}${replyHtml}<div style="display:flex;align-items:center;gap:10px;min-width:180px;max-width:260px;">
@@ -510,6 +517,7 @@ function createMessageElement(msg, isOwn){
             </div>
             ${fileUrl?`<a href="${fileUrl}" download="${escHtml(fileName)}" target="_blank" style="background:${isOwn?'rgba(255,255,255,0.2)':'var(--bg)'};border:none;border-radius:8px;padding:6px 10px;cursor:pointer;text-decoration:none;color:inherit;font-size:0.75rem;font-weight:700;flex-shrink:0;">⬇ Download</a>`:'<span style="font-size:0.75rem;opacity:0.6;">Uploading…</span>'}
         </div>`;
+        }
     } else {
         // Text with optional link preview
         let text=escHtml(msg.content);

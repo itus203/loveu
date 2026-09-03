@@ -410,8 +410,8 @@ function buildPostCard(post) {
  <span class="reaction-btn" onclick="doReact(event,'${post._id || post.id}','love')">❤️</span>
  <span class="reaction-btn" onclick="doReact(event,'${post._id || post.id}','haha')">😂</span>
  <span class="reaction-btn" onclick="doReact(event,'${post._id || post.id}','wow')">😮</span>
- <span class="reaction-btn" onclick="doReact(event,'${post._id || post.id}','sad')"></span>
- <span class="reaction-btn" onclick="doReact(event,'${post._id || post.id}','angry')"></span>
+ <span class="reaction-btn" onclick="doReact(event,'${post._id || post.id}','sad')">😢</span>
+ <span class="reaction-btn" onclick="doReact(event,'${post._id || post.id}','angry')">😡</span>
  </div>
  <button class="post-action ${reactedClass}" id="react-btn-${post._id || post.id}" data-postid="${post._id || post.id}" data-reaction="${post.myReaction || ''}" onclick="doReact(event,'${post._id || post.id}','${post.myReaction || 'like'}')">
  <span>${reactedIcon}</span> <span>${post.myReaction ? capitalize(post.myReaction) : 'Like'}</span>
@@ -446,7 +446,7 @@ function buildPostCard(post) {
 }
 
 function getReactionIcon(type) {
- const icons = { like: '👍', love: '❤️', haha: '😂', wow: '😮', sad: '', angry: '' };
+ const icons = { like: '👍', love: '❤️', haha: '😂', wow: '😮', sad: '😢', angry: '😡' };
  return icons[type] || '👍';
 }
 
@@ -499,6 +499,7 @@ async function openReactionsModal(postId) {
  const modal = document.getElementById('reactionsModal');
  const listEl = document.getElementById('reactionsList');
  if (!modal || !listEl) return;
+ window._currentReactionsPostId = postId;
 
  modal.classList.add('show');
  listEl.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-secondary);"><i class="fas fa-spinner fa-spin"></i> Loading reactions...</div>';
