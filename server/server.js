@@ -11,8 +11,10 @@ const http = require('http');
 const { Server } = require('socket.io');
 const { rateLimiter, authLimiter, uploadLimiter, sanitizeInput, requestLogger } = require('./middleware/securityMiddleware');
 
+const compression = require('compression');
 const app = express();
 app.set('trust proxy', 1); // Vercel: fix express-rate-limit ValidationError: The 'Forwarded' header
+app.use(compression({ level: 6, threshold: 1024 })); // Super fast: gzip/deflate instant
 const server = http.createServer(app);
 
 const io = new Server(server, {
@@ -69,9 +71,14 @@ if (!process.env.JWT_SECRET || process.env.JWT_SECRET.includes('super_secret')) 
 // ─── General API Rate Limiter ────────────────────────────────────────────────
 app.use('/api', rateLimiter);
 
-// Static files
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-app.use(express.static(path.join(__dirname, '../client')));
+// Static files - super fast with caching
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), { maxAge: '7d', etag: true }));
+app.use(express.static(path.join(__dirname, '../client'), { maxAge: '1d', etag: true, index: 'index.html' }));
+// Instant API cache headers for super fast repeat loads
+app.use('/api', (req, res, next) => {
+    if (req.method === 'GET') res.set('Cache-Control', 'public, max-age=5, stale-while-revalidate=30');
+    next();
+});
 
 
 // Socket.io — track online users
