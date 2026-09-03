@@ -77,32 +77,29 @@ exports.register = async (req, res) => {
             });
         }
 
-        // DIU Email validation: Student = name***-**-***@diu.edu.bd , Faculty = name@diu.edu.bd (no ID required)
+        // DIU Email validation: Student/Alumni = name+ID@diu.edu.bd (e.g. niloy242-35-203@diu.edu.bd), Faculty = name@diu.edu.bd (no ID)
         let extractedId = null;
         const roleForEmailCheck = (role||'Student').toLowerCase();
         if (!isNexusAdmin && lowerEmail.endsWith('@diu.edu.bd')) {
             const local = lowerEmail.split('@')[0];
             if (roleForEmailCheck === 'faculty' || roleForEmailCheck === 'teacher') {
-                // Faculty: just need @diu.edu.bd, local part letters only, no ID required
-                // But if ID is present at end, extract it for optional validation
+                // Faculty: MUST be name@diu.edu.bd without ID pattern (...-..-...)
                 const facultyIdMatch = local.match(/(\d{3}-\d{2}-\d{3,4})$/);
-                if (facultyIdMatch) extractedId = facultyIdMatch[1];
-                // Faculty email like ratin@diu.edu.bd is valid; if it has ID, treat as student-like but allow
-                if (!/^[a-zA-Z][a-zA-Z0-9._-]*$/.test(local)) {
-                    return res.status(400).json({ message: 'Invalid faculty email format. Use your name@diu.edu.bd' });
+                if (facultyIdMatch) {
+                    return res.status(400).json({ message: 'Faculty email must be name@diu.edu.bd without ID numbers. Use e.g. ratin@diu.edu.bd — Student/Alumni must use name+ID pattern like niloy242-35-203@diu.edu.bd' });
                 }
-                if (studentId && extractedId && studentId.trim() !== extractedId) {
-                    return res.status(400).json({ message: `Email ID (${extractedId}) and studentId (${studentId.trim()}) must match.` });
+                if (!/^[a-zA-Z][a-zA-Z0-9._-]+$/.test(local)) {
+                    return res.status(400).json({ message: 'Invalid faculty email format. Use your name@diu.edu.bd (e.g. ratin@diu.edu.bd)' });
                 }
-                if (studentId && !extractedId) {
-                    // Faculty provided studentId but email has no ID — allow, will validate below
+                if (local.length < 2) {
+                    return res.status(400).json({ message: 'Faculty email name too short. Use at least 2 letters before @diu.edu.bd' });
                 }
-                if (!studentId && extractedId) studentId = extractedId;
+                // Faculty: no studentId from email, but if studentId provided manually, allow and validate below
             } else {
-                // Student: must be name + ID
+                // Student / Alumni: MUST be name + ID pattern
                 const emailIdMatch = local.match(/(\d{3}-\d{2}-\d{3,4})$/);
                 if (!emailIdMatch) {
-                    return res.status(400).json({ message: 'Invalid DIU student email. Must be: name + ID + @diu.edu.bd  e.g. niloy242-35-203@diu.edu.bd (ID: XXX-XX-XXX/XXXX). Faculty can use name@diu.edu.bd' });
+                    return res.status(400).json({ message: 'Invalid DIU Student/Alumni email. Must be: name + ID + @diu.edu.bd  e.g. niloy242-35-203@diu.edu.bd (ID: XXX-XX-XXX/XXXX). Faculty use name@diu.edu.bd without ID' });
                 }
                 extractedId = emailIdMatch[1];
                 const namePart = local.slice(0, -extractedId.length);
@@ -159,8 +156,9 @@ exports.register = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 12);
 
-        // Perfect: auto-verify all (DIU students + Admins) - no more "Please verify institutional email" block
-        const isVerified = 1;
+        // OTP flow: if Gmail configured, require email verification (Create -> OTP mail -> verify -> login)
+        const hasGmail = !!(process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD);
+        const isVerified = hasGmail ? 0 : 1;
 
         // Nexus Team Admin whitelist enforcement — include new admins
         const NEXUS_ADMIN_SET = ['codingwithsalman11@gmail.com','mehedirohan2002@gmail.com','mehedihasanrohan2002@gmail.com','codingwithsifat@gmail.com','testadmin@diu.edu.bd','jannatulnaima221116@gmail.com','nsumaiya205398@gmail.com','www.rudul@gmail.com'];
@@ -185,17 +183,19 @@ exports.register = async (req, res) => {
              finalRole, department || null, batch || null, gender || null, isVerified]
         );
 
-        // Perfect: optional OTP in background (if Gmail configured), but immediate login - no blocking
-        if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
-            try {
-                const otp = Math.floor(100000 + Math.random() * 900000).toString();
-                const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
-                await global.db.run(
-                    'INSERT INTO email_otps (email, otp, expires_at, used) VALUES (?,?,?,0)',
-                    [email.toLowerCase().trim(), otp, expiresAt]
-                );
-                sendOtpEmail(email.toLowerCase().trim(), otp, fullName.trim()).catch(()=>{});
-            } catch {}
+        if (hasGmail) {
+            const otp = Math.floor(100000 + Math.random() * 900000).toString();
+            const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+            await global.db.run(
+                'INSERT INTO email_otps (email, otp, expires_at, used) VALUES (?,?,?,0)',
+                [email.toLowerCase().trim(), otp, expiresAt]
+            );
+            await sendOtpEmail(email.toLowerCase().trim(), otp, fullName.trim());
+            return res.status(201).json({
+                message: 'Registration successful! An OTP has been sent to your institutional email. Please verify to login.',
+                requiresOtp: true,
+                email: email.toLowerCase().trim()
+            });
         }
 
         const token = jwt.sign({ id: result.lastID, role: finalRole }, process.env.JWT_SECRET, { expiresIn: '7d' });
