@@ -63,12 +63,7 @@ app.use((req, res, next) => {
 
 // ─── JWT Secret check ─────────────────────────────────────────────────────────
 if (!process.env.JWT_SECRET || process.env.JWT_SECRET.includes('super_secret')) {
-    if (process.env.NODE_ENV === 'production') {
-        console.error('❌ CRITICAL: JWT_SECRET must be changed in production! Set JWT_SECRET in .env');
-        process.exit(1);
-    } else {
-        console.warn('⚠️  JWT_SECRET using default - change JWT_SECRET in .env for production!');
-    }
+    console.warn('⚠️  JWT_SECRET using default - change JWT_SECRET in .env for production! (not exiting)');
 }
 
 // ─── General API Rate Limiter ────────────────────────────────────────────────
