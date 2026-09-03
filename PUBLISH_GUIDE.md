@@ -1,4 +1,4 @@
-# 🚀 DIU Nexus — Comprehensive Multi-Platform Publishing & Deployment Guide
+# DIU Nexus — Comprehensive Multi-Platform Publishing & Deployment Guide
 
 This guide provides the complete step-by-step instructions to deploy **DIU Nexus** for **Web (500+ to 10,000+ daily concurrent users)**, publish on the **Google Play Store (Android Mobile App)**, and build the **PC Desktop App (Windows / Mac / Linux)**.
 
@@ -36,24 +36,24 @@ pm2 startup
 ### C. Nginx Reverse Proxy with Free SSL (Certbot):
 ```nginx
 server {
-    server_name yourdomain.com www.yourdomain.com;
+ server_name yourdomain.com www.yourdomain.com;
 
-    location / {
-        proxy_pass http://localhost:5000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_cache_bypass $http_upgrade;
-        client_max_body_size 5120M; # Support up to 5GB file/video uploads
-    }
+ location / {
+ proxy_pass http://localhost:5000;
+ proxy_http_version 1.1;
+ proxy_set_header Upgrade $http_upgrade;
+ proxy_set_header Connection 'upgrade';
+ proxy_set_header Host $host;
+ proxy_cache_bypass $http_upgrade;
+ client_max_body_size 5120M; # Support up to 5GB file/video uploads
+ }
 }
 ```
 Run `sudo certbot --nginx -d yourdomain.com` for instant HTTPS.
 
 ---
 
-## 📱 2. Android App (Google Play Store Publication)
+## 2. Android App (Google Play Store Publication)
 
 DIU Nexus includes a full **PWA (Progressive Web App)** with `manifest.json` and `sw.js`. You can package it into an **Android App Bundle (.aab)** for Google Play Store using **Google's official Bubblewrap CLI** or **TWA (Trusted Web Activity)**:
 
@@ -82,7 +82,7 @@ This generates `app-release-bundle.aab`.
 
 ---
 
-## 💻 3. PC Desktop App (Windows / Mac / Linux)
+## 3. PC Desktop App (Windows / Mac / Linux)
 
 DIU Nexus is fully configured with **Electron & Electron Builder**:
 
@@ -100,8 +100,8 @@ The output `.exe` installer will be generated in the `dist/` directory ready for
 2. In **Database Access**, create a database user and password.
 3. In **Network Access**, add `0.0.0.0/0` (Allow Access from Anywhere).
 4. Click **Connect > Drivers**, copy your connection string:
-   ```env
-   MONGODB_URI=mongodb+srv://<username>:<password>@cluster0.mongodb.net/diunexus?retryWrites=true&w=majority
-   MONGO_DB_NAME=diunexus
-   ```
+ ```env
+ MONGODB_URI=mongodb+srv://<username>:<password>@cluster0.mongodb.net/diunexus?retryWrites=true&w=majority
+ MONGO_DB_NAME=diunexus
+ ```
 5. Paste it into your `diu-nexus/.env` file. DIU Nexus will automatically connect directly to MongoDB Cloud!

@@ -1,676 +1,676 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#070D1E">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="icon" type="image/svg+xml" href="assets/icon.svg">
-    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
-    <link rel="apple-touch-icon" href="assets/icon-512.png">
-    <link rel="manifest" href="manifest.json">
-    <title>DIU Nexus — Connect with Your Campus</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <script>
-    // Kill SW completely — fixes net::ERR_FAILED for config.js/logo
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(regs=>Promise.all(regs.map(r=>r.unregister()))).catch(()=>{});
-        if (window.caches) caches.keys().then(keys=>Promise.all(keys.map(k=>caches.delete(k)))).catch(()=>{});
-        // Do NOT register again
-    }
-    </script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        :root {
-            --blue: #0866ff;
-            --blue-dark: #0550c1;
-            --blue-light: #e7f0ff;
-            --gray-bg: #f0f2f5;
-            --gray-border: #dde1e7;
-            --gray-text: #65676b;
-            --text: #1c1e21;
-            --text-secondary: var(--gray-text);
-            --white: #ffffff;
-            --surface: var(--white);
-            --border: var(--gray-border);
-            --shadow: 0 2px 12px rgba(0,0,0,0.08);
-            --radius: 12px;
-        }
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--gray-bg);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        /* ===== HERO SECTION — Premium with form inside ===== */
-        .hero {
-            background: radial-gradient(ellipse at 20% 20%, rgba(34,211,255,0.15) 0%, transparent 50%),
-                        radial-gradient(ellipse at 80% 80%, rgba(10,108,255,0.12) 0%, transparent 50%),
-                        linear-gradient(135deg, #070D1E 0%, #0a162e 45%, #0f2450 100%);
-            padding: 30px 20px 40px;
-            position: relative;
-            overflow: hidden;
-            min-height: 680px;
-            display: flex;
-            align-items: center;
-        }
-        .hero::before {
-            content: '';
-            position: absolute; inset: 0;
-            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-            opacity: 0.4;
-        }
-        .hero-inner {
-            max-width: 1100px;
-            margin: 0 auto;
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 40px;
-            position: relative;
-            z-index: 1;
-        }
-        .hero-left {
-            flex: 1;
-            text-align: left;
-            max-width: 520px;
-        }
-        .hero-logo-wrap {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 10px;
-            margin-bottom: 16px;
-        }
-        .hero-tagline {
-            color: rgba(255,255,255,0.85);
-            font-size: 1.15rem;
-            font-weight: 400;
-            line-height: 1.6;
-            margin-bottom: 28px;
-        }
-        .hero-stats {
-            display: flex;
-            gap: 32px;
-        }
-        .hero-stat {
-            text-align: left;
-            color: white;
-            position: relative;
-            padding-left: 12px;
-        }
-        .hero-stat::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 4px;
-            bottom: 4px;
-            width: 3px;
-            background: linear-gradient(180deg, #22D3FF, #0A6CFF);
-            border-radius: 2px;
-        }
-        .hero-stat-num {
-            font-size: 1.7rem;
-            font-weight: 800;
-            line-height: 1;
-        }
-        .hero-stat-label {
-            font-size: 0.75rem;
-            opacity: 0.7;
-            letter-spacing: 0.8px;
-            text-transform: uppercase;
-            margin-top: 4px;
-            font-weight: 600;
-        }
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+ <meta name="theme-color" content="#070D1E">
+ <meta name="apple-mobile-web-app-capable" content="yes">
+ <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+ <link rel="icon" type="image/svg+xml" href="assets/icon.svg">
+ <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+ <link rel="apple-touch-icon" href="assets/icon-512.png">
+ <link rel="manifest" href="manifest.json">
+ <title>DIU Nexus — Connect with Your Campus</title>
+ <link rel="preconnect" href="https://fonts.googleapis.com">
+ <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+ <script>
+ // Kill SW completely — fixes net::ERR_FAILED for config.js/logo
+ if ('serviceWorker' in navigator) {
+ navigator.serviceWorker.getRegistrations().then(regs=>Promise.all(regs.map(r=>r.unregister()))).catch(()=>{});
+ if (window.caches) caches.keys().then(keys=>Promise.all(keys.map(k=>caches.delete(k)))).catch(()=>{});
+ // Do NOT register again
+ }
+ </script>
+ <style>
+ * { margin: 0; padding: 0; box-sizing: border-box; }
+ :root {
+ --blue: #0866ff;
+ --blue-dark: #0550c1;
+ --blue-light: #e7f0ff;
+ --gray-bg: #f0f2f5;
+ --gray-border: #dde1e7;
+ --gray-text: #65676b;
+ --text: #1c1e21;
+ --text-secondary: var(--gray-text);
+ --white: #ffffff;
+ --surface: var(--white);
+ --border: var(--gray-border);
+ --shadow: 0 2px 12px rgba(0,0,0,0.08);
+ --radius: 12px;
+ }
+ body {
+ font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+ background: var(--gray-bg);
+ min-height: 100vh;
+ display: flex;
+ flex-direction: column;
+ }
+ /* ===== HERO SECTION — Premium with form inside ===== */
+ .hero {
+ background: radial-gradient(ellipse at 20% 20%, rgba(34,211,255,0.15) 0%, transparent 50%),
+ radial-gradient(ellipse at 80% 80%, rgba(10,108,255,0.12) 0%, transparent 50%),
+ linear-gradient(135deg, #070D1E 0%, #0a162e 45%, #0f2450 100%);
+ padding: 30px 20px 40px;
+ position: relative;
+ overflow: hidden;
+ min-height: 680px;
+ display: flex;
+ align-items: center;
+ }
+ .hero::before {
+ content: '';
+ position: absolute; inset: 0;
+ background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+ opacity: 0.4;
+ }
+ .hero-inner {
+ max-width: 1100px;
+ margin: 0 auto;
+ width: 100%;
+ display: flex;
+ align-items: center;
+ justify-content: space-between;
+ gap: 40px;
+ position: relative;
+ z-index: 1;
+ }
+ .hero-left {
+ flex: 1;
+ text-align: left;
+ max-width: 520px;
+ }
+ .hero-logo-wrap {
+ display: flex;
+ flex-direction: column;
+ align-items: flex-start;
+ gap: 10px;
+ margin-bottom: 16px;
+ }
+ .hero-tagline {
+ color: rgba(255,255,255,0.85);
+ font-size: 1.15rem;
+ font-weight: 400;
+ line-height: 1.6;
+ margin-bottom: 28px;
+ }
+ .hero-stats {
+ display: flex;
+ gap: 32px;
+ }
+ .hero-stat {
+ text-align: left;
+ color: white;
+ position: relative;
+ padding-left: 12px;
+ }
+ .hero-stat::before {
+ content: '';
+ position: absolute;
+ left: 0;
+ top: 4px;
+ bottom: 4px;
+ width: 3px;
+ background: linear-gradient(180deg, #22D3FF, #0A6CFF);
+ border-radius: 2px;
+ }
+ .hero-stat-num {
+ font-size: 1.7rem;
+ font-weight: 800;
+ line-height: 1;
+ }
+ .hero-stat-label {
+ font-size: 0.75rem;
+ opacity: 0.7;
+ letter-spacing: 0.8px;
+ text-transform: uppercase;
+ margin-top: 4px;
+ font-weight: 600;
+ }
 
-        /* ===== MAIN CONTAINER — now inside hero on desktop ===== */
-        .main-container {
-            display: contents;
-        }
-        .hero .form-card {
-            width: 420px;
-            flex-shrink: 0;
-            background: rgba(255,255,255,0.98);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 8px 20px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.1) inset;
-            overflow: hidden;
-            animation: floatIn 0.6s cubic-bezier(0.16,1,0.3,1);
-        }
-        @keyframes floatIn { from { opacity:0; transform: translateY(20px) scale(0.98); } to { opacity:1; transform: none; } }
-        @media(max-width: 900px){
-            .hero { min-height: auto; padding: 20px 16px 30px; }
-            .hero-inner { flex-direction: column; gap: 24px; }
-            .hero-left { text-align: center; align-items: center; }
-            .hero-logo-wrap { align-items: center; }
-            .hero-stats { justify-content: center; }
-            .hero-stat { text-align: center; padding-left: 0; }
-            .hero-stat::before { display: none; }
-            .hero .form-card { width: 100%; max-width: 420px; }
-        }
+ /* ===== MAIN CONTAINER — now inside hero on desktop ===== */
+ .main-container {
+ display: contents;
+ }
+ .hero .form-card {
+ width: 420px;
+ flex-shrink: 0;
+ background: rgba(255,255,255,0.98);
+ backdrop-filter: blur(20px);
+ border: 1px solid rgba(255,255,255,0.2);
+ border-radius: 20px;
+ box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 8px 20px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.1) inset;
+ overflow: hidden;
+ animation: floatIn 0.6s cubic-bezier(0.16,1,0.3,1);
+ }
+ @keyframes floatIn { from { opacity:0; transform: translateY(20px) scale(0.98); } to { opacity:1; transform: none; } }
+ @media(max-width: 900px){
+ .hero { min-height: auto; padding: 20px 16px 30px; }
+ .hero-inner { flex-direction: column; gap: 24px; }
+ .hero-left { text-align: center; align-items: center; }
+ .hero-logo-wrap { align-items: center; }
+ .hero-stats { justify-content: center; }
+ .hero-stat { text-align: center; padding-left: 0; }
+ .hero-stat::before { display: none; }
+ .hero .form-card { width: 100%; max-width: 420px; }
+ }
 
-        /* ===== LEFT BRANDING ===== */
-        .branding {
-            flex: 1;
-            padding-top: 60px;
-        }
-        .branding h2 {
-            font-size: 1.7rem;
-            font-weight: 700;
-            color: var(--text);
-            margin-bottom: 12px;
-            line-height: 1.3;
-        }
-        .branding p {
-            color: var(--gray-text);
-            font-size: 1rem;
-            line-height: 1.6;
-            margin-bottom: 24px;
-        }
-        .features-list {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .features-list li {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: var(--text);
-            font-size: 0.9rem;
-        }
-        .features-list li .icon {
-            width: 34px;
-            height: 34px;
-            border-radius: 50%;
-            background: var(--blue-light);
-            color: var(--blue);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.85rem;
-            flex-shrink: 0;
-        }
+ /* ===== LEFT BRANDING ===== */
+ .branding {
+ flex: 1;
+ padding-top: 60px;
+ }
+ .branding h2 {
+ font-size: 1.7rem;
+ font-weight: 700;
+ color: var(--text);
+ margin-bottom: 12px;
+ line-height: 1.3;
+ }
+ .branding p {
+ color: var(--gray-text);
+ font-size: 1rem;
+ line-height: 1.6;
+ margin-bottom: 24px;
+ }
+ .features-list {
+ list-style: none;
+ display: flex;
+ flex-direction: column;
+ gap: 12px;
+ }
+ .features-list li {
+ display: flex;
+ align-items: center;
+ gap: 10px;
+ color: var(--text);
+ font-size: 0.9rem;
+ }
+ .features-list li .icon {
+ width: 34px;
+ height: 34px;
+ border-radius: 50%;
+ background: var(--blue-light);
+ color: var(--blue);
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ font-size: 0.85rem;
+ flex-shrink: 0;
+ }
 
-        /* ===== FORM CARD ===== */
-        .form-card {
-            width: 380px;
-            flex-shrink: 0;
-            background: var(--white);
-            border-radius: 16px;
-            box-shadow: 0 4px 32px rgba(0,0,0,0.12);
-            overflow: hidden;
-        }
+ /* ===== FORM CARD ===== */
+ .form-card {
+ width: 380px;
+ flex-shrink: 0;
+ background: var(--white);
+ border-radius: 16px;
+ box-shadow: 0 4px 32px rgba(0,0,0,0.12);
+ overflow: hidden;
+ }
 
-        /* ===== TABS — Premium pill inside glass ===== */
-        .tabs {
-            display: flex;
-            background: #f0f2f5;
-            border-radius: 12px;
-            padding: 4px;
-            margin: 16px 16px 0;
-            border: none;
-            gap: 4px;
-        }
-        .tab-btn {
-            flex: 1;
-            padding: 10px;
-            background: transparent;
-            border: none;
-            border-radius: 8px;
-            font-family: inherit;
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: var(--gray-text);
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .tab-btn.active {
-            color: var(--blue);
-            background: white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            border: none;
-        }
+ /* ===== TABS — Premium pill inside glass ===== */
+ .tabs {
+ display: flex;
+ background: #f0f2f5;
+ border-radius: 12px;
+ padding: 4px;
+ margin: 16px 16px 0;
+ border: none;
+ gap: 4px;
+ }
+ .tab-btn {
+ flex: 1;
+ padding: 10px;
+ background: transparent;
+ border: none;
+ border-radius: 8px;
+ font-family: inherit;
+ font-size: 0.9rem;
+ font-weight: 700;
+ color: var(--gray-text);
+ cursor: pointer;
+ transition: all 0.2s;
+ }
+ .tab-btn.active {
+ color: var(--blue);
+ background: white;
+ box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+ border: none;
+ }
 
-        /* ===== FORM ===== */
-        .form-body {
-            padding: 24px;
-        }
-        .form-panel { display: none; }
-        .form-panel.active { display: block; }
+ /* ===== FORM ===== */
+ .form-body {
+ padding: 24px;
+ }
+ .form-panel { display: none; }
+ .form-panel.active { display: block; }
 
-        .form-group {
-            margin-bottom: 14px;
-        }
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-        label {
-            display: block;
-            font-size: 0.78rem;
-            font-weight: 600;
-            color: var(--gray-text);
-            margin-bottom: 5px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-        }
-        .input-wrap {
-            position: relative;
-        }
-        .input-wrap i {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #b0b3b8;
-            font-size: 0.85rem;
-        }
-        input, select {
-            width: 100%;
-            padding: 11px 12px 11px 36px;
-            border: 1.5px solid var(--gray-border);
-            border-radius: 8px;
-            font-family: inherit;
-            font-size: 0.92rem;
-            color: var(--text);
-            background: #f8f9fa;
-            outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
-        }
-        input:focus, select:focus {
-            border-color: var(--blue);
-            background: white;
-            box-shadow: 0 0 0 3px rgba(8,102,255,0.12);
-        }
-        .input-wrap .eye-btn {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: #b0b3b8;
-            left: auto;
-            font-size: 0.9rem;
-        }
-        .error-msg {
-            display: none;
-            color: #e41e3f;
-            font-size: 0.78rem;
-            margin-top: 4px;
-        }
-        .error-msg.show { display: block; }
+ .form-group {
+ margin-bottom: 14px;
+ }
+ .form-row {
+ display: grid;
+ grid-template-columns: 1fr 1fr;
+ gap: 10px;
+ }
+ label {
+ display: block;
+ font-size: 0.78rem;
+ font-weight: 600;
+ color: var(--gray-text);
+ margin-bottom: 5px;
+ text-transform: uppercase;
+ letter-spacing: 0.3px;
+ }
+ .input-wrap {
+ position: relative;
+ }
+ .input-wrap i {
+ position: absolute;
+ left: 12px;
+ top: 50%;
+ transform: translateY(-50%);
+ color: #b0b3b8;
+ font-size: 0.85rem;
+ }
+ input, select {
+ width: 100%;
+ padding: 11px 12px 11px 36px;
+ border: 1.5px solid var(--gray-border);
+ border-radius: 8px;
+ font-family: inherit;
+ font-size: 0.92rem;
+ color: var(--text);
+ background: #f8f9fa;
+ outline: none;
+ transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+ }
+ input:focus, select:focus {
+ border-color: var(--blue);
+ background: white;
+ box-shadow: 0 0 0 3px rgba(8,102,255,0.12);
+ }
+ .input-wrap .eye-btn {
+ position: absolute;
+ right: 12px;
+ top: 50%;
+ transform: translateY(-50%);
+ background: none;
+ border: none;
+ cursor: pointer;
+ color: #b0b3b8;
+ left: auto;
+ font-size: 0.9rem;
+ }
+ .error-msg {
+ display: none;
+ color: #e41e3f;
+ font-size: 0.78rem;
+ margin-top: 4px;
+ }
+ .error-msg.show { display: block; }
 
-        .btn-primary {
-            width: 100%;
-            padding: 13px;
-            background: var(--blue);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-family: inherit;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
-            margin-top: 6px;
-            letter-spacing: 0.2px;
-        }
-        .btn-primary:hover {
-            background: var(--blue-dark);
-            box-shadow: 0 4px 14px rgba(8,102,255,0.3);
-            transform: translateY(-1px);
-        }
-        .btn-primary:active { transform: translateY(0); }
-        .btn-primary:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-            transform: none;
-        }
+ .btn-primary {
+ width: 100%;
+ padding: 13px;
+ background: var(--blue);
+ color: white;
+ border: none;
+ border-radius: 8px;
+ font-family: inherit;
+ font-size: 1rem;
+ font-weight: 700;
+ cursor: pointer;
+ transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+ margin-top: 6px;
+ letter-spacing: 0.2px;
+ }
+ .btn-primary:hover {
+ background: var(--blue-dark);
+ box-shadow: 0 4px 14px rgba(8,102,255,0.3);
+ transform: translateY(-1px);
+ }
+ .btn-primary:active { transform: translateY(0); }
+ .btn-primary:disabled {
+ opacity: 0.7;
+ cursor: not-allowed;
+ transform: none;
+ }
 
-        .divider {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin: 16px 0;
-        }
-        .divider hr { flex: 1; border: none; border-top: 1px solid var(--gray-border); }
-        .divider span { font-size: 0.78rem; color: var(--gray-text); }
+ .divider {
+ display: flex;
+ align-items: center;
+ gap: 12px;
+ margin: 16px 0;
+ }
+ .divider hr { flex: 1; border: none; border-top: 1px solid var(--gray-border); }
+ .divider span { font-size: 0.78rem; color: var(--gray-text); }
 
-        .forgot-link {
-            display: block;
-            text-align: center;
-            color: var(--blue);
-            font-size: 0.85rem;
-            font-weight: 500;
-            text-decoration: none;
-            margin-top: 12px;
-        }
-        .forgot-link:hover { text-decoration: underline; }
+ .forgot-link {
+ display: block;
+ text-align: center;
+ color: var(--blue);
+ font-size: 0.85rem;
+ font-weight: 500;
+ text-decoration: none;
+ margin-top: 12px;
+ }
+ .forgot-link:hover { text-decoration: underline; }
 
-        .alert-box {
-            padding: 10px 14px;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            margin-bottom: 14px;
-            display: none;
-        }
-        .alert-box.show { display: block; }
-        .alert-box.error { background: #fff0f2; border: 1px solid #ffb3be; color: #c0002a; }
-        .alert-box.success { background: #f0fff4; border: 1px solid #86efac; color: #166534; }
+ .alert-box {
+ padding: 10px 14px;
+ border-radius: 8px;
+ font-size: 0.85rem;
+ margin-bottom: 14px;
+ display: none;
+ }
+ .alert-box.show { display: block; }
+ .alert-box.error { background: #fff0f2; border: 1px solid #ffb3be; color: #c0002a; }
+ .alert-box.success { background: #f0fff4; border: 1px solid #86efac; color: #166534; }
 
-        /* ===== FOOTER ===== */
-        footer {
-            margin-top: auto;
-            padding: 24px;
-            text-align: center;
-            color: var(--gray-text);
-            font-size: 0.8rem;
-        }
-        footer a { color: var(--gray-text); text-decoration: none; margin: 0 6px; }
-        footer a:hover { text-decoration: underline; }
+ /* ===== FOOTER ===== */
+ footer {
+ margin-top: auto;
+ padding: 24px;
+ text-align: center;
+ color: var(--gray-text);
+ font-size: 0.8rem;
+ }
+ footer a { color: var(--gray-text); text-decoration: none; margin: 0 6px; }
+ footer a:hover { text-decoration: underline; }
 
-        /* ===== RESPONSIVE ===== */
-        @media (max-width: 768px) {
-            .hero { padding: 40px 20px 60px; }
-            .hero-logo { font-size: 2.2rem; }
-            .main-container { flex-direction: column; align-items: center; margin-top: -30px; }
-            .branding { display: none; }
-            .form-card { width: 100%; max-width: 420px; }
-        }
+ /* ===== RESPONSIVE ===== */
+ @media (max-width: 768px) {
+ .hero { padding: 40px 20px 60px; }
+ .hero-logo { font-size: 2.2rem; }
+ .main-container { flex-direction: column; align-items: center; margin-top: -30px; }
+ .branding { display: none; }
+ .form-card { width: 100%; max-width: 420px; }
+ }
 
-        /* ===== LOADING SPINNER ===== */
-        .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; margin-right: 6px; vertical-align: middle; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-    </style>
+ /* ===== LOADING SPINNER ===== */
+ .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; margin-right: 6px; vertical-align: middle; }
+ @keyframes spin { to { transform: rotate(360deg); } }
+ </style>
 </head>
 <body>
 
 <!-- Top Auth Bar — Log In / Create Account on top (as requested) -->
 <div style="background:#070D1E;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;border-bottom:1px solid rgba(255,255,255,0.08);">
-    <div style="display:flex;align-items:center;gap:10px;">
-        <img src="assets/icon.svg" alt="NEXUS" style="width:28px;height:28px;filter:drop-shadow(0 2px 6px rgba(10,108,255,0.35));" onerror="this.style.display='none'">
-        <span style="color:white;font-weight:800;letter-spacing:1px;font-size:1.05rem;">NEXUS</span>
-    </div>
-    <div style="display:flex;gap:8px;">
-        <button onclick="switchTab('login'); document.querySelector('.main-container').scrollIntoView({behavior:'smooth'})" id="topLoginBtn" style="padding:8px 18px;border-radius:20px;border:1.5px solid #0A6CFF;background:#0A6CFF;color:white;font-weight:700;cursor:pointer;font-family:inherit;font-size:0.85rem;transition:all 0.15s;">Log In</button>
-        <button onclick="switchTab('register'); document.querySelector('.main-container').scrollIntoView({behavior:'smooth'})" id="topRegisterBtn" style="padding:8px 18px;border-radius:20px;border:1.5px solid rgba(255,255,255,0.2);background:transparent;color:white;font-weight:700;cursor:pointer;font-family:inherit;font-size:0.85rem;transition:all 0.15s;">Create Account</button>
-    </div>
+ <div style="display:flex;align-items:center;gap:10px;">
+ <img src="assets/icon.svg" alt="NEXUS" style="width:28px;height:28px;filter:drop-shadow(0 2px 6px rgba(10,108,255,0.35));" onerror="this.style.display='none'">
+ <span style="color:white;font-weight:800;letter-spacing:1px;font-size:1.05rem;">NEXUS</span>
+ </div>
+ <div style="display:flex;gap:8px;">
+ <button onclick="switchTab('login'); document.querySelector('.main-container').scrollIntoView({behavior:'smooth'})" id="topLoginBtn" style="padding:8px 18px;border-radius:20px;border:1.5px solid #0A6CFF;background:#0A6CFF;color:white;font-weight:700;cursor:pointer;font-family:inherit;font-size:0.85rem;transition:all 0.15s;">Log In</button>
+ <button onclick="switchTab('register'); document.querySelector('.main-container').scrollIntoView({behavior:'smooth'})" id="topRegisterBtn" style="padding:8px 18px;border-radius:20px;border:1.5px solid rgba(255,255,255,0.2);background:transparent;color:white;font-weight:700;cursor:pointer;font-family:inherit;font-size:0.85rem;transition:all 0.15s;">Create Account</button>
+ </div>
 </div>
 
 <!-- Hero Section — Premium integrated with Login -->
 <div class="hero">
-    <div class="hero-inner">
-        <div class="hero-left">
-            <div class="hero-logo-wrap">
-                <img src="assets/logo.svg" alt="NEXUS" style="width:240px;height:auto;filter:drop-shadow(0 12px 32px rgba(42,212,255,0.4));" onerror="this.src='assets/logo-full.png'; this.style.width='260px';">
-                <div style="font-size:0.85rem;color:rgba(255,255,255,0.55);letter-spacing:5px;font-weight:700;margin-top:6px;">DIU • NEXUS</div>
-            </div>
-            <p class="hero-tagline">The exclusive social platform for Daffodil International University students, faculty & alumni.</p>
-            <div class="hero-stats">
-                <div class="hero-stat">
-                    <div class="hero-stat-num">25K+</div>
-                    <div class="hero-stat-label">Students</div>
-                </div>
-                <div class="hero-stat">
-                    <div class="hero-stat-num">50+</div>
-                    <div class="hero-stat-label">Departments</div>
-                </div>
-                <div class="hero-stat">
-                    <div class="hero-stat-num">100+</div>
-                    <div class="hero-stat-label">Groups</div>
-                </div>
-            </div>
-        </div>
+ <div class="hero-inner">
+ <div class="hero-left">
+ <div class="hero-logo-wrap">
+ <img src="assets/logo.svg" alt="NEXUS" style="width:240px;height:auto;filter:drop-shadow(0 12px 32px rgba(42,212,255,0.4));" onerror="this.src='assets/logo-full.png'; this.style.width='260px';">
+ <div style="font-size:0.85rem;color:rgba(255,255,255,0.55);letter-spacing:5px;font-weight:700;margin-top:6px;">DIU • NEXUS</div>
+ </div>
+ <p class="hero-tagline">The exclusive social platform for Daffodil International University students, faculty & alumni.</p>
+ <div class="hero-stats">
+ <div class="hero-stat">
+ <div class="hero-stat-num">25K+</div>
+ <div class="hero-stat-label">Students</div>
+ </div>
+ <div class="hero-stat">
+ <div class="hero-stat-num">50+</div>
+ <div class="hero-stat-label">Departments</div>
+ </div>
+ <div class="hero-stat">
+ <div class="hero-stat-num">100+</div>
+ <div class="hero-stat-label">Groups</div>
+ </div>
+ </div>
+ </div>
 
-        <!-- Form Card — Premium Glass inside Hero -->
-        <div class="form-card">
-        <div class="tabs">
-            <button class="tab-btn active" id="loginTab" onclick="switchTab('login')">Sign In</button>
-            <button class="tab-btn" id="registerTab" onclick="switchTab('register')">Create Account</button>
-        </div>
+ <!-- Form Card — Premium Glass inside Hero -->
+ <div class="form-card">
+ <div class="tabs">
+ <button class="tab-btn active" id="loginTab" onclick="switchTab('login')">Sign In</button>
+ <button class="tab-btn" id="registerTab" onclick="switchTab('register')">Create Account</button>
+ </div>
 
-        <div class="form-body">
-            <!-- LOGIN -->
-            <div class="form-panel active" id="loginPanel">
-                <div class="alert-box" id="loginAlert"></div>
-                <div class="form-group">
-                    <label>Email Address</label>
-                    <div class="input-wrap">
-                        <i class="fas fa-envelope"></i>
-                        <input type="email" id="loginEmail" placeholder="you@diu.edu.bd" autocomplete="email">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <div class="input-wrap">
-                        <i class="fas fa-lock"></i>
-                        <input type="password" id="loginPassword" placeholder="Enter your password" autocomplete="current-password">
-                        <button class="eye-btn" type="button" onclick="togglePassword('loginPassword', this)"><i class="fas fa-eye"></i></button>
-                    </div>
-                </div>
-                <button class="btn-primary" id="loginBtn" onclick="handleLogin()">Sign In</button>
-                <a href="#" class="forgot-link">Forgot password?</a>
-            </div>
+ <div class="form-body">
+ <!-- LOGIN -->
+ <div class="form-panel active" id="loginPanel">
+ <div class="alert-box" id="loginAlert"></div>
+ <div class="form-group">
+ <label>Email Address</label>
+ <div class="input-wrap">
+ <i class="fas fa-envelope"></i>
+ <input type="email" id="loginEmail" placeholder="you@diu.edu.bd" autocomplete="email">
+ </div>
+ </div>
+ <div class="form-group">
+ <label>Password</label>
+ <div class="input-wrap">
+ <i class="fas fa-lock"></i>
+ <input type="password" id="loginPassword" placeholder="Enter your password" autocomplete="current-password">
+ <button class="eye-btn" type="button" onclick="togglePassword('loginPassword', this)"><i class="fas fa-eye"></i></button>
+ </div>
+ </div>
+ <button class="btn-primary" id="loginBtn" onclick="handleLogin()">Sign In</button>
+ <a href="#" class="forgot-link">Forgot password?</a>
+ </div>
 
-            <!-- REGISTER -->
-            <div class="form-panel" id="registerPanel">
-                <div class="alert-box" id="registerAlert"></div>
-                <div class="form-group">
-                    <label>Full Name</label>
-                    <div class="input-wrap">
-                        <i class="fas fa-user"></i>
-                        <input type="text" id="regName" placeholder="Your full name" autocomplete="name">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Email Address</label>
-                    <div class="input-wrap">
-                        <i class="fas fa-envelope"></i>
-                        <input type="email" id="regEmail" placeholder="your.name@diu.edu.bd" autocomplete="email">
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Department</label>
-                        <div class="input-wrap">
-                            <i class="fas fa-building"></i>
-                            <select id="regDepartment" style="padding-left:36px;">
-                                <option value="">Select Department</option>
-                                <optgroup label="Faculty of Science & IT">
-                                    <option>CSE - Computer Science & Engineering</option>
-                                    <option>SWE - Software Engineering</option>
-                                    <option>CIS - Computing & Information System</option>
-                                    <option>CS - Computer Science</option>
-                                    <option>ITM - Information Technology & Management</option>
-                                    <option>MCT - Multimedia & Creative Technology</option>
-                                </optgroup>
-                                <optgroup label="Faculty of Engineering">
-                                    <option>EEE - Electrical & Electronic Engineering</option>
-                                    <option>ETE - Electronics & Telecommunication</option>
-                                    <option>Civil Engineering</option>
-                                    <option>Architecture</option>
-                                    <option>Textile Engineering</option>
-                                    <option>Real Estate</option>
-                                </optgroup>
-                                <optgroup label="Faculty of Business & Entrepreneurship">
-                                    <option>BBA - Business Administration</option>
-                                    <option>Accounting</option>
-                                    <option>Finance</option>
-                                    <option>Marketing</option>
-                                    <option>Management</option>
-                                    <option>THM - Tourism & Hospitality Management</option>
-                                    <option>Innovation & Entrepreneurship</option>
-                                </optgroup>
-                                <optgroup label="Faculty of Health & Life Sciences">
-                                    <option>Pharmacy</option>
-                                    <option>Public Health</option>
-                                    <option>NFE - Nutrition & Food Engineering</option>
-                                    <option>GEB - Genetic Engineering & Biotechnology</option>
-                                    <option>ESDM - Environmental Science & Disaster Management</option>
-                                </optgroup>
-                                <optgroup label="Faculty of Humanities & Social Sciences">
-                                    <option>English</option>
-                                    <option>Law (LLB)</option>
-                                    <option>JMC - Journalism, Media & Communication</option>
-                                    <option>Development Studies</option>
-                                </optgroup>
-                                <optgroup label="Others">
-                                    <option>GED - General Educational Development</option>
-                                    <option>Physical Education</option>
-                                </optgroup>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Batch</label>
-                        <div class="input-wrap">
-                            <i class="fas fa-graduation-cap"></i>
-                            <select id="regBatch" style="padding-left:36px;">
-                                <option value="">Select</option>
-                                <option>Spring 2026</option><option>Fall 2025</option>
-                                <option>Spring 2025</option><option>Fall 2024</option>
-                                <option>Spring 2024</option><option>Fall 2023</option>
-                                <option>Spring 2023</option><option>Fall 2022</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Role</label>
-                        <div class="input-wrap">
-                            <i class="fas fa-id-badge"></i>
-                            <select id="regRole" style="padding-left:36px;">
-                                <option value="Student">Student</option>
-                                <option value="Faculty">Faculty</option>
-                                <option value="Alumni">Alumni</option>
-                                <option value="Admin">🛡️ Admin (System Administrator)</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Gender</label>
-                        <div class="input-wrap">
-                            <i class="fas fa-venus-mars"></i>
-                            <select id="regGender" style="padding-left:36px;">
-                                <option value="">Prefer not</option>
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <div class="input-wrap">
-                        <i class="fas fa-lock"></i>
-                        <input type="password" id="regPassword" placeholder="At least 6 characters" autocomplete="new-password">
-                        <button class="eye-btn" type="button" onclick="togglePassword('regPassword', this)"><i class="fas fa-eye"></i></button>
-                    </div>
-                </div>
-                <button class="btn-primary" id="registerBtn" onclick="handleRegister()">Create Account</button>
-            </div>
-        </div>
-    </div>
-    </div> <!-- hero-inner -->
+ <!-- REGISTER -->
+ <div class="form-panel" id="registerPanel">
+ <div class="alert-box" id="registerAlert"></div>
+ <div class="form-group">
+ <label>Full Name</label>
+ <div class="input-wrap">
+ <i class="fas fa-user"></i>
+ <input type="text" id="regName" placeholder="Your full name" autocomplete="name">
+ </div>
+ </div>
+ <div class="form-group">
+ <label>Email Address</label>
+ <div class="input-wrap">
+ <i class="fas fa-envelope"></i>
+ <input type="email" id="regEmail" placeholder="your.name@diu.edu.bd" autocomplete="email">
+ </div>
+ </div>
+ <div class="form-row">
+ <div class="form-group">
+ <label>Department</label>
+ <div class="input-wrap">
+ <i class="fas fa-building"></i>
+ <select id="regDepartment" style="padding-left:36px;">
+ <option value="">Select Department</option>
+ <optgroup label="Faculty of Science & IT">
+ <option>CSE - Computer Science & Engineering</option>
+ <option>SWE - Software Engineering</option>
+ <option>CIS - Computing & Information System</option>
+ <option>CS - Computer Science</option>
+ <option>ITM - Information Technology & Management</option>
+ <option>MCT - Multimedia & Creative Technology</option>
+ </optgroup>
+ <optgroup label="Faculty of Engineering">
+ <option>EEE - Electrical & Electronic Engineering</option>
+ <option>ETE - Electronics & Telecommunication</option>
+ <option>Civil Engineering</option>
+ <option>Architecture</option>
+ <option>Textile Engineering</option>
+ <option>Real Estate</option>
+ </optgroup>
+ <optgroup label="Faculty of Business & Entrepreneurship">
+ <option>BBA - Business Administration</option>
+ <option>Accounting</option>
+ <option>Finance</option>
+ <option>Marketing</option>
+ <option>Management</option>
+ <option>THM - Tourism & Hospitality Management</option>
+ <option>Innovation & Entrepreneurship</option>
+ </optgroup>
+ <optgroup label="Faculty of Health & Life Sciences">
+ <option>Pharmacy</option>
+ <option>Public Health</option>
+ <option>NFE - Nutrition & Food Engineering</option>
+ <option>GEB - Genetic Engineering & Biotechnology</option>
+ <option>ESDM - Environmental Science & Disaster Management</option>
+ </optgroup>
+ <optgroup label="Faculty of Humanities & Social Sciences">
+ <option>English</option>
+ <option>Law (LLB)</option>
+ <option>JMC - Journalism, Media & Communication</option>
+ <option>Development Studies</option>
+ </optgroup>
+ <optgroup label="Others">
+ <option>GED - General Educational Development</option>
+ <option>Physical Education</option>
+ </optgroup>
+ </select>
+ </div>
+ </div>
+ <div class="form-group">
+ <label>Batch</label>
+ <div class="input-wrap">
+ <i class="fas fa-graduation-cap"></i>
+ <select id="regBatch" style="padding-left:36px;">
+ <option value="">Select</option>
+ <option>Spring 2026</option><option>Fall 2025</option>
+ <option>Spring 2025</option><option>Fall 2024</option>
+ <option>Spring 2024</option><option>Fall 2023</option>
+ <option>Spring 2023</option><option>Fall 2022</option>
+ </select>
+ </div>
+ </div>
+ </div>
+ <div class="form-row">
+ <div class="form-group">
+ <label>Role</label>
+ <div class="input-wrap">
+ <i class="fas fa-id-badge"></i>
+ <select id="regRole" style="padding-left:36px;">
+ <option value="Student">Student</option>
+ <option value="Faculty">Faculty</option>
+ <option value="Alumni">Alumni</option>
+ <option value="Admin">🛡️ Admin (System Administrator)</option>
+ </select>
+ </div>
+ </div>
+ <div class="form-group">
+ <label>Gender</label>
+ <div class="input-wrap">
+ <i class="fas fa-venus-mars"></i>
+ <select id="regGender" style="padding-left:36px;">
+ <option value="">Prefer not</option>
+ <option value="Male">Male</option>
+ <option value="Female">Female</option>
+ </select>
+ </div>
+ </div>
+ </div>
+ <div class="form-group">
+ <label>Password</label>
+ <div class="input-wrap">
+ <i class="fas fa-lock"></i>
+ <input type="password" id="regPassword" placeholder="At least 6 characters" autocomplete="new-password">
+ <button class="eye-btn" type="button" onclick="togglePassword('regPassword', this)"><i class="fas fa-eye"></i></button>
+ </div>
+ </div>
+ <button class="btn-primary" id="registerBtn" onclick="handleRegister()">Create Account</button>
+ </div>
+ </div>
+ </div>
+ </div> <!-- hero-inner -->
 </div> <!-- hero -->
 
 <!-- Features — Professional below hero -->
 <div style="max-width:1100px;margin:36px auto;padding:0 20px;">
-    <div style="text-align:center;margin-bottom:22px;">
-        <h2 style="font-size:1.55rem;font-weight:800;letter-spacing:-0.3px;">Everything you need for campus life</h2>
-        <p style="color:#65676b;margin-top:6px;">Connect with classmates, share knowledge, join groups, chat in real-time — all in one place.</p>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;">
-        <div style="background:white;border:1px solid #e4e6eb;border-radius:14px;padding:16px;display:flex;gap:12px;align-items:center;"><span style="width:42px;height:42px;border-radius:10px;background:#e7f0ff;color:#0A6CFF;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-users"></i></span><div><div style="font-weight:700;font-size:0.9rem;">Connect</div><div style="font-size:0.82rem;color:#65676b;">All departments together</div></div></div>
-        <div style="background:white;border:1px solid #e4e6eb;border-radius:14px;padding:16px;display:flex;gap:12px;align-items:center;"><span style="width:42px;height:42px;border-radius:10px;background:#e7f0ff;color:#0A6CFF;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-book-open"></i></span><div><div style="font-weight:700;font-size:0.9rem;">Resources</div><div style="font-size:0.82rem;color:#65676b;">Share & download notes</div></div></div>
-        <div style="background:white;border:1px solid #e4e6eb;border-radius:14px;padding:16px;display:flex;gap:12px;align-items:center;"><span style="width:42px;height:42px;border-radius:10px;background:#e7f0ff;color:#0A6CFF;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-comments"></i></span><div><div style="font-weight:700;font-size:0.9rem;">Messenger</div><div style="font-size:0.82rem;color:#65676b;">Real-time chat & groups</div></div></div>
-        <div style="background:white;border:1px solid #e4e6eb;border-radius:14px;padding:16px;display:flex;gap:12px;align-items:center;"><span style="width:42px;height:42px;border-radius:10px;background:#e7f0ff;color:#0A6CFF;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-calendar-alt"></i></span><div><div style="font-weight:700;font-size:0.9rem;">Events</div><div style="font-size:0.82rem;color:#65676b;">Campus programs</div></div></div>
-        <div style="background:white;border:1px solid #e4e6eb;border-radius:14px;padding:16px;display:flex;gap:12px;align-items:center;"><span style="width:42px;height:42px;border-radius:10px;background:#e7f0ff;color:#0A6CFF;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-calculator"></i></span><div><div style="font-weight:700;font-size:0.9rem;">GPA Tools</div><div style="font-size:0.82rem;color:#65676b;">CGPA & Tuition calc</div></div></div>
-        <div style="background:white;border:1px solid #e4e6eb;border-radius:14px;padding:16px;display:flex;gap:12px;align-items:center;"><span style="width:42px;height:42px;border-radius:10px;background:#e7f0ff;color:#0A6CFF;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-film"></i></span><div><div style="font-weight:700;font-size:0.9rem;">Reels & Stories</div><div style="font-size:0.82rem;color:#65676b;">From classmates</div></div></div>
-    </div>
+ <div style="text-align:center;margin-bottom:22px;">
+ <h2 style="font-size:1.55rem;font-weight:800;letter-spacing:-0.3px;">Everything you need for campus life</h2>
+ <p style="color:#65676b;margin-top:6px;">Connect with classmates, share knowledge, join groups, chat in real-time — all in one place.</p>
+ </div>
+ <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;">
+ <div style="background:white;border:1px solid #e4e6eb;border-radius:14px;padding:16px;display:flex;gap:12px;align-items:center;"><span style="width:42px;height:42px;border-radius:10px;background:#e7f0ff;color:#0A6CFF;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-users"></i></span><div><div style="font-weight:700;font-size:0.9rem;">Connect</div><div style="font-size:0.82rem;color:#65676b;">All departments together</div></div></div>
+ <div style="background:white;border:1px solid #e4e6eb;border-radius:14px;padding:16px;display:flex;gap:12px;align-items:center;"><span style="width:42px;height:42px;border-radius:10px;background:#e7f0ff;color:#0A6CFF;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-book-open"></i></span><div><div style="font-weight:700;font-size:0.9rem;">Resources</div><div style="font-size:0.82rem;color:#65676b;">Share & download notes</div></div></div>
+ <div style="background:white;border:1px solid #e4e6eb;border-radius:14px;padding:16px;display:flex;gap:12px;align-items:center;"><span style="width:42px;height:42px;border-radius:10px;background:#e7f0ff;color:#0A6CFF;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-comments"></i></span><div><div style="font-weight:700;font-size:0.9rem;">Messenger</div><div style="font-size:0.82rem;color:#65676b;">Real-time chat & groups</div></div></div>
+ <div style="background:white;border:1px solid #e4e6eb;border-radius:14px;padding:16px;display:flex;gap:12px;align-items:center;"><span style="width:42px;height:42px;border-radius:10px;background:#e7f0ff;color:#0A6CFF;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-calendar-alt"></i></span><div><div style="font-weight:700;font-size:0.9rem;">Events</div><div style="font-size:0.82rem;color:#65676b;">Campus programs</div></div></div>
+ <div style="background:white;border:1px solid #e4e6eb;border-radius:14px;padding:16px;display:flex;gap:12px;align-items:center;"><span style="width:42px;height:42px;border-radius:10px;background:#e7f0ff;color:#0A6CFF;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-calculator"></i></span><div><div style="font-weight:700;font-size:0.9rem;">GPA Tools</div><div style="font-size:0.82rem;color:#65676b;">CGPA & Tuition calc</div></div></div>
+ <div style="background:white;border:1px solid #e4e6eb;border-radius:14px;padding:16px;display:flex;gap:12px;align-items:center;"><span style="width:42px;height:42px;border-radius:10px;background:#e7f0ff;color:#0A6CFF;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-film"></i></span><div><div style="font-weight:700;font-size:0.9rem;">Reels & Stories</div><div style="font-size:0.82rem;color:#65676b;">From classmates</div></div></div>
+ </div>
 </div>
 
 <footer style="background:#070D1E;color:rgba(255,255,255,0.7);padding:20px;text-align:center;border-top:1px solid rgba(255,255,255,0.08);">
-    <p style="font-size:0.82rem;font-weight:600;letter-spacing:0.3px;">© 2026 DIU Nexus &nbsp;·&nbsp; Developed by <span style="color:#22D3FF;font-weight:800;">Farsi and Team</span> &nbsp;·&nbsp; For Daffodil International University</p>
-    <p style="margin-top:8px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
-        <a href="#" onclick="openFooterModal('privacyModal'); return false;" style="color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.8rem;">Privacy</a>
-        <a href="#" onclick="openFooterModal('termsModal'); return false;" style="color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.8rem;">Terms</a>
-        <a href="#" onclick="openFooterModal('helpModal'); return false;" style="color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.8rem;">Help</a>
-        <a href="#" onclick="openFooterModal('aboutModal'); return false;" style="color:#22D3FF;text-decoration:none;font-size:0.8rem;font-weight:700;border:1px solid rgba(34,211,255,0.3);padding:2px 10px;border-radius:12px;">About</a>
-    </p>
+ <p style="font-size:0.82rem;font-weight:600;letter-spacing:0.3px;">© 2026 DIU Nexus &nbsp;·&nbsp; Developed by <span style="color:#22D3FF;font-weight:800;">Farsi and Team</span> &nbsp;·&nbsp; For Daffodil International University</p>
+ <p style="margin-top:8px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+ <a href="#" onclick="openFooterModal('privacyModal'); return false;" style="color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.8rem;">Privacy</a>
+ <a href="#" onclick="openFooterModal('termsModal'); return false;" style="color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.8rem;">Terms</a>
+ <a href="#" onclick="openFooterModal('helpModal'); return false;" style="color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.8rem;">Help</a>
+ <a href="#" onclick="openFooterModal('aboutModal'); return false;" style="color:#22D3FF;text-decoration:none;font-size:0.8rem;font-weight:700;border:1px solid rgba(34,211,255,0.3);padding:2px 10px;border-radius:12px;">About</a>
+ </p>
 </footer>
 
 <!-- Footer Modals -->
 <div id="privacyModal" class="footer-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center;padding:20px;">
-    <div style="background:white;border-radius:16px;max-width:560px;width:100%;max-height:85vh;overflow-y:auto;padding:24px;position:relative;">
-        <button onclick="closeFooterModal('privacyModal')" style="position:absolute;top:12px;right:12px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:#65676b;">&times;</button>
-        <h2 style="font-size:1.2rem;font-weight:800;margin-bottom:12px;display:flex;gap:8px;align-items:center;"><i class="fas fa-shield-alt" style="color:#0A6CFF"></i> Privacy Policy</h2>
-        <div style="font-size:0.88rem;line-height:1.6;color:#374151;">
-            <p style="margin-bottom:10px;"><strong>DIU Nexus</strong> respects your privacy. This is a private campus network for DIU students only.</p>
-            <ul style="margin-left:18px;margin-bottom:10px;">
-                <li>Your email, department & batch are used only for verification and campus features.</li>
-                <li>Posts marked <strong>Public</strong> are visible to all logged-in DIU members; <strong>Friends</strong> posts only to friends.</li>
-                <li>Messages are end-to-end between participants — not shared publicly.</li>
-                <li>We do not sell your data. Reports are reviewed only by Nexus Team Admins.</li>
-                <li>You can delete your posts or request account deletion anytime via Settings.</li>
-            </ul>
-            <p style="font-size:0.8rem;color:#65676b;">Last updated: 2026 • Contact: nexus@diu.edu.bd</p>
-        </div>
-    </div>
+ <div style="background:white;border-radius:16px;max-width:560px;width:100%;max-height:85vh;overflow-y:auto;padding:24px;position:relative;">
+ <button onclick="closeFooterModal('privacyModal')" style="position:absolute;top:12px;right:12px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:#65676b;">&times;</button>
+ <h2 style="font-size:1.2rem;font-weight:800;margin-bottom:12px;display:flex;gap:8px;align-items:center;"><i class="fas fa-shield-alt" style="color:#0A6CFF"></i> Privacy Policy</h2>
+ <div style="font-size:0.88rem;line-height:1.6;color:#374151;">
+ <p style="margin-bottom:10px;"><strong>DIU Nexus</strong> respects your privacy. This is a private campus network for DIU students only.</p>
+ <ul style="margin-left:18px;margin-bottom:10px;">
+ <li>Your email, department & batch are used only for verification and campus features.</li>
+ <li>Posts marked <strong>Public</strong> are visible to all logged-in DIU members; <strong>Friends</strong> posts only to friends.</li>
+ <li>Messages are end-to-end between participants — not shared publicly.</li>
+ <li>We do not sell your data. Reports are reviewed only by Nexus Team Admins.</li>
+ <li>You can delete your posts or request account deletion anytime via Settings.</li>
+ </ul>
+ <p style="font-size:0.8rem;color:#65676b;">Last updated: 2026 • Contact: nexus@diu.edu.bd</p>
+ </div>
+ </div>
 </div>
 <div id="termsModal" class="footer-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center;padding:20px;">
-    <div style="background:white;border-radius:16px;max-width:560px;width:100%;max-height:85vh;overflow-y:auto;padding:24px;position:relative;">
-        <button onclick="closeFooterModal('termsModal')" style="position:absolute;top:12px;right:12px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:#65676b;">&times;</button>
-        <h2 style="font-size:1.2rem;font-weight:800;margin-bottom:12px;"><i class="fas fa-file-contract" style="color:#0A6CFF"></i> Terms of Service</h2>
-        <div style="font-size:0.88rem;line-height:1.6;color:#374151;">
-            <ul style="margin-left:18px;">
-                <li>Use your official <strong>@diu.edu.bd</strong> email only. Fake accounts will be removed.</li>
-                <li>Be respectful — no harassment, hate, spam or false information. Violations may lead to warn/ban.</li>
-                <li>Do not share others' private info without permission.</li>
-                <li>Academic resources must be shared with proper credit.</li>
-                <li>Admins may remove content that violates campus guidelines.</li>
-            </ul>
-            <p style="margin-top:10px;font-size:0.8rem;color:#65676b;">By using DIU Nexus you agree to these terms. Updated 2026.</p>
-        </div>
-    </div>
+ <div style="background:white;border-radius:16px;max-width:560px;width:100%;max-height:85vh;overflow-y:auto;padding:24px;position:relative;">
+ <button onclick="closeFooterModal('termsModal')" style="position:absolute;top:12px;right:12px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:#65676b;">&times;</button>
+ <h2 style="font-size:1.2rem;font-weight:800;margin-bottom:12px;"><i class="fas fa-file-contract" style="color:#0A6CFF"></i> Terms of Service</h2>
+ <div style="font-size:0.88rem;line-height:1.6;color:#374151;">
+ <ul style="margin-left:18px;">
+ <li>Use your official <strong>@diu.edu.bd</strong> email only. Fake accounts will be removed.</li>
+ <li>Be respectful — no harassment, hate, spam or false information. Violations may lead to warn/ban.</li>
+ <li>Do not share others' private info without permission.</li>
+ <li>Academic resources must be shared with proper credit.</li>
+ <li>Admins may remove content that violates campus guidelines.</li>
+ </ul>
+ <p style="margin-top:10px;font-size:0.8rem;color:#65676b;">By using DIU Nexus you agree to these terms. Updated 2026.</p>
+ </div>
+ </div>
 </div>
 <div id="helpModal" class="footer-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center;padding:20px;">
-    <div style="background:white;border-radius:16px;max-width:560px;width:100%;max-height:85vh;overflow-y:auto;padding:24px;position:relative;">
-        <button onclick="closeFooterModal('helpModal')" style="position:absolute;top:12px;right:12px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:#65676b;">&times;</button>
-        <h2 style="font-size:1.2rem;font-weight:800;margin-bottom:12px;"><i class="fas fa-question-circle" style="color:#0A6CFF"></i> Help Center</h2>
-        <div style="font-size:0.88rem;line-height:1.6;color:#374151;">
-            <p><strong>Login issue?</strong> Use your DIU email + password. Forgot? Contact admin.</p>
-            <p><strong>How to post?</strong> After login, go to Home → Create Post (photo/video/text).</p>
-            <p><strong>Blood/Housing/Marketplace?</strong> Use the Student Corner in left sidebar.</p>
-            <p><strong>Report a problem?</strong> Use the Flag icon on any post — reports go directly to Admin.</p>
-            <p style="margin-top:10px;"><i class="fas fa-envelope"></i> Support: <a href="mailto:nexus@diu.edu.bd" style="color:#0A6CFF;">nexus@diu.edu.bd</a> &nbsp;|&nbsp; Facebook: DIU Nexus</p>
-        </div>
-    </div>
+ <div style="background:white;border-radius:16px;max-width:560px;width:100%;max-height:85vh;overflow-y:auto;padding:24px;position:relative;">
+ <button onclick="closeFooterModal('helpModal')" style="position:absolute;top:12px;right:12px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:#65676b;">&times;</button>
+ <h2 style="font-size:1.2rem;font-weight:800;margin-bottom:12px;"><i class="fas fa-question-circle" style="color:#0A6CFF"></i> Help Center</h2>
+ <div style="font-size:0.88rem;line-height:1.6;color:#374151;">
+ <p><strong>Login issue?</strong> Use your DIU email + password. Forgot? Contact admin.</p>
+ <p><strong>How to post?</strong> After login, go to Home → Create Post (photo/video/text).</p>
+ <p><strong>Blood/Housing/Marketplace?</strong> Use the Student Corner in left sidebar.</p>
+ <p><strong>Report a problem?</strong> Use the Flag icon on any post — reports go directly to Admin.</p>
+ <p style="margin-top:10px;"><i class="fas fa-envelope"></i> Support: <a href="mailto:nexus@diu.edu.bd" style="color:#0A6CFF;">nexus@diu.edu.bd</a> &nbsp;|&nbsp; Facebook: DIU Nexus</p>
+ </div>
+ </div>
 </div>
 <div id="aboutModal" class="footer-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center;padding:20px;">
-    <div style="background:linear-gradient(135deg,#070D1E 0%,#0a162e 100%);border-radius:16px;max-width:520px;width:100%;padding:28px;position:relative;color:white;text-align:center;border:1px solid rgba(34,211,255,0.2);">
-        <button onclick="closeFooterModal('aboutModal')" style="position:absolute;top:12px;right:12px;background:rgba(255,255,255,0.1);border:none;color:white;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1.2rem;">&times;</button>
-        <div style="font-size:2.5rem;margin-bottom:12px;">🎉</div>
-        <h2 style="font-size:1.35rem;font-weight:800;margin-bottom:8px;background:linear-gradient(90deg,#22D3FF,#0A6CFF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Congratulations!</h2>
-        <p style="font-size:0.95rem;line-height:1.6;opacity:0.9;">
-            You will be happy to know that this is developed by <strong style="color:#22D3FF;">Farsi and his friends</strong> — it is just a <strong>beta app version</strong> — enjoy it! ✨<br><br>
-            Built with ❤️ for <strong>Daffodil International University</strong> students.<br>
-            <span style="font-size:0.82rem;opacity:0.7;">DIU Nexus v2.0 • Beta • 2026</span>
-        </p>
-        <img src="assets/logo.svg" alt="NEXUS" style="width:160px;margin:16px auto 0;display:block;filter:drop-shadow(0 4px 12px rgba(34,211,255,0.3));" onerror="this.style.display='none'">
-    </div>
+ <div style="background:linear-gradient(135deg,#070D1E 0%,#0a162e 100%);border-radius:16px;max-width:520px;width:100%;padding:28px;position:relative;color:white;text-align:center;border:1px solid rgba(34,211,255,0.2);">
+ <button onclick="closeFooterModal('aboutModal')" style="position:absolute;top:12px;right:12px;background:rgba(255,255,255,0.1);border:none;color:white;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1.2rem;">&times;</button>
+ <div style="font-size:2.5rem;margin-bottom:12px;"></div>
+ <h2 style="font-size:1.35rem;font-weight:800;margin-bottom:8px;background:linear-gradient(90deg,#22D3FF,#0A6CFF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Congratulations!</h2>
+ <p style="font-size:0.95rem;line-height:1.6;opacity:0.9;">
+ You will be happy to know that this is developed by <strong style="color:#22D3FF;">Farsi and his friends</strong> — it is just a <strong>beta app version</strong> — enjoy it! <br><br>
+ Built with ❤️ for <strong>Daffodil International University</strong> students.<br>
+ <span style="font-size:0.82rem;opacity:0.7;">DIU Nexus v2.0 • Beta • 2026</span>
+ </p>
+ <img src="assets/logo.svg" alt="NEXUS" style="width:160px;margin:16px auto 0;display:block;filter:drop-shadow(0 4px 12px rgba(34,211,255,0.3));" onerror="this.style.display='none'">
+ </div>
 </div>
 
 <script src="js/config.js"></script>
@@ -679,234 +679,234 @@
 const API = (typeof window.API !== 'undefined' ? window.API : (function(){ var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000/api'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin+'/api'; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin+'/api':'http://localhost:5000/api'; return 'http://localhost:5000/api'; } return window.location.origin+'/api'; })());
 // Health check banner — helps diagnose Failed to fetch
 document.addEventListener('DOMContentLoaded', async ()=>{
-  const banner = document.createElement('div');
-  banner.id='healthBanner';
-  banner.style.cssText='position:fixed;top:0;left:0;right:0;background:#fee2e2;color:#991b1b;padding:6px 12px;text-align:center;font-size:0.8rem;font-weight:600;z-index:9999;display:none;';
-  banner.innerHTML='⏳ Checking server...';
-  document.body.prepend(banner);
-  try{
-    const r = await fetch((window.API_BASE||window.location.origin)+'/api/health');
-    if(r.ok){ banner.style.background='#d1fae5'; banner.style.color='#065f46'; banner.textContent='✅ Server connected: '+ (window.API_BASE||window.location.origin); setTimeout(()=>banner.style.display='none',3000); }
-    else throw new Error('health '+r.status);
-    banner.style.display='block';
-  }catch(e){
-    banner.style.display='block';
-    banner.innerHTML='❌ Failed to fetch — Server not running at '+(window.API_BASE||window.location.origin)+' — Run <code>npm run server</code> and hard refresh (Ctrl+Shift+R). <a href="#" onclick="location.reload()" style="color:#991b1b;text-decoration:underline;">Retry</a> | API: '+API;
-    console.error('[NEXUS] Health check failed', e, 'API:', API, 'API_BASE:', window.API_BASE);
-  }
+ const banner = document.createElement('div');
+ banner.id='healthBanner';
+ banner.style.cssText='position:fixed;top:0;left:0;right:0;background:#fee2e2;color:#991b1b;padding:6px 12px;text-align:center;font-size:0.8rem;font-weight:600;z-index:9999;display:none;';
+ banner.innerHTML='⏳ Checking server...';
+ document.body.prepend(banner);
+ try{
+ const r = await fetch((window.API_BASE||window.location.origin)+'/api/health');
+ if(r.ok){ banner.style.background='#d1fae5'; banner.style.color='#065f46'; banner.textContent=' Server connected: '+ (window.API_BASE||window.location.origin); setTimeout(()=>banner.style.display='none',3000); }
+ else throw new Error('health '+r.status);
+ banner.style.display='block';
+ }catch(e){
+ banner.style.display='block';
+ banner.innerHTML='❌ Failed to fetch — Server not running at '+(window.API_BASE||window.location.origin)+' — Run <code>npm run server</code> and hard refresh (Ctrl+Shift+R). <a href="#" onclick="location.reload()" style="color:#991b1b;text-decoration:underline;">Retry</a> | API: '+API;
+ console.error('[NEXUS] Health check failed', e, 'API:', API, 'API_BASE:', window.API_BASE);
+ }
 });
 
 function switchTab(tab) {
-    document.getElementById('loginTab').classList.toggle('active', tab === 'login');
-    document.getElementById('registerTab').classList.toggle('active', tab === 'register');
-    document.getElementById('loginPanel').classList.toggle('active', tab === 'login');
-    document.getElementById('registerPanel').classList.toggle('active', tab === 'register');
-    // Sync top bar buttons
-    const topL = document.getElementById('topLoginBtn');
-    const topR = document.getElementById('topRegisterBtn');
-    if(topL && topR){
-        if(tab==='login'){ topL.style.background='#0A6CFF'; topL.style.borderColor='#0A6CFF'; topL.style.color='white'; topR.style.background='transparent'; topR.style.borderColor='rgba(255,255,255,0.2)'; topR.style.color='white'; }
-        else { topR.style.background='#0A6CFF'; topR.style.borderColor='#0A6CFF'; topR.style.color='white'; topL.style.background='transparent'; topL.style.borderColor='rgba(255,255,255,0.2)'; topL.style.color='white'; }
-    }
+ document.getElementById('loginTab').classList.toggle('active', tab === 'login');
+ document.getElementById('registerTab').classList.toggle('active', tab === 'register');
+ document.getElementById('loginPanel').classList.toggle('active', tab === 'login');
+ document.getElementById('registerPanel').classList.toggle('active', tab === 'register');
+ // Sync top bar buttons
+ const topL = document.getElementById('topLoginBtn');
+ const topR = document.getElementById('topRegisterBtn');
+ if(topL && topR){
+ if(tab==='login'){ topL.style.background='#0A6CFF'; topL.style.borderColor='#0A6CFF'; topL.style.color='white'; topR.style.background='transparent'; topR.style.borderColor='rgba(255,255,255,0.2)'; topR.style.color='white'; }
+ else { topR.style.background='#0A6CFF'; topR.style.borderColor='#0A6CFF'; topR.style.color='white'; topL.style.background='transparent'; topL.style.borderColor='rgba(255,255,255,0.2)'; topL.style.color='white'; }
+ }
 }
 
 function togglePassword(inputId, btn) {
-    const input = document.getElementById(inputId);
-    const icon = btn.querySelector('i');
-    if (input.type === 'password') {
-        input.type = 'text';
-        icon.classList.replace('fa-eye', 'fa-eye-slash');
-    } else {
-        input.type = 'password';
-        icon.classList.replace('fa-eye-slash', 'fa-eye');
-    }
+ const input = document.getElementById(inputId);
+ const icon = btn.querySelector('i');
+ if (input.type === 'password') {
+ input.type = 'text';
+ icon.classList.replace('fa-eye', 'fa-eye-slash');
+ } else {
+ input.type = 'password';
+ icon.classList.replace('fa-eye-slash', 'fa-eye');
+ }
 }
 
 function showAlert(id, msg, type = 'error') {
-    const el = document.getElementById(id);
-    el.textContent = msg;
-    el.className = `alert-box show ${type}`;
+ const el = document.getElementById(id);
+ el.textContent = msg;
+ el.className = `alert-box show ${type}`;
 }
 
 function setLoading(btnId, loading) {
-    const btn = document.getElementById(btnId);
-    btn.disabled = loading;
-    btn.innerHTML = loading
-        ? '<span class="spinner"></span> Please wait...'
-        : (btnId === 'loginBtn' ? 'Sign In' : 'Create Account');
+ const btn = document.getElementById(btnId);
+ btn.disabled = loading;
+ btn.innerHTML = loading
+ ? '<span class="spinner"></span> Please wait...'
+ : (btnId === 'loginBtn' ? 'Sign In' : 'Create Account');
 }
 
 async function handleLogin() {
-    const email = document.getElementById('loginEmail').value.trim();
-    const password = document.getElementById('loginPassword').value;
-    if (!email || !password) return showAlert('loginAlert', 'Please fill in all fields');
-    setLoading('loginBtn', true);
-    try {
-        const res = await fetch(`${API}/auth/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message);
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        showAlert('loginAlert', 'Login successful! Redirecting...', 'success');
-        setTimeout(() => window.location.href = 'home.html', 800);
-    } catch (err) {
-        showAlert('loginAlert', err.message || 'Login failed');
-    } finally {
-        setLoading('loginBtn', false);
-    }
+ const email = document.getElementById('loginEmail').value.trim();
+ const password = document.getElementById('loginPassword').value;
+ if (!email || !password) return showAlert('loginAlert', 'Please fill in all fields');
+ setLoading('loginBtn', true);
+ try {
+ const res = await fetch(`${API}/auth/login`, {
+ method: 'POST',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify({ email, password })
+ });
+ const data = await res.json();
+ if (!res.ok) throw new Error(data.message);
+ localStorage.setItem('token', data.token);
+ localStorage.setItem('user', JSON.stringify(data.user));
+ showAlert('loginAlert', 'Login successful! Redirecting...', 'success');
+ setTimeout(() => window.location.href = 'home.html', 800);
+ } catch (err) {
+ showAlert('loginAlert', err.message || 'Login failed');
+ } finally {
+ setLoading('loginBtn', false);
+ }
 }
 
 let pendingOtpEmail = '';
 
 async function handleRegister() {
-    const fullName = document.getElementById('regName').value.trim();
-    const email = document.getElementById('regEmail').value.trim();
-    const password = document.getElementById('regPassword').value;
-    const department = document.getElementById('regDepartment').value;
-    const batch = document.getElementById('regBatch').value;
-    const role = document.getElementById('regRole').value;
-    const gender = document.getElementById('regGender').value;
-    if (!fullName || !email || !password) return showAlert('registerAlert', 'Name, email and password are required');
-    if (password.length < 6) return showAlert('registerAlert', 'Password must be at least 6 characters');
-    setLoading('registerBtn', true);
-    try {
-        const res = await fetch(`${API}/auth/register`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ fullName, email, password, department, batch, role, gender })
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message);
+ const fullName = document.getElementById('regName').value.trim();
+ const email = document.getElementById('regEmail').value.trim();
+ const password = document.getElementById('regPassword').value;
+ const department = document.getElementById('regDepartment').value;
+ const batch = document.getElementById('regBatch').value;
+ const role = document.getElementById('regRole').value;
+ const gender = document.getElementById('regGender').value;
+ if (!fullName || !email || !password) return showAlert('registerAlert', 'Name, email and password are required');
+ if (password.length < 6) return showAlert('registerAlert', 'Password must be at least 6 characters');
+ setLoading('registerBtn', true);
+ try {
+ const res = await fetch(`${API}/auth/register`, {
+ method: 'POST',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify({ fullName, email, password, department, batch, role, gender })
+ });
+ const data = await res.json();
+ if (!res.ok) throw new Error(data.message);
 
-        if (data.requiresOtp) {
-            // Show OTP verification panel
-            pendingOtpEmail = data.email || email;
-            showOtpPanel(pendingOtpEmail);
-            showAlert('registerAlert', `✅ Registered! Check your email (${pendingOtpEmail}) for the 6-digit OTP code.`, 'success');
-        } else {
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('user', JSON.stringify(data.user));
-            showAlert('registerAlert', 'Account created! Redirecting...', 'success');
-            setTimeout(() => window.location.href = 'home.html', 800);
-        }
-    } catch (err) {
-        showAlert('registerAlert', err.message || 'Registration failed');
-    } finally {
-        setLoading('registerBtn', false);
-    }
+ if (data.requiresOtp) {
+ // Show OTP verification panel
+ pendingOtpEmail = data.email || email;
+ showOtpPanel(pendingOtpEmail);
+ showAlert('registerAlert', ` Registered! Check your email (${pendingOtpEmail}) for the 6-digit OTP code.`, 'success');
+ } else {
+ localStorage.setItem('token', data.token);
+ localStorage.setItem('user', JSON.stringify(data.user));
+ showAlert('registerAlert', 'Account created! Redirecting...', 'success');
+ setTimeout(() => window.location.href = 'home.html', 800);
+ }
+ } catch (err) {
+ showAlert('registerAlert', err.message || 'Registration failed');
+ } finally {
+ setLoading('registerBtn', false);
+ }
 }
 
 function showOtpPanel(email) {
-    // Hide register form, show OTP panel
-    const panel = document.getElementById('registerPanel');
-    const existing = document.getElementById('otpBox');
-    if (existing) existing.remove();
-    const otpBox = document.createElement('div');
-    otpBox.id = 'otpBox';
-    otpBox.style.cssText = 'text-align:center;padding:8px 0;';
-    otpBox.innerHTML = `
-        <div style="font-size:2.5rem;margin-bottom:8px;">📧</div>
-        <h3 style="font-weight:800;font-size:1.05rem;margin-bottom:6px;">Check Your Email</h3>
-        <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:20px;line-height:1.5;">
-            We sent a 6-digit code to<br><strong>${email}</strong>
-        </p>
-        <div id="otpAlert" style="margin-bottom:12px;"></div>
-        <div style="display:flex;gap:8px;justify-content:center;margin-bottom:16px;">
-            <input id="otp1" maxlength="1" style="width:44px;height:52px;border:2px solid var(--border);border-radius:10px;text-align:center;font-size:1.5rem;font-weight:700;font-family:inherit;outline:none;background:var(--surface);color:var(--text);" oninput="otpNext(this,'otp2')" onkeydown="otpBack(event,this,'')">
-            <input id="otp2" maxlength="1" style="width:44px;height:52px;border:2px solid var(--border);border-radius:10px;text-align:center;font-size:1.5rem;font-weight:700;font-family:inherit;outline:none;background:var(--surface);color:var(--text);" oninput="otpNext(this,'otp3')" onkeydown="otpBack(event,this,'otp1')">
-            <input id="otp3" maxlength="1" style="width:44px;height:52px;border:2px solid var(--border);border-radius:10px;text-align:center;font-size:1.5rem;font-weight:700;font-family:inherit;outline:none;background:var(--surface);color:var(--text);" oninput="otpNext(this,'otp4')" onkeydown="otpBack(event,this,'otp2')">
-            <input id="otp4" maxlength="1" style="width:44px;height:52px;border:2px solid var(--border);border-radius:10px;text-align:center;font-size:1.5rem;font-weight:700;font-family:inherit;outline:none;background:var(--surface);color:var(--text);" oninput="otpNext(this,'otp5')" onkeydown="otpBack(event,this,'otp3')">
-            <input id="otp5" maxlength="1" style="width:44px;height:52px;border:2px solid var(--border);border-radius:10px;text-align:center;font-size:1.5rem;font-weight:700;font-family:inherit;outline:none;background:var(--surface);color:var(--text);" oninput="otpNext(this,'otp6')" onkeydown="otpBack(event,this,'otp4')">
-            <input id="otp6" maxlength="1" style="width:44px;height:52px;border:2px solid var(--border);border-radius:10px;text-align:center;font-size:1.5rem;font-weight:700;font-family:inherit;outline:none;background:var(--surface);color:var(--text);" oninput="otpNext(this,'')" onkeydown="otpBack(event,this,'otp5')">
-        </div>
-        <button id="verifyOtpBtn" onclick="handleVerifyOtp()" style="width:100%;padding:13px;background:#0866ff;color:white;border:none;border-radius:12px;font-family:inherit;font-size:0.95rem;font-weight:700;cursor:pointer;margin-bottom:12px;">Verify Email</button>
-        <div style="font-size:0.82rem;color:var(--text-secondary);">
-            Didn’t receive the code?
-            <button id="resendBtn" onclick="handleResendOtp()" style="background:none;border:none;color:#0866ff;font-weight:700;cursor:pointer;font-family:inherit;font-size:0.82rem;">Resend</button>
-            <span id="resendTimer"></span>
-        </div>
-        <button onclick="document.getElementById('otpBox').remove();" style="margin-top:12px;background:none;border:none;color:var(--text-secondary);font-size:0.82rem;cursor:pointer;font-family:inherit;">← Back to register</button>
-    `;
-    panel.insertAdjacentElement('afterend', otpBox);
-    panel.style.display = 'none';
-    document.getElementById('otp1').focus();
-    startResendTimer();
+ // Hide register form, show OTP panel
+ const panel = document.getElementById('registerPanel');
+ const existing = document.getElementById('otpBox');
+ if (existing) existing.remove();
+ const otpBox = document.createElement('div');
+ otpBox.id = 'otpBox';
+ otpBox.style.cssText = 'text-align:center;padding:8px 0;';
+ otpBox.innerHTML = `
+ <div style="font-size:2.5rem;margin-bottom:8px;">📧</div>
+ <h3 style="font-weight:800;font-size:1.05rem;margin-bottom:6px;">Check Your Email</h3>
+ <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:20px;line-height:1.5;">
+ We sent a 6-digit code to<br><strong>${email}</strong>
+ </p>
+ <div id="otpAlert" style="margin-bottom:12px;"></div>
+ <div style="display:flex;gap:8px;justify-content:center;margin-bottom:16px;">
+ <input id="otp1" maxlength="1" style="width:44px;height:52px;border:2px solid var(--border);border-radius:10px;text-align:center;font-size:1.5rem;font-weight:700;font-family:inherit;outline:none;background:var(--surface);color:var(--text);" oninput="otpNext(this,'otp2')" onkeydown="otpBack(event,this,'')">
+ <input id="otp2" maxlength="1" style="width:44px;height:52px;border:2px solid var(--border);border-radius:10px;text-align:center;font-size:1.5rem;font-weight:700;font-family:inherit;outline:none;background:var(--surface);color:var(--text);" oninput="otpNext(this,'otp3')" onkeydown="otpBack(event,this,'otp1')">
+ <input id="otp3" maxlength="1" style="width:44px;height:52px;border:2px solid var(--border);border-radius:10px;text-align:center;font-size:1.5rem;font-weight:700;font-family:inherit;outline:none;background:var(--surface);color:var(--text);" oninput="otpNext(this,'otp4')" onkeydown="otpBack(event,this,'otp2')">
+ <input id="otp4" maxlength="1" style="width:44px;height:52px;border:2px solid var(--border);border-radius:10px;text-align:center;font-size:1.5rem;font-weight:700;font-family:inherit;outline:none;background:var(--surface);color:var(--text);" oninput="otpNext(this,'otp5')" onkeydown="otpBack(event,this,'otp3')">
+ <input id="otp5" maxlength="1" style="width:44px;height:52px;border:2px solid var(--border);border-radius:10px;text-align:center;font-size:1.5rem;font-weight:700;font-family:inherit;outline:none;background:var(--surface);color:var(--text);" oninput="otpNext(this,'otp6')" onkeydown="otpBack(event,this,'otp4')">
+ <input id="otp6" maxlength="1" style="width:44px;height:52px;border:2px solid var(--border);border-radius:10px;text-align:center;font-size:1.5rem;font-weight:700;font-family:inherit;outline:none;background:var(--surface);color:var(--text);" oninput="otpNext(this,'')" onkeydown="otpBack(event,this,'otp5')">
+ </div>
+ <button id="verifyOtpBtn" onclick="handleVerifyOtp()" style="width:100%;padding:13px;background:#0866ff;color:white;border:none;border-radius:12px;font-family:inherit;font-size:0.95rem;font-weight:700;cursor:pointer;margin-bottom:12px;">Verify Email</button>
+ <div style="font-size:0.82rem;color:var(--text-secondary);">
+ Didn’t receive the code?
+ <button id="resendBtn" onclick="handleResendOtp()" style="background:none;border:none;color:#0866ff;font-weight:700;cursor:pointer;font-family:inherit;font-size:0.82rem;">Resend</button>
+ <span id="resendTimer"></span>
+ </div>
+ <button onclick="document.getElementById('otpBox').remove();" style="margin-top:12px;background:none;border:none;color:var(--text-secondary);font-size:0.82rem;cursor:pointer;font-family:inherit;">← Back to register</button>
+ `;
+ panel.insertAdjacentElement('afterend', otpBox);
+ panel.style.display = 'none';
+ document.getElementById('otp1').focus();
+ startResendTimer();
 }
 
 function otpNext(el, nextId) {
-    el.style.borderColor = '#0866ff';
-    if (el.value && nextId) document.getElementById(nextId)?.focus();
+ el.style.borderColor = '#0866ff';
+ if (el.value && nextId) document.getElementById(nextId)?.focus();
 }
 function otpBack(e, el, prevId) {
-    if (e.key === 'Backspace' && !el.value && prevId) document.getElementById(prevId)?.focus();
+ if (e.key === 'Backspace' && !el.value && prevId) document.getElementById(prevId)?.focus();
 }
 
 let resendInterval;
 function startResendTimer() {
-    let secs = 60;
-    const btn = document.getElementById('resendBtn');
-    const timer = document.getElementById('resendTimer');
-    if (btn) btn.disabled = true;
-    clearInterval(resendInterval);
-    resendInterval = setInterval(() => {
-        secs--;
-        if (timer) timer.textContent = ` (${secs}s)`;
-        if (secs <= 0) {
-            clearInterval(resendInterval);
-            if (btn) { btn.disabled = false; }
-            if (timer) timer.textContent = '';
-        }
-    }, 1000);
+ let secs = 60;
+ const btn = document.getElementById('resendBtn');
+ const timer = document.getElementById('resendTimer');
+ if (btn) btn.disabled = true;
+ clearInterval(resendInterval);
+ resendInterval = setInterval(() => {
+ secs--;
+ if (timer) timer.textContent = ` (${secs}s)`;
+ if (secs <= 0) {
+ clearInterval(resendInterval);
+ if (btn) { btn.disabled = false; }
+ if (timer) timer.textContent = '';
+ }
+ }, 1000);
 }
 
 async function handleVerifyOtp() {
-    const otp = ['otp1','otp2','otp3','otp4','otp5','otp6'].map(id => document.getElementById(id)?.value || '').join('');
-    if (otp.length < 6) return showAlert('otpAlert', 'Please enter the 6-digit code');
-    const btn = document.getElementById('verifyOtpBtn');
-    if (btn) { btn.disabled = true; btn.textContent = 'Verifying...'; }
-    try {
-        const res = await fetch(`${API}/auth/verify-otp`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: pendingOtpEmail, otp })
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message);
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        showAlert('otpAlert', '✅ Email verified! Welcome to DIU Nexus!', 'success');
-        setTimeout(() => window.location.href = 'home.html', 900);
-    } catch (err) {
-        showAlert('otpAlert', err.message || 'Verification failed');
-        if (btn) { btn.disabled = false; btn.textContent = 'Verify Email'; }
-    }
+ const otp = ['otp1','otp2','otp3','otp4','otp5','otp6'].map(id => document.getElementById(id)?.value || '').join('');
+ if (otp.length < 6) return showAlert('otpAlert', 'Please enter the 6-digit code');
+ const btn = document.getElementById('verifyOtpBtn');
+ if (btn) { btn.disabled = true; btn.textContent = 'Verifying...'; }
+ try {
+ const res = await fetch(`${API}/auth/verify-otp`, {
+ method: 'POST',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify({ email: pendingOtpEmail, otp })
+ });
+ const data = await res.json();
+ if (!res.ok) throw new Error(data.message);
+ localStorage.setItem('token', data.token);
+ localStorage.setItem('user', JSON.stringify(data.user));
+ showAlert('otpAlert', ' Email verified! Welcome to DIU Nexus!', 'success');
+ setTimeout(() => window.location.href = 'home.html', 900);
+ } catch (err) {
+ showAlert('otpAlert', err.message || 'Verification failed');
+ if (btn) { btn.disabled = false; btn.textContent = 'Verify Email'; }
+ }
 }
 
 async function handleResendOtp() {
-    try {
-        const res = await fetch(`${API}/auth/resend-otp`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: pendingOtpEmail })
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message);
-        showAlert('otpAlert', '✅ New OTP sent! Check your email.', 'success');
-        startResendTimer();
-    } catch (err) {
-        showAlert('otpAlert', err.message || 'Failed to resend');
-    }
+ try {
+ const res = await fetch(`${API}/auth/resend-otp`, {
+ method: 'POST',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify({ email: pendingOtpEmail })
+ });
+ const data = await res.json();
+ if (!res.ok) throw new Error(data.message);
+ showAlert('otpAlert', ' New OTP sent! Check your email.', 'success');
+ startResendTimer();
+ } catch (err) {
+ showAlert('otpAlert', err.message || 'Failed to resend');
+ }
 }
 
 function showAlert(id, msg, type='error') {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.textContent = msg;
-    el.style.cssText = `display:block;padding:10px 14px;border-radius:8px;font-size:0.85rem;margin-bottom:8px;background:${type==='success'?'#d1fae5':'#fee2e2'};color:${type==='success'?'#065f46':'#b91c1c'};`;
+ const el = document.getElementById(id);
+ if (!el) return;
+ el.textContent = msg;
+ el.style.cssText = `display:block;padding:10px 14px;border-radius:8px;font-size:0.85rem;margin-bottom:8px;background:${type==='success'?'#d1fae5':'#fee2e2'};color:${type==='success'?'#065f46':'#b91c1c'};`;
 }
 
 // Redirect if already logged in
@@ -914,11 +914,11 @@ if (localStorage.getItem('token')) window.location.href = 'home.html';
 
 // Enter key support
 document.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-        const loginActive = document.getElementById('loginPanel').classList.contains('active');
-        if (loginActive) handleLogin();
-        else handleRegister();
-    }
+ if (e.key === 'Enter') {
+ const loginActive = document.getElementById('loginPanel').classList.contains('active');
+ if (loginActive) handleLogin();
+ else handleRegister();
+ }
 });
 </script>
 </body>
