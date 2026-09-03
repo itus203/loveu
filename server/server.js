@@ -351,11 +351,10 @@ server.on('error', (err) => {
 
     } catch (err) {
         console.error('❌ Failed to start server:', err);
-        // Don't hard exit if port in use — let Electron try to connect to existing server
         if (err.code === 'EADDRINUSE') {
             console.log(`⚠️  Server already running on port ${process.env.PORT || 5000}, continuing...`);
         } else {
-            process.exit(1);
+            console.log('⚠️  DB init failed, server stays up (health will show dbReady:false) — will retry');
         }
     }
 })();
