@@ -199,7 +199,12 @@ exports.register = async (req, res) => {
         }
 
         const token = jwt.sign({ id: result.lastID, role: finalRole }, process.env.JWT_SECRET, { expiresIn: '7d' });
-        const user = await global.db.get('SELECT id as _id, fullName, email, role, department, batch, profilePicture FROM users WHERE id=?', [result.lastID]);
+        let user = await global.db.get('SELECT id as _id, fullName, email, role, department, batch, profilePicture FROM users WHERE id=?', [result.lastID]);
+        if (user) {
+            user.fullName = user.fullName || user.fullname;
+            user.profilePicture = user.profilePicture || user.profilepicture;
+            user._id = user._id || user.id;
+        }
         res.status(201).json({ message: 'Registration successful', token, user, requiresOtp: false });
     } catch (e) {
         console.error('Register error:', e);
@@ -235,6 +240,13 @@ exports.login = async (req, res) => {
         const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
         const { password: _, ...userWithoutPassword } = user;
         userWithoutPassword._id = user.id;
+        // Normalize for Postgres lowercase -> frontend expects camelCase
+        userWithoutPassword.fullName = userWithoutPassword.fullName || userWithoutPassword.fullname;
+        userWithoutPassword.profilePicture = userWithoutPassword.profilePicture || userWithoutPassword.profilepicture;
+        userWithoutPassword.coverPicture = userWithoutPassword.coverPicture || userWithoutPassword.coverpicture;
+        userWithoutPassword.createdAt = userWithoutPassword.createdAt || userWithoutPassword.createdat;
+        userWithoutPassword.studentId = userWithoutPassword.studentId || userWithoutPassword.studentid;
+        if (!userWithoutPassword.fullName) userWithoutPassword.fullName = 'DIU Member';
         res.status(200).json({ message: 'Login successful', token, user: userWithoutPassword });
     } catch (e) {
         console.error('Login error:', e);
@@ -263,6 +275,9 @@ exports.verifyOtp = async (req, res) => {
         const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
         const { password: _, ...userWithoutPassword } = user;
         userWithoutPassword._id = user.id;
+        userWithoutPassword.fullName = userWithoutPassword.fullName || userWithoutPassword.fullname;
+        userWithoutPassword.profilePicture = userWithoutPassword.profilePicture || userWithoutPassword.profilepicture;
+        userWithoutPassword.coverPicture = userWithoutPassword.coverPicture || userWithoutPassword.coverpicture;
 
         res.json({ message: '✅ Email verified successfully! Welcome to DIU Nexus.', token, user: userWithoutPassword });
     } catch (e) {
@@ -285,10 +300,10 @@ exports.resendOtp = async (req, res) => {
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
         const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
         await global.db.run(
-            'INSERT INTO email_otps (email, otp, expires_at) VALUES (?,?,?)',
+            'INSERT INTO email_otps (email, otp, expires_at, used) VALUES (?,?,?,0)',
             [email.toLowerCase().trim(), otp, expiresAt]
         );
-        await sendOtpEmail(email.toLowerCase().trim(), otp, user.fullName);
+        await sendOtpEmail(email.toLowerCase().trim(), otp, user.fullName || user.fullname);
         res.json({ message: 'A new OTP code has been sent to your email.' });
     } catch (e) {
         res.status(500).json({ message: e.message });

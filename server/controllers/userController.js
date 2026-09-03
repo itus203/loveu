@@ -1,9 +1,16 @@
 exports.getUsers = async (req, res) => {
     try {
-        const users = await global.db.all(
+        let users = await global.db.all(
             'SELECT id as _id, fullName, profilePicture, department, batch, role FROM users WHERE id != ?',
             [req.user.id]
         );
+        // Normalize for Postgres lowercase
+        users = users.map(u => ({
+            ...u,
+            fullName: u.fullName || u.fullname,
+            profilePicture: u.profilePicture || u.profilepicture,
+            _id: u._id || u.id,
+        }));
         res.status(200).json(users);
     } catch (e) { res.status(500).json({ message: e.message }); }
 };
@@ -11,11 +18,19 @@ exports.getUsers = async (req, res) => {
 exports.getProfile = async (req, res) => {
     try {
         const userId = req.params.id || req.user.id;
-        const user = await global.db.get(
+        let user = await global.db.get(
             'SELECT id as _id, fullName, email, role, bio, department, batch, gender, profilePicture, coverPicture, createdAt FROM users WHERE id = ?',
             [userId]
         );
         if (!user) return res.status(404).json({ message: 'User not found' });
+        // Postgres lowercases unquoted columns -> normalize to camelCase for frontend
+        user.fullName = user.fullName || user.fullname;
+        user.profilePicture = user.profilePicture || user.profilepicture;
+        user.coverPicture = user.coverPicture || user.coverpicture;
+        user.createdAt = user.createdAt || user.createdat;
+        user.studentId = user.studentId || user.studentid;
+        user._id = user._id || user.id;
+        user.id = user.id || user._id;
         const postCount = await global.db.get('SELECT COUNT(*) as count FROM posts WHERE user_id=?', [userId]);
         const friendCount = await global.db.get('SELECT COUNT(*) as count FROM friends WHERE user1_id=? OR user2_id=?', [userId, userId]);
         const resourceCount = await global.db.get('SELECT COUNT(*) as count FROM resources WHERE user_id=?', [userId]);
@@ -39,14 +54,20 @@ exports.updateProfile = async (req, res) => {
             'UPDATE users SET fullName=COALESCE(?,fullName), bio=COALESCE(?,bio), department=COALESCE(?,department), batch=COALESCE(?,batch), gender=COALESCE(?,gender), profilePicture=COALESCE(?,profilePicture), coverPicture=COALESCE(?,coverPicture) WHERE id=?',
             [fullName || null, bio || null, department || null, batch || null, gender || null, profilePicture || null, coverPicture || null, req.user.id]
         );
-        const updated = await global.db.get('SELECT id as _id, fullName, email, role, bio, department, batch, gender, profilePicture, coverPicture FROM users WHERE id=?', [req.user.id]);
+        let updated = await global.db.get('SELECT id as _id, fullName, email, role, bio, department, batch, gender, profilePicture, coverPicture FROM users WHERE id=?', [req.user.id]);
+        if (updated) {
+            updated.fullName = updated.fullName || updated.fullname;
+            updated.profilePicture = updated.profilePicture || updated.profilepicture;
+            updated.coverPicture = updated.coverPicture || updated.coverpicture;
+            updated._id = updated._id || updated.id;
+        }
         res.status(200).json({ message: 'Profile updated', user: updated });
     } catch (e) { res.status(500).json({ message: e.message }); }
 };
 
 exports.getUserSuggestions = async (req, res) => {
     try {
-        const users = await global.db.all(`
+        let users = await global.db.all(`
             SELECT id as _id, fullName, profilePicture, department, batch FROM users
             WHERE id != ?
             AND id NOT IN (
@@ -57,6 +78,12 @@ exports.getUserSuggestions = async (req, res) => {
             )
             ORDER BY RANDOM() LIMIT 8
         `, [req.user.id, req.user.id, req.user.id, req.user.id, req.user.id]);
+        users = users.map(u => ({
+            ...u,
+            fullName: u.fullName || u.fullname,
+            profilePicture: u.profilePicture || u.profilepicture,
+            _id: u._id || u.id,
+        }));
         res.json(users);
     } catch (e) { res.status(500).json({ message: e.message }); }
 };
