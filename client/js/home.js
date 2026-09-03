@@ -218,12 +218,14 @@ async function apiFetch(path, options = {}) {
     const headers = { 'Content-Type': 'application/json', ...options.headers };
     if (token) headers['Authorization'] = `Bearer ${token}`;
     if (options.body instanceof FormData) delete headers['Content-Type'];
+    const method = (options.method || 'GET').toUpperCase();
+    const isSafeRetry = method === 'GET' || method === 'HEAD';
     let attempt=0;
     while(attempt<2){
         try {
             const res = await fetch(`${API}${path}`, { ...options, headers });
-            // If server warming up (503 retry:true) → wait 900ms and retry once (perfect for exe)
-            if(res.status===503){
+            // If server warming up (503 retry:true) → wait 900ms and retry once (perfect for exe) — ONLY for safe GET
+            if(res.status===503 && isSafeRetry){
                 const j=await res.clone().json().catch(()=>({}));
                 if(j.retry && attempt===0){
                     await new Promise(r=>setTimeout(r, 900));
@@ -234,7 +236,7 @@ async function apiFetch(path, options = {}) {
         } catch (err) {
             if (err.message && err.message.includes('Failed to fetch')) {
                 console.error('[DIU Nexus] Failed to fetch', `${API}${path}`, err);
-                if (attempt===0 && !path.includes('/health')){
+                if (attempt===0 && isSafeRetry && !path.includes('/health')){
                     await new Promise(r=>setTimeout(r, 800));
                     attempt++; continue;
                 }
@@ -1067,7 +1069,7 @@ function renderStoriesRing(users) {
         const isOwn = String(user.user_id) === myId;
         const latest = user.stories[user.stories.length-1];
         const mediaPath = latest ? (latest.media_url || latest.content || '') : '';
-        const isMedia = mediaPath.startsWith('/uploads');
+        const isMedia = typeof mediaPath==='string' && (mediaPath.startsWith('/uploads') || mediaPath.startsWith('http') || mediaPath.startsWith('blob:') || mediaPath.startsWith('data:'));
         const bg = latest ? (latest.bg_color || '#1a1a2e') : '#1a1a2e';
         // Cover: if latest is text, use bg color card with text preview; if media, use image
         let coverHtml = '';
@@ -1075,7 +1077,7 @@ function renderStoriesRing(users) {
             const txt = latest ? (latest.caption || latest.content || '').slice(0,42) : '';
             coverHtml = `<div style="width:100%;height:100%;background:${bg};display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:0.85rem;padding:10px;text-align:center;line-height:1.3;">${escapeHtml(txt)}</div>`;
         } else if(isMedia){
-            const src = `${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${mediaPath}`;
+            const src = (window.mediaUrl ? window.mediaUrl(mediaPath) : (mediaPath.startsWith('http') ? mediaPath : `${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${mediaPath}`));
             coverHtml = `<img src="${src}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div style="display:none;width:100%;height:100%;background:${bg};align-items:center;justify-content:center;color:white;padding:8px;text-align:center;">${escapeHtml((latest.caption||latest.content||'Story').slice(0,30))}</div>`;
         } else {
             coverHtml = `<div style="width:100%;height:100%;background:${bg};"></div>`;
@@ -2265,7 +2267,7 @@ renderCurrentStory = function(){
   // ── Type rendering (robust: handle text vs media path) ──
   const pvBox=document.getElementById('svStage');
   const mediaPath = story.media_url || story.content || '';
-  const isMediaPath = typeof mediaPath === 'string' && mediaPath.startsWith('/uploads');
+  const isMediaPath = typeof mediaPath === 'string' && (mediaPath.startsWith('/uploads') || mediaPath.startsWith('http') || mediaPath.startsWith('blob:') || mediaPath.startsWith('data:'));
   const isVideoFile = isMediaPath && /\.(mp4|mov|webm|avi|mkv)$/i.test(mediaPath);
   const isVoiceType = story.type==='voice' || !!story.voice_url;
   pvBox.style.background = story.bg_color || (story.type==='text' || !isMediaPath ? (story.bg_color||'#1a1a2e') : 'black');
@@ -2299,7 +2301,7 @@ renderCurrentStory = function(){
     voiceBox.style.display='flex';
     const vAud=document.getElementById('svVoiceAudio');
     const vSrc = story.voice_url || mediaPath;
-    vAud.src = vSrc.startsWith('/uploads') ? `${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${vSrc}` : vSrc;
+    vAud.src = (vSrc && !vSrc.startsWith('http') && !vSrc.startsWith('blob:') && !vSrc.startsWith('data:')) ? `${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${vSrc}` : vSrc;
     document.getElementById('svVoiceCaption').textContent = displayText;
     // also show caption if exists separately
     if(story.caption){
@@ -2307,13 +2309,13 @@ renderCurrentStory = function(){
       caption.style.display='block';
     }
   } else if(isVideoFile || story.type==='video'){
-    const vSrc = isMediaPath ? `${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${mediaPath}` : mediaPath;
-    vid.src = vSrc;
+    const vSrc = (isMediaPath && !mediaPath.startsWith('http')) ? `${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${mediaPath}` : mediaPath;
+    vid.src = window.mediaUrl ? window.mediaUrl(vSrc) : vSrc;
     vid.style.display='block';
     vid.play().catch(()=>{});
     txt.style.display='none'; voiceBox.style.display='none';
   } else if(isMediaPath){
-    const iSrc = `${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${mediaPath}`;
+    const iSrc = mediaPath.startsWith('http') ? mediaPath : `${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${mediaPath}`;
     img.src = iSrc;
     img.style.display='block';
     img.onerror = function(){
@@ -2567,15 +2569,15 @@ async function loadExplore(filter, btn){
     grid.innerHTML=arr.slice(0,12).map(s=>{
       const bg=s.bg_color || '#232526';
       const mediaPath=s.media_url || s.content || '';
-      const isMedia=mediaPath.startsWith('/uploads');
+      const isMedia=typeof mediaPath==='string' && (mediaPath.startsWith('/uploads') || mediaPath.startsWith('http') || mediaPath.startsWith('blob:'));
       const isVideo=s.type==='video' || (isMedia && mediaPath.match(/\.(mp4|mov|webm)$/i));
       const isText=!isMedia || s.type==='text';
-      const avatar=s.profilePicture ? `<img src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${s.profilePicture}" style="width:100%;height:100%;object-fit:cover;">` : `<div style="width:100%;height:100%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;color:white;font-weight:800;">${escapeHtml((s.fullName||'U')[0])}</div>`;
+      const avatar=(s.profilePicture||s.profilepicture) ? `<img src="${window.mediaUrl ? window.mediaUrl(s.profilePicture||s.profilepicture) : ((s.profilePicture||s.profilepicture).startsWith('http') ? (s.profilePicture||s.profilepicture) : `${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${s.profilePicture||s.profilepicture}`)}" style="width:100%;height:100%;object-fit:cover;">` : `<div style="width:100%;height:100%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;color:white;font-weight:800;">${escapeHtml((s.fullName||s.fullname||'U')[0])}</div>`;
       let thumb='';
       if(isText){
         thumb=`<div class="text-card" style="background:${bg};">${escapeHtml((s.caption||s.content||'').slice(0,48))}</div>`;
       } else {
-        const src=isMedia ? `${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${mediaPath}` : mediaPath;
+        const src= window.mediaUrl ? window.mediaUrl(mediaPath) : (mediaPath.startsWith('http') ? mediaPath : `${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${mediaPath}`);
         thumb=`<img src="${src}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.innerHTML='<div class=text-card style=background:${bg}>'+escapeHtml((s.caption||s.content||'Story').slice(0,40))+'</div>'">`;
       }
       const tagIcon= s.campus_tag ? '📍' : s.course_code ? '📚' : s.challenge_tag ? '🔥' : isVideo ? '🎥' : s.type==='voice' ? '🎤' : '';

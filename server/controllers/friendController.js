@@ -119,18 +119,19 @@ exports.unfriend = async (req, res) => {
 exports.getFriends = async (req, res) => {
     try {
         const userId = req.params.userId || req.user.id;
-        const friends = await global.db.all(`
+        let friends = await global.db.all(`
             SELECT u.id as _id, u.fullName, u.profilePicture, u.department, u.batch FROM users u
             JOIN friends f ON (f.user1_id=u.id OR f.user2_id=u.id)
             WHERE (f.user1_id=? OR f.user2_id=?) AND u.id != ?
         `, [userId, userId, userId]);
+        friends = friends.map(f => ({ ...f, fullName: f.fullName||f.fullname, profilePicture: f.profilePicture||f.profilepicture, _id: f._id||f.id }));
         res.status(200).json(friends);
     } catch (e) { res.status(500).json({ message: e.message }); }
 };
 
 exports.getPendingRequests = async (req, res) => {
     try {
-        const requests = await global.db.all(`
+        let requests = await global.db.all(`
             SELECT fr.id as requestId, fr.sender_id, fr.created_at,
                    u.id as _id, u.fullName, u.profilePicture, u.department, u.batch
             FROM friend_requests fr
@@ -138,6 +139,7 @@ exports.getPendingRequests = async (req, res) => {
             WHERE fr.receiver_id=? AND fr.status='pending'
             ORDER BY fr.created_at DESC
         `, [req.user.id]);
+        requests = requests.map(r => ({ ...r, fullName: r.fullName||r.fullname, profilePicture: r.profilePicture||r.profilepicture }));
         res.status(200).json(requests);
     } catch (e) { res.status(500).json({ message: e.message }); }
 };

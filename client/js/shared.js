@@ -5,20 +5,22 @@
     const API = (typeof window.API !== 'undefined' ? window.API : (function(){ var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000/api'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin+'/api'; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin+'/api':'http://localhost:5000/api'; return 'http://localhost:5000/api'; } return window.location.origin+'/api'; })());
     const token = localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user') || 'null');
-    // Fix exe button jam: retry once on 503 warming or Failed to fetch (Electron reopen race)
+    // Fix exe button jam: retry once on 503 warming or Failed to fetch (Electron reopen race) — ONLY for GET, never POST (prevents 1 upload -> 2 stories)
     (function(){
         const _f=window.fetch.bind(window);
         window.fetch=async(url,opts)=>{
+            const method = (opts && opts.method) ? opts.method.toUpperCase() : 'GET';
+            const isSafeRetry = method === 'GET' || method === 'HEAD';
             for(let a=0;a<2;a++){
                 try{
                     const r=await _f(url,opts);
-                    if(r.status===503 && a===0){
+                    if(r.status===503 && a===0 && isSafeRetry){
                         const j=await r.clone().json().catch(()=>({}));
                         if(j.retry){ await new Promise(res=>setTimeout(res,850)); continue; }
                     }
                     return r;
                 }catch(e){
-                    if(a===0 && String(e.message||'').includes('Failed to fetch')){
+                    if(a===0 && isSafeRetry && String(e.message||'').includes('Failed to fetch')){
                         await new Promise(res=>setTimeout(res,800)); continue;
                     }
                     throw e;

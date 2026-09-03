@@ -1,3 +1,5 @@
+function normPost(p){ if(!p) return p; p._id=p._id||p.id; p.id=p.id||p._id; p.fullName=p.fullName||p.fullname; p.profilePicture=p.profilePicture||p.profilepicture; p.mediaUrl=p.mediaUrl||p.mediaurl; p.mediaType=p.mediaType||p.mediatype; p.created_at=p.created_at||p.createdAt||p.createdat; p.createdAt=p.createdAt||p.created_at; p.reactionCount=p.reactionCount??p.reactioncount; p.commentCount=p.commentCount??p.commentcount; p.myReaction=p.myReaction??p.myreaction; return p; }
+function normUser(u){ if(!u) return u; u._id=u._id||u.id; u.fullName=u.fullName||u.fullname; u.profilePicture=u.profilePicture||u.profilepicture; return u; }
 exports.createPost = async (req, res) => {
     try {
         const { content, visibility } = req.body;
@@ -30,11 +32,11 @@ exports.createPost = async (req, res) => {
             'INSERT INTO posts (user_id, content, mediaUrl, mediaType, visibility, mentions) VALUES (?, ?, ?, ?, ?, ?)',
             [req.user.id, content || '', mediaUrl, mediaType, visibility || 'Public', mentionsJson]
         );
-        const post = await global.db.get(
+        let post = await global.db.get(
             'SELECT p.*, u.fullName, u.profilePicture, p.is_exclusive FROM posts p JOIN users u ON p.user_id=u.id WHERE p.id=?',
             [result.lastID]
         );
-        post._id = post.id;
+        post = normPost(post);
         post.user = { fullName: post.fullName, profilePicture: post.profilePicture, _id: post.user_id };
         
         // Notify friends via socket
@@ -135,7 +137,7 @@ exports.getFeed = async (req, res) => {
         `, [userId, userId, userId, userId, userId, limit, offset]);
 
         for (let p of posts) {
-            p._id = p.id;
+            normPost(p);
             p.user = { fullName: p.fullName, profilePicture: p.profilePicture, _id: p.user_id };
             try { p.mentions = p.mentions ? JSON.parse(p.mentions) : []; if(!Array.isArray(p.mentions)) p.mentions=[]; } catch { p.mentions=[]; }
             // parse comment mentions if needed later
@@ -146,12 +148,12 @@ exports.getFeed = async (req, res) => {
 
 exports.getPost = async (req, res) => {
     try {
-        const post = await global.db.get(
+        let post = await global.db.get(
             'SELECT p.*, u.fullName, u.profilePicture, p.is_exclusive FROM posts p JOIN users u ON p.user_id=u.id WHERE p.id=?',
             [req.params.id]
         );
         if (!post) return res.status(404).json({ message: 'Post not found' });
-        post._id = post.id;
+        post = normPost(post);
         post.user = { fullName: post.fullName, profilePicture: post.profilePicture, _id: post.user_id };
         try { post.mentions = post.mentions ? JSON.parse(post.mentions) : []; if(!Array.isArray(post.mentions)) post.mentions=[]; } catch { post.mentions=[]; }
         post.comments = await global.db.all(
@@ -200,8 +202,8 @@ exports.updatePost = async (req, res) => {
         const { content } = req.body;
         if (!content || !content.trim()) return res.status(400).json({ message: 'Content cannot be empty' });
         await global.db.run('UPDATE posts SET content=? WHERE id=?', [content.trim(), req.params.id]);
-        const updated = await global.db.get('SELECT p.*, u.fullName, u.profilePicture FROM posts p JOIN users u ON p.user_id=u.id WHERE p.id=?', [req.params.id]);
-        updated._id = updated.id;
+        let updated = await global.db.get('SELECT p.*, u.fullName, u.profilePicture FROM posts p JOIN users u ON p.user_id=u.id WHERE p.id=?', [req.params.id]);
+        updated = normPost(updated);
         updated.user = { fullName: updated.fullName, profilePicture: updated.profilePicture, _id: updated.user_id };
         res.json({ message: 'Post updated', post: updated });
     } catch (e) { res.status(500).json({ message: e.message }); }
@@ -253,7 +255,7 @@ exports.getUserPosts = async (req, res) => {
             [targetUserId]
         );
         for (let p of posts) {
-            p._id = p.id;
+            normPost(p);
             p.user = { fullName: p.fullName, profilePicture: p.profilePicture, _id: p.user_id };
             try { p.mentions = p.mentions ? JSON.parse(p.mentions) : []; if(!Array.isArray(p.mentions)) p.mentions=[]; } catch { p.mentions=[]; }
         }
@@ -283,10 +285,11 @@ exports.addComment = async (req, res) => {
             'INSERT INTO comments (post_id, user_id, content, mentions) VALUES (?,?,?,?)',
             [req.params.id, req.user.id, content, mentionsJson]
         );
-        const comment = await global.db.get(
+        let comment = await global.db.get(
             'SELECT c.*, u.fullName, u.profilePicture FROM comments c JOIN users u ON c.user_id=u.id WHERE c.id=?',
             [result.lastID]
         );
+        comment = normPost(comment); // re-use norm for comment user fields
         // Notify post owner — with link to post
         const post = await global.db.get('SELECT user_id FROM posts WHERE id=?', [req.params.id]);
         if (post && String(post.user_id) !== String(req.user.id)) {

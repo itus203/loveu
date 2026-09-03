@@ -13,8 +13,15 @@ exports.getResources = async (req, res) => {
         if (subject) { query += ' AND r.subject LIKE ?'; params.push(`%${subject}%`); }
         if (user_id) { query += ' AND r.user_id=?'; params.push(user_id); }
         query += ' ORDER BY COALESCE(r.like_count,0) DESC, r.created_at DESC';
-        const resources = await global.db.all(query, params);
-        resources.forEach(r=>{ r.isLiked=!!r.isLiked; });
+        let resources = await global.db.all(query, params);
+        resources = resources.map(r => ({
+            ...r,
+            fullName: r.fullName||r.fullname,
+            profilePicture: r.profilePicture||r.profilepicture,
+            fileUrl: r.fileUrl||r.fileurl,
+            isLiked: !!(r.isLiked??r.isliked),
+            like_count: r.like_count??r.likeCount,
+        }));
         res.json(resources);
     } catch (e) { res.status(500).json({ message: e.message }); }
 };

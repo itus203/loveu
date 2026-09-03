@@ -54,6 +54,15 @@ exports.createStory = async (req, res) => {
     }
     if(!finalContent) return res.status(400).json({message:'Content or media required'});
 
+    // Prevent duplicate upload within 5 seconds (fixes 1 upload -> 2 stories via double-click/retry)
+    try{
+      const dup = await global.db.get(`SELECT id FROM stories WHERE user_id=? AND content=? AND created_at > datetime('now', '-5 seconds')`, [req.user.id, finalContent]);
+      if(dup){
+        const existing = await global.db.get(`SELECT * FROM stories WHERE id=?`,[dup.id]);
+        return res.status(200).json({message:'Story already uploaded', storyId: dup.id, story: existing});
+      }
+    }catch{}
+
     // Validate nexus signature fields
     // quiz_data / poll_data should be JSON strings if provided
     let qData = quiz_data;
@@ -105,7 +114,19 @@ exports.getFeedStories = async (req, res) => {
     const params=[];
     // privacy handled in JS after fetch for simplicity (need friend checks)
     sql += ` ORDER BY s.created_at DESC`;
-    const stories = await global.db.all(sql, params);
+    let stories = await global.db.all(sql, params);
+    // Postgres lowercase fix
+    stories = stories.map(s => ({
+        ...s,
+        fullName: s.fullName||s.fullname,
+        profilePicture: s.profilePicture||s.profilepicture,
+        media_url: s.media_url||s.mediaUrl||s.mediaurl||s.content,
+        bg_color: s.bg_color||s.bgColor,
+        campus_tag: s.campus_tag||s.campusTag,
+        course_code: s.course_code||s.courseCode,
+        created_at: s.created_at||s.createdAt||s.createdat,
+        expires_at: s.expires_at||s.expiresAt,
+    }));
 
     // Filter by visibility
     const visible=[];
