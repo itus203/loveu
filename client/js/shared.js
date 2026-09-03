@@ -28,6 +28,31 @@
  }
  };
  })();
+// Fix double prefix for any img src that was built as https://diunexus.onrender.comhttps://res.cloudinary...
+  (function(){
+    const fix = () => {
+      document.querySelectorAll('img[src*="https://diunexus"], img[src*="httphttp"]').forEach(img=>{
+        let src = img.getAttribute('src') || img.src;
+        if(src && src.includes('https://res.cloudinary')){
+          const idx = src.indexOf('https://res.cloudinary');
+          if(idx>0) {
+            const fixed = src.slice(idx);
+            if(img.src !== fixed) img.src = fixed;
+            if(img.getAttribute('src') !== fixed) img.setAttribute('src', fixed);
+          }
+        }
+      });
+    };
+    // Run on load and on DOM changes
+    if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ()=>setTimeout(fix, 500));
+    else setTimeout(fix, 500);
+    // Also observe future img adds
+    try {
+      const obs = new MutationObserver(()=>fix());
+      obs.observe(document.documentElement, {childList:true, subtree:true});
+    } catch {}
+  })();
+
 
  // Build shared navbar automatically — skip on home.html where native navbar exists (fixes double-navbar blocking notif button)
  function buildNavbar() {

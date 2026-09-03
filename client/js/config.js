@@ -29,7 +29,20 @@
   window.API_BASE = window.getBaseUrl();
   window.API = window.API_BASE + '/api';
   window.SOCKET_URL = window.API_BASE;
-  window.mediaUrl = function(p){
+  window._fixDoubleUrl = function(url){
+  if(!url) return url;
+  if(url.includes('https://res.cloudinary')) {
+    const idx = url.indexOf('https://res.cloudinary');
+    if(idx>0) url = url.slice(idx);
+  }
+  if(url.includes('httphttp')) {
+    url = url.replace('httphttp','http');
+  }
+  return url;
+};
+window.mediaUrl = function(p){
+  p = window._fixDoubleUrl(p);
+
     if(!p) return '';
     if(p.startsWith('http') || p.startsWith('data:') || p.startsWith('blob:')) return p;
     return window.API_BASE + p;
