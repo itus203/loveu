@@ -347,24 +347,28 @@ async function loadProfile() {
         throw new Error('API return not ok');
     } catch (e) {
         console.warn('loadProfile fallback:', e);
-        // Fail-safe graceful fallback to local storage so UI is never stuck
+        // Fail-safe graceful fallback to local storage so UI is never stuck — handle both camelCase & postgres lowercase
+        const fallbackName = myUser ? (myUser.fullName || myUser.fullname || myUser.name || 'DIU Student') : 'DIU Student';
+        const fallbackPic = myUser ? (myUser.profilePicture || myUser.profilepicture) : null;
+        const fallbackCover = myUser ? (myUser.coverPicture || myUser.coverpicture) : null;
         if (!profileUserId && myUser) {
             profileData = {
-                _id: myId,
-                fullName: myUser.fullName || 'DIU Student',
+                _id: myId || myUser._id || myUser.id || '0',
+                fullName: fallbackName,
                 email: myUser.email || 'student@diu.edu.bd',
                 role: myUser.role || 'Student',
                 department: myUser.department || 'CSE',
                 batch: myUser.batch || 'Batch 64',
-                profilePicture: myUser.profilePicture || null,
-                coverPicture: null,
+                profilePicture: fallbackPic,
+                coverPicture: fallbackCover,
                 bio: myUser.bio || 'Proud Daffodil International University member.',
                 friendCount: 0,
                 postCount: 0,
-                createdAt: new Date().toISOString()
+                createdAt: myUser.createdAt || myUser.createdat || new Date().toISOString()
             };
+            console.log('Fallback profileData:', profileData);
             renderProfile(profileData);
-            loadUserPosts(myId);
+            loadUserPosts(myId || profileData._id);
         } else {
             showToast('Unable to load profile data', 'error');
             document.getElementById('profileName').textContent = 'User Profile';
@@ -375,7 +379,16 @@ async function loadProfile() {
 }
 
 function renderProfile(u) {
-    const isOwner = !profileUserId || String(u._id || u.id) === myId;
+    // Normalize for Postgres lowercase (handle both)
+    if (u) {
+        u.fullName = u.fullName || u.fullname || u.name || 'DIU Member';
+        u.profilePicture = u.profilePicture || u.profilepicture || null;
+        u.coverPicture = u.coverPicture || u.coverpicture || null;
+        u.createdAt = u.createdAt || u.createdat || u.created_at || new Date().toISOString();
+        u._id = u._id || u.id || u.user_id || myId;
+        u.id = u.id || u._id;
+    }
+    const isOwner = !profileUserId || String(u._id || u.id) === String(myId);
     document.title = `${u.fullName} | DIU Nexus`;
     
     // Header name with role & verified badge
