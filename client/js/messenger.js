@@ -444,6 +444,59 @@ function createMessageElement(msg, isOwn){
     const isGif=msg.content && msg.content.startsWith('[GIF]:');
     const isFile=msg.content && msg.content.startsWith('[FILE]:');
     let bubbleContent='', extraClass='';
+    // Global image fix: handle file_url directly (Cloudinary) before prefix checks
+    const rawFileUrl = msg.file_url || msg.fileUrl || '';
+    const isDirectImage = rawFileUrl && (msg.message_type==='image' || /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(rawFileUrl) || rawFileUrl.includes('res.cloudinary.com') || rawFileUrl.includes('/uploads/'));
+    if(isDirectImage && !msg.content?.startsWith('[IMAGE]:') && !msg.content?.startsWith('[FILE]:')){
+        const url=(rawFileUrl.startsWith('http')||rawFileUrl.startsWith('data:')||rawFileUrl.startsWith('blob:')) ? rawFileUrl : (window.mediaUrl ? window.mediaUrl(rawFileUrl) : `${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${rawFileUrl}`);
+        bubbleContent=`<img src="${url}" onclick="openLightbox('${url}')" alt="Image" style="max-width:220px;max-height:220px;border-radius:10px;cursor:zoom-in;display:block;">`;
+        extraClass=' img-msg';
+        // Skip other branches by returning early bubble
+        let replyHtml2='';
+        if(msg.reply_to_id && msg.replyTo){
+            const r=msg.replyTo;
+            const rText = r.content ? (r.content.startsWith('[IMAGE]:')?'📷 Photo': r.content.startsWith('[FILE]:')?'📎 File': r.content.startsWith('[VOICE]:')?'🎤 Voice': r.content).slice(0,60) : '';
+            replyHtml2=`<div style="border-left:3px solid ${isOwn?'rgba(255,255,255,0.8)':'var(--blue)'}; padding:4px 8px; margin-bottom:6px; background:${isOwn?'rgba(255,255,255,0.15)':'var(--bg)'}; border-radius:6px; font-size:0.78rem;">
+                <div style="font-weight:700; font-size:0.72rem; color:${isOwn?'white':'var(--blue)'};">${escHtml(r.fullName||'Reply')}</div>
+                <div style="opacity:0.85; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escHtml(rText)}</div>
+            </div>`;
+        }
+        let forwardedHtml2= msg.is_forwarded ? `<div class="forwarded-label"><i class="fas fa-share"></i> Forwarded</div>` : '';
+        const avatarHtml2 = !isOwn ? (activeUserPic?`<img class="msg-small-av" src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${activeUserPic}" onerror="this.style.display='none'">`:`<div class="msg-small-ap">${getInitials(activeUserName)}</div>`) : `<div class="msg-tail-space"></div>`;
+        let reactionsHtml2='';
+        if(msg.reactions && msg.reactions.length){
+            reactionsHtml2=`<div class="msg-reactions">${msg.reactions.map(r=>`<span class="react-pill ${r.users.includes(String(currentUser._id||currentUser.id))?'mine':''}" onclick="toggleReact(${msg.id},'${r.emoji}',${activeUserType==='group'})">${r.emoji} ${r.count}</span>`).join('')}</div>`;
+        }
+        let statusHtml2='';
+        if(isOwn){
+            let tick='✓ Sent';
+            if(msg.status==='delivered') tick='✓✓ Delivered';
+            else if(msg.status==='seen' || msg.isRead) tick='✓✓ Seen';
+            statusHtml2=`<div class="msg-status"><span class="tick ${tick.includes('Seen')?'seen':''}">${tick}</span></div>`;
+        }
+        // Return early constructed element
+        const _tmp=document.createElement('div');
+        _tmp.className='msg-group '+(isOwn?'mine':'theirs');
+        _tmp.id='msg_'+(msg.id||msg._id);
+        _tmp.dataset.sender=msg.sender_id;
+        const time2=formatTime(msg.created_at);
+        _tmp.innerHTML=`
+            <div class="msg-group-row">
+                ${isOwn?'':avatarHtml2}
+                <div style="position:relative; max-width:78%; display:flex; flex-direction:column; align-items:${isOwn?'flex-end':'flex-start'};">
+                    <div class="msg-bubble ${isOwn?'mine':'theirs'}${extraClass}" data-msgid="${msg.id}">${forwardedHtml2}${replyHtml2}${bubbleContent}</div>
+                    <div class="reaction-bar" style="display:none;" id="reactBar-${msg.id}">${REACT_EMOJIS.map(e=>`<button onclick="toggleReact(${msg.id},'${e}',${activeUserType==='group'})">${e}</button>`).join('')}<button onclick="toggleReact(${msg.id},'👍',${activeUserType==='group'})" style="font-size:0.75rem;">＋</button></div>
+                    ${reactionsHtml2}
+                </div>
+                ${isOwn?'<div class="msg-tail-space"></div>':''}
+            </div>
+            <div class="msg-meta" style="text-align:${isOwn?'right':'left'};"><span>${time2}</span></div>
+            ${statusHtml2}
+        `;
+        _tmp.addEventListener('mouseenter',()=>{ const bar=document.getElementById(`reactBar-${msg.id}`); if(bar) bar.style.display='flex'; });
+        _tmp.addEventListener('mouseleave',()=>{ const bar=document.getElementById(`reactBar-${msg.id}`); if(bar) bar.style.display='none'; });
+        return _tmp;
+    }
     // Reply preview
     let replyHtml='';
     if(msg.reply_to_id && msg.replyTo){

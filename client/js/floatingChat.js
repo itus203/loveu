@@ -117,7 +117,25 @@
       else msgs.slice(-20).forEach(m=>{
         const isOwn=String(m.sender_id)===myIdStr;
         let content=esc(m.content);
-        if(m.content && m.content.startsWith('[IMAGE]:')) content='<img src="'+esc(m.content.replace('[IMAGE]:','').trim())+'" style="max-width:160px;border-radius:8px;">';
+        // handle image via file_url or [IMAGE]: or [FILE]: image
+        const fUrl=m.file_url||m.fileUrl||'';
+        const isImgUrl = fUrl && (m.message_type==='image' || /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(fUrl) || fUrl.includes('res.cloudinary.com') || fUrl.includes('/uploads/'));
+        if(isImgUrl){
+          const url=(fUrl.startsWith('http')||fUrl.startsWith('data:')||fUrl.startsWith('blob:'))? fUrl : (window.mediaUrl?window.mediaUrl(fUrl): API_BASE+fUrl);
+          content=`<img src="${esc(url)}" style="max-width:160px;max-height:160px;border-radius:8px;cursor:zoom-in;" onclick="window.open('${esc(url)}','_blank')">`;
+        } else if(m.content && m.content.startsWith('[IMAGE]:')){
+          const raw=m.content.replace('[IMAGE]:','').trim().split('|')[0].trim();
+          const url=(raw.startsWith('http')||raw.startsWith('data:')||raw.startsWith('blob:'))? raw : (window.mediaUrl?window.mediaUrl(raw): API_BASE+raw);
+          content=`<img src="${esc(url)}" style="max-width:160px;border-radius:8px;cursor:zoom-in;" onclick="window.open('${esc(url)}','_blank')">`;
+        } else if(m.content && m.content.startsWith('[FILE]:')){
+          const parts=m.content.replace('[FILE]:','').split('|');
+          const urlPart=parts[0]||fUrl;
+          const isImg=/\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(urlPart) || (fUrl && /\.(jpg|jpeg|png|gif|webp)$/i.test(fUrl));
+          if(isImg){
+            const url=(urlPart.startsWith('http')||urlPart.startsWith('data:'))? urlPart : (window.mediaUrl?window.mediaUrl(urlPart): API_BASE+urlPart);
+            content=`<img src="${esc(url)}" style="max-width:160px;border-radius:8px;cursor:zoom-in;" onclick="window.open('${esc(url)}','_blank')">`;
+          }
+        }
         const d=document.createElement('div');
         d.innerHTML=`<div class="fbBubble ${isOwn?'mine':'theirs'}">${content}</div>`;
         body.appendChild(d);
@@ -141,8 +159,24 @@
           const body=document.getElementById('fbBody-'+other);
           if(body){
             const isOwn=String(msg.sender_id)===myId;
+            const fUrl=msg.file_url||msg.fileUrl||'';
             let content=esc(msg.content);
-            if(msg.content && msg.content.startsWith('[IMAGE]:')) content='<img src="'+esc(msg.content.replace('[IMAGE]:','').trim())+'" style="max-width:160px;border-radius:8px;">';
+            const isImgUrl = fUrl && (msg.message_type==='image' || /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(fUrl) || fUrl.includes('res.cloudinary.com'));
+            if(isImgUrl){
+              const url=(fUrl.startsWith('http')||fUrl.startsWith('data:'))? fUrl : (window.mediaUrl?window.mediaUrl(fUrl): API_BASE+fUrl);
+              content=`<img src="${esc(url)}" style="max-width:160px;max-height:160px;border-radius:8px;cursor:zoom-in;" onclick="window.open('${esc(url)}','_blank')">`;
+            } else if(msg.content && msg.content.startsWith('[IMAGE]:')){
+              const raw=msg.content.replace('[IMAGE]:','').trim().split('|')[0].trim();
+              const url=(raw.startsWith('http')||raw.startsWith('data:'))? raw : (window.mediaUrl?window.mediaUrl(raw): API_BASE+raw);
+              content=`<img src="${esc(url)}" style="max-width:160px;border-radius:8px;cursor:zoom-in;" onclick="window.open('${esc(url)}','_blank')">`;
+            } else if(msg.content && msg.content.startsWith('[FILE]:')){
+              const parts=msg.content.replace('[FILE]:','').split('|');
+              const urlPart=parts[0]||fUrl;
+              if(/\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(urlPart)) {
+                const url=(urlPart.startsWith('http')||urlPart.startsWith('data:'))? urlPart : (window.mediaUrl?window.mediaUrl(urlPart): API_BASE+urlPart);
+                content=`<img src="${esc(url)}" style="max-width:160px;border-radius:8px;cursor:zoom-in;" onclick="window.open('${esc(url)}','_blank')">`;
+              }
+            }
             const d=document.createElement('div'); d.innerHTML=`<div class="fbBubble ${isOwn?'mine':'theirs'}">${content}</div>`; body.appendChild(d); body.scrollTop=body.scrollHeight;
             // if minimized, show badge
             if(win.classList.contains('minimized')){
