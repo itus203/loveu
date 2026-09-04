@@ -6,7 +6,9 @@ const nodemailer = require('nodemailer');
 async function sendOtpEmail(toEmail, otp, fullName) {
     try {
         const gmailUser = process.env.GMAIL_USER;
-        const gmailPass = process.env.GMAIL_APP_PASSWORD;
+        let gmailPass = process.env.GMAIL_APP_PASSWORD;
+        // App password often has spaces like "uhhk edvs gbxv mtwt" — strip spaces for SMTP
+        if (gmailPass) gmailPass = gmailPass.replace(/\s+/g, '');
 
         if (!gmailUser || !gmailPass) {
             console.warn('⚠️  GMAIL_USER or GMAIL_APP_PASSWORD missing in .env — email skipped');
