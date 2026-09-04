@@ -1256,13 +1256,6 @@ loadProfile = async function() {
     }
 };
 
-loadProfile();
-
-</script>
-</body>
-</html>
-
-
 function sharePost(postId){
     if(navigator.share){
         navigator.share({title:'DIU Nexus Post', url: window.location.href.split('?')[0] + '?post=' + postId}).catch(()=>{});
@@ -1282,3 +1275,9 @@ function reportPost(postId, e){
     }).catch(()=>showToast('Failed to report','error'));
     document.querySelectorAll('.dropdown-menu').forEach(m=>{ m.classList.remove('show'); m.style.display='none'; });
 }
+
+loadProfile();
+
+</script>
+</body>
+</html>
