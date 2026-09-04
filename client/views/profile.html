@@ -51,6 +51,8 @@
 
         .email-lock-badge { background: #f0fdf4; border: 1.5px solid #86efac; color: #166534; padding: 12px; border-radius: 10px; font-size: 0.82rem; line-height: 1.5; margin-top: 12px; }
         [data-theme="dark"] .email-lock-badge { background: rgba(22, 101, 52, 0.2); border-color: #166534; color: #86efac; }
+        .diu-verified { background:#e7f0ff; color:#0866ff; font-size:0.62rem; padding:2px 6px; border-radius:10px; border:1px solid #bfdbfe; display:inline-flex; align-items:center; gap:3px; flex-shrink:0; white-space:nowrap; line-height:1; }
+        [data-theme="dark"] .diu-verified { background: rgba(8,102,255,0.18); border-color: rgba(96,165,250,0.35); color:#93c5fd; }
         
         /* Friends Grid */
         .friends-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
@@ -747,7 +749,7 @@ function buildProfilePostCard(post){
             <div class="post-author" style="display:flex;align-items:center;gap:10px;">
                 ${avatarHtml}
                 <div>
-                    <div class="post-author-name" onclick="window.location.href='profile.html?id=${post.user?._id || post.user_id}'" style="cursor:pointer; font-weight:800; font-size:0.95rem; display:flex; align-items:center; gap:6px;">${esc(post.user?.fullName || post.fullName || 'Unknown')}<span class="diu-verified" style="background:#e7f0ff;color:#0866ff;font-size:0.62rem;padding:2px 6px;border-radius:10px;border:1px solid #bfdbfe;display:inline-flex;align-items:center;gap:3px;"><i class="fas fa-check" style="font-size:0.6rem;"></i> Verified</span></div>
+                    <div class="post-author-name" onclick="window.location.href='profile.html?id=${post.user?._id || post.user_id}'" style="cursor:pointer; font-weight:800; font-size:0.95rem; display:flex; align-items:center; gap:6px; flex-wrap:wrap; min-width:0;"><span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:165px; display:inline-block; vertical-align:middle;">${esc(post.user?.fullName || post.fullName || 'Unknown')}</span><span class="diu-verified"><i class="fas fa-check" style="font-size:0.6rem;"></i> Verified</span></div>
                     <div class="post-author-meta" style="font-size:0.78rem;color:var(--text-secondary);display:flex;gap:6px;align-items:center;"><span>${timeAgo(post.created_at)}</span><span>·</span><i class="fas ${post.visibility === 'Public' ? 'fa-globe-americas' : 'fa-user-friends'}" title="${post.visibility}"></i></div>
                 </div>
             </div>
