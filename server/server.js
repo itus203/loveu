@@ -4,8 +4,9 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const hpp = require('hpp');
-const sqlite3 = require('sqlite3').verbose();
-const { open } = require('sqlite');
+let sqlite3, open;
+try { sqlite3 = require('sqlite3').verbose(); } catch(e) { console.warn('⚠️  sqlite3 not available in server.js - using PG'); }
+try { ({ open } = require('sqlite')); } catch(e) {}
 const path = require('path');
 const http = require('http');
 const { Server } = require('socket.io');

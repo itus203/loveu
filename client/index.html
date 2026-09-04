@@ -748,7 +748,18 @@ async function handleLogin() {
  body: JSON.stringify({ email, password })
  });
  const data = await res.json();
- if (!res.ok) throw new Error(data.message);
+ if (!res.ok) {
+   // Unverified account: backend auto-sent new OTP — show OTP panel
+   if (data.requiresOtp) {
+     pendingOtpEmail = data.email || email;
+     showOtpPanel(pendingOtpEmail);
+     showAlert('otpAlert', data.message || `A verification code was sent to ${pendingOtpEmail}. Please enter it below.`, 'success');
+     // Also hint on loginAlert for visibility
+     showAlert('loginAlert', data.message || 'Please verify your email — check OTP panel below.', 'success');
+     return;
+   }
+   throw new Error(data.message);
+ }
  localStorage.setItem('token', data.token);
  localStorage.setItem('user', JSON.stringify(data.user));
  showAlert('loginAlert', 'Login successful! Redirecting...', 'success');
@@ -817,10 +828,20 @@ async function handleRegister() {
 }
 
 function showOtpPanel(email) {
- // Hide register form, show OTP panel
- const panel = document.getElementById('registerPanel');
+ // Hide both login & register forms, show OTP panel (works from either tab)
+ const loginPanel = document.getElementById('loginPanel');
+ const regPanel = document.getElementById('registerPanel');
+ const formBody = document.querySelector('.form-body');
  const existing = document.getElementById('otpBox');
  if (existing) existing.remove();
+ // Remember which tab was active to restore on back
+ const wasLoginActive = loginPanel.classList.contains('active');
+ window._otpReturnTab = wasLoginActive ? 'login' : 'register';
+ // Hide both panels visually
+ loginPanel.style.display = 'none';
+ regPanel.style.display = 'none';
+ loginPanel.classList.remove('active');
+ regPanel.classList.remove('active');
  const otpBox = document.createElement('div');
  otpBox.id = 'otpBox';
  otpBox.style.cssText = 'text-align:center;padding:8px 0;';
@@ -845,12 +866,23 @@ function showOtpPanel(email) {
  <button id="resendBtn" onclick="handleResendOtp()" style="background:none;border:none;color:#0866ff;font-weight:700;cursor:pointer;font-family:inherit;font-size:0.82rem;">Resend</button>
  <span id="resendTimer"></span>
  </div>
- <button onclick="document.getElementById('otpBox').remove();" style="margin-top:12px;background:none;border:none;color:var(--text-secondary);font-size:0.82rem;cursor:pointer;font-family:inherit;">← Back to register</button>
+ <button onclick="restoreFromOtp()" style="margin-top:12px;background:none;border:none;color:var(--text-secondary);font-size:0.82rem;cursor:pointer;font-family:inherit;">← Back</button>
  `;
- panel.insertAdjacentElement('afterend', otpBox);
- panel.style.display = 'none';
+ // Insert into form-body so it shows regardless of tab
+ (formBody || regPanel.parentElement).appendChild(otpBox);
  document.getElementById('otp1').focus();
  startResendTimer();
+}
+function restoreFromOtp(){
+ const box=document.getElementById('otpBox');
+ if(box) box.remove();
+ const loginPanel=document.getElementById('loginPanel');
+ const regPanel=document.getElementById('registerPanel');
+ loginPanel.style.display='';
+ regPanel.style.display='';
+ // Restore previous tab
+ const tab = window._otpReturnTab || 'login';
+ switchTab(tab);
 }
 
 function otpNext(el, nextId) {

@@ -7,22 +7,15 @@ async function sendOtpEmail(toEmail, otp, fullName) {
     try {
         const gmailUser = process.env.GMAIL_USER;
         let gmailPass = process.env.GMAIL_APP_PASSWORD;
-        // App password often has spaces like "uhhk edvs gbxv mtwt" — strip spaces for SMTP
         if (gmailPass) gmailPass = gmailPass.replace(/\s+/g, '');
-
         if (!gmailUser || !gmailPass) {
             console.warn('⚠️  GMAIL_USER or GMAIL_APP_PASSWORD missing in .env — email skipped');
-            return;
+            return false;
         }
-
         const transporter = nodemailer.createTransport({
             service: 'gmail',
-            auth: {
-                user: gmailUser,
-                pass: gmailPass
-            }
+            auth: { user: gmailUser, pass: gmailPass }
         });
-
         await transporter.sendMail({
             from: `"DIU Nexus" <${gmailUser}>`,
             to: toEmail,
@@ -52,8 +45,10 @@ async function sendOtpEmail(toEmail, otp, fullName) {
             </div>`
         });
         console.log(`✅ OTP email sent to ${toEmail}`);
+        return true;
     } catch(e) {
         console.error('❌ Email send error:', e.message);
+        return false;
     }
 }
 
@@ -69,7 +64,6 @@ exports.register = async (req, res) => {
         if (!emailRegex.test(email))
             return res.status(400).json({ message: 'Invalid email address' });
 
-        // Nexus Team Admin whitelist: only @diu.edu.bd allowed except admins (including new)
         const NEXUS_ADMINS = ['codingwithsalman11@gmail.com','mehedirohan2002@gmail.com','mehedihasanrohan2002@gmail.com','codingwithsifat@gmail.com','testadmin@diu.edu.bd','jannatulnaima221116@gmail.com','nsumaiya205398@gmail.com','www.rudul@gmail.com'];
         const lowerEmail = email.toLowerCase().trim();
         const isNexusAdmin = NEXUS_ADMINS.includes(lowerEmail);
@@ -79,13 +73,11 @@ exports.register = async (req, res) => {
             });
         }
 
-        // DIU Email validation: Student/Alumni = name+ID@diu.edu.bd (e.g. niloy242-35-203@diu.edu.bd), Faculty = name@diu.edu.bd (no ID)
         let extractedId = null;
         const roleForEmailCheck = (role||'Student').toLowerCase();
         if (!isNexusAdmin && lowerEmail.endsWith('@diu.edu.bd')) {
             const local = lowerEmail.split('@')[0];
             if (roleForEmailCheck === 'faculty' || roleForEmailCheck === 'teacher') {
-                // Faculty: MUST be name@diu.edu.bd without ID pattern (...-..-...)
                 const facultyIdMatch = local.match(/(\d{3}-\d{2}-\d{3,4})$/);
                 if (facultyIdMatch) {
                     return res.status(400).json({ message: 'Faculty email must be name@diu.edu.bd without ID numbers. Use e.g. ratin@diu.edu.bd — Student/Alumni must use name+ID pattern like niloy242-35-203@diu.edu.bd' });
@@ -96,9 +88,7 @@ exports.register = async (req, res) => {
                 if (local.length < 2) {
                     return res.status(400).json({ message: 'Faculty email name too short. Use at least 2 letters before @diu.edu.bd' });
                 }
-                // Faculty: no studentId from email, but if studentId provided manually, allow and validate below
             } else {
-                // Student / Alumni: MUST be name + ID pattern
                 const emailIdMatch = local.match(/(\d{3}-\d{2}-\d{3,4})$/);
                 if (!emailIdMatch) {
                     return res.status(400).json({ message: 'Invalid DIU Student/Alumni email. Must be: name + ID + @diu.edu.bd  e.g. niloy242-35-203@diu.edu.bd (ID: XXX-XX-XXX/XXXX). Faculty use name@diu.edu.bd without ID' });
@@ -115,7 +105,6 @@ exports.register = async (req, res) => {
             }
         }
 
-        // DIU ID strict validation (now allows 3 or 4 digit serial, but blocks fake)
         const idToValidate = studentId ? studentId.trim() : extractedId;
         if (idToValidate) {
             const diuIdRegex = /^\d{3}-\d{2}-\d{3,4}$/;
@@ -135,34 +124,69 @@ exports.register = async (req, res) => {
             if (serialNum < 100 || serialNum > 9999) {
                 return res.status(400).json({ message: 'Invalid serial. Must be 100-9999' });
             }
-            // Previously blocked 242-35-203 as example fake — now unblocked per user request (niloy's real ID)
-            const blockedFake = ['232-15-125']; // 242-35-203 removed
+            const blockedFake = ['232-15-125'];
             if (blockedFake.includes(idToValidate)) {
                 const isExistingBlocked = await global.db.get('SELECT id FROM users WHERE studentId=?', [idToValidate]);
                 if (!isExistingBlocked) {
                     return res.status(400).json({ message: 'This ID appears fabricated. Please use your official DIU ID from your ID card. If you believe this is your real ID, contact admin@diu.edu.bd' });
                 }
             }
-            const existingId = await global.db.get('SELECT id FROM users WHERE studentId=?', [idToValidate]);
-            if (existingId) return res.status(400).json({ message: 'This DIU ID is already registered. Please Sign In instead.' });
-            // Email consistency: student email should contain ID or be predictable? For now, if email is @diu.edu.bd, local part should not be generic gmail
-            // If studentId provided, we can optionally check email contains studentId without dashes
-            // const idNoDash = studentId.replace(/-/g,'');
-            // if (!lowerEmail.includes(idNoDash) && !lowerEmail.includes(serialPart)) {
-            //   // soft warning, not block
-            // }
         }
 
-        const existing = await global.db.get('SELECT id FROM users WHERE email=?', [lowerEmail]);
-        if (existing) return res.status(400).json({ message: 'Email address is already registered. Please Sign In instead.' });
+        // Check if already a verified user
+        let existingVerified = null;
+        try { existingVerified = await global.db.get('SELECT * FROM users WHERE email=?', [lowerEmail]); } catch {}
+        if (existingVerified) {
+            const v = existingVerified.isVerified ?? existingVerified.isverified ?? existingVerified.is_verified;
+            const isVerifiedEmail = v && Number(v) !== 0;
+            if (isVerifiedEmail) {
+                return res.status(400).json({ message: 'Email address is already registered. Please Sign In instead.' });
+            } else {
+                // Legacy ghost: clean it now — will be replaced by pending flow
+                console.log(`[Auth] Cleaning legacy unverified ghost ${lowerEmail}`);
+                await global.db.run('DELETE FROM users WHERE email=?', [lowerEmail]);
+                try { await global.db.run('DELETE FROM email_otps WHERE email=?', [lowerEmail]); } catch {}
+            }
+        }
+
+        // StudentId uniqueness: check verified users and pending
+        if (idToValidate) {
+            let ghostIdUser = null;
+            try { ghostIdUser = await global.db.get('SELECT * FROM users WHERE studentId=?', [idToValidate]); } catch {}
+            if (ghostIdUser) {
+                const v = ghostIdUser.isVerified ?? ghostIdUser.isverified ?? ghostIdUser.is_verified;
+                const isVerifiedId = v && Number(v) !== 0;
+                const sameEmail = ghostIdUser.email && ghostIdUser.email.toLowerCase().trim() === lowerEmail;
+                if (isVerifiedId && !sameEmail) {
+                    return res.status(400).json({ message: 'This DIU ID is already registered. Please Sign In instead.' });
+                }
+                if (!isVerifiedId && !sameEmail) {
+                    console.log(`[Auth] Cleaning legacy ghost ID ${idToValidate}`);
+                    await global.db.run('DELETE FROM users WHERE studentId=?', [idToValidate]);
+                }
+            }
+            // Check pending for same ID but different email
+            try {
+                const pendingSameId = await global.db.get('SELECT email FROM pending_registrations WHERE studentId=?', [idToValidate]);
+                if (pendingSameId && pendingSameId.email.toLowerCase().trim() !== lowerEmail) {
+                    // Allow overwrite if pending is expired (>10min)
+                    const pendingRow = await global.db.get('SELECT expires_at FROM pending_registrations WHERE studentId=?', [idToValidate]);
+                    if (pendingRow && new Date(pendingRow.expires_at) > new Date()) {
+                        return res.status(400).json({ message: 'This DIU ID is already pending verification with another email. Please use your own ID or wait 10 minutes.' });
+                    } else {
+                        await global.db.run('DELETE FROM pending_registrations WHERE studentId=?', [idToValidate]);
+                    }
+                }
+            } catch {}
+        }
+
+        // Also check pending for same email — allow re-register (overwrite)
+        // No block, just overwrite below
 
         const hashedPassword = await bcrypt.hash(password, 12);
-
-        // OTP flow: if Gmail configured, require email verification (Create -> OTP mail -> verify -> login)
         const hasGmail = !!(process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD);
-        const isVerified = hasGmail ? 0 : 1;
+        const isVerifiedFlag = hasGmail ? 0 : 1;
 
-        // Nexus Team Admin whitelist enforcement — include new admins
         const NEXUS_ADMIN_SET = ['codingwithsalman11@gmail.com','mehedirohan2002@gmail.com','mehedihasanrohan2002@gmail.com','codingwithsifat@gmail.com','testadmin@diu.edu.bd','jannatulnaima221116@gmail.com','nsumaiya205398@gmail.com','www.rudul@gmail.com'];
         let finalRole = role || 'Student';
         const wantsAdmin = finalRole === 'Admin';
@@ -172,44 +196,58 @@ exports.register = async (req, res) => {
                 try{ await global.db.run(`INSERT INTO audit_logs (user_id, user_email, user_role, action, target_type, details, severity) VALUES (NULL, ?, ?, ?, ?, ?, ?)`, [lowerEmail, 'Student', 'UNAUTHORIZED_ADMIN_ATTEMPT', 'auth', null, `Blocked admin registration attempt for ${lowerEmail}`, 'warning']); }catch{}
                 return res.status(403).json({ message: 'Admin registration restricted to Nexus Team only. Your attempt has been logged.' });
             }
-            // Whitelisted users can become Admin even if admins exist
             finalRole = 'Admin';
         } else {
-            // Ensure non-whitelisted cannot be admin via any other path
             if (finalRole === 'Admin' && !isWhitelisted) finalRole = 'Student';
         }
 
-        const result = await global.db.run(
-            'INSERT INTO users (fullName, email, studentId, password, role, department, batch, gender, isVerified) VALUES (?,?,?,?,?,?,?,?,?)',
-            [fullName.trim(), lowerEmail, studentId ? studentId.trim() : null, hashedPassword,
-             finalRole, department || null, batch || null, gender || null, isVerified]
-        );
-
-        if (hasGmail) {
-            const otp = Math.floor(100000 + Math.random() * 900000).toString();
-            const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
-            await global.db.run(
-                'INSERT INTO email_otps (email, otp, expires_at, used) VALUES (?,?,?,0)',
-                [email.toLowerCase().trim(), otp, expiresAt]
+        // If Gmail not configured, directly create verified user (legacy dev mode)
+        if (!hasGmail) {
+            const result = await global.db.run(
+                'INSERT INTO users (fullName, email, studentId, password, role, department, batch, gender, isVerified) VALUES (?,?,?,?,?,?,?,?,?)',
+                [fullName.trim(), lowerEmail, studentId ? studentId.trim() : null, hashedPassword, finalRole, department || null, batch || null, gender || null, 1]
             );
-            // Super fast: don't await email (was 2min), send in background + log OTP for dev (if mail fails)
-            console.log(`[OTP] ${email.toLowerCase().trim()} -> ${otp} (expires ${expiresAt})`);
-            sendOtpEmail(email.toLowerCase().trim(), otp, fullName.trim()).catch(e=> console.error('[OTP email background fail]', e.message));
-            return res.status(201).json({
-                message: 'Registration successful! An OTP has been sent to your institutional email. Please verify to login.',
-                requiresOtp: true,
-                email: email.toLowerCase().trim()
-            });
+            const token = jwt.sign({ id: result.lastID, role: finalRole }, process.env.JWT_SECRET, { expiresIn: '7d' });
+            let user = await global.db.get('SELECT id as _id, fullName, email, role, department, batch, profilePicture FROM users WHERE id=?', [result.lastID]);
+            if (user) {
+                user.fullName = user.fullName || user.fullname;
+                user.profilePicture = user.profilePicture || user.profilepicture;
+                user._id = user._id || user.id;
+            }
+            return res.status(201).json({ message: 'Registration successful', token, user, requiresOtp: false });
         }
 
-        const token = jwt.sign({ id: result.lastID, role: finalRole }, process.env.JWT_SECRET, { expiresIn: '7d' });
-        let user = await global.db.get('SELECT id as _id, fullName, email, role, department, batch, profilePicture FROM users WHERE id=?', [result.lastID]);
-        if (user) {
-            user.fullName = user.fullName || user.fullname;
-            user.profilePicture = user.profilePicture || user.profilepicture;
-            user._id = user._id || user.id;
-        }
-        res.status(201).json({ message: 'Registration successful', token, user, requiresOtp: false });
+        // === OTP pending flow: DO NOT insert into users yet ===
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+
+        // Ensure pending table exists (for hot-reload without restart)
+        try { await global.db.exec(`CREATE TABLE IF NOT EXISTS pending_registrations (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, fullName TEXT NOT NULL, studentId TEXT, password TEXT NOT NULL, role TEXT DEFAULT 'Student', department TEXT, batch TEXT, gender TEXT, otp TEXT NOT NULL, expires_at DATETIME NOT NULL, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`); } catch {}
+
+        // Upsert pending: delete then insert (works for SQLite & Postgres)
+        try { await global.db.run('DELETE FROM pending_registrations WHERE email=?', [lowerEmail]); } catch {}
+        await global.db.run(
+            'INSERT INTO pending_registrations (email, fullName, studentId, password, role, department, batch, gender, otp, expires_at) VALUES (?,?,?,?,?,?,?,?,?,?)',
+            [lowerEmail, fullName.trim(), studentId ? studentId.trim() : null, hashedPassword, finalRole, department || null, batch || null, gender || null, otp, expiresAt]
+        );
+        // Also insert into email_otps for compatibility / resend lookup
+        try {
+            await global.db.run('INSERT INTO email_otps (email, otp, expires_at, used) VALUES (?,?,?,0)', [lowerEmail, otp, expiresAt]);
+        } catch {}
+
+        console.log(`[OTP pending] ${lowerEmail} -> ${otp} (expires ${expiresAt})`);
+
+        // Send email in background but log result; if fails, we still keep pending so user can resend
+        sendOtpEmail(lowerEmail, otp, fullName.trim()).then(sent=>{
+            if(!sent) console.error(`[OTP] Failed to send to ${lowerEmail} — pending kept for resend`);
+        }).catch(e=> console.error('[OTP email background fail]', e.message));
+
+        return res.status(201).json({
+            message: 'Registration successful! An OTP has been sent to your institutional email. Please verify to create your account.',
+            requiresOtp: true,
+            email: lowerEmail
+        });
+
     } catch (e) {
         console.error('Register error:', e);
         res.status(500).json({ message: e.message });
@@ -221,20 +259,59 @@ exports.login = async (req, res) => {
         const { email, password } = req.body;
         if (!email || !password) return res.status(400).json({ message: 'Email and password are required' });
 
-        const user = await global.db.get('SELECT * FROM users WHERE email=?', [email.toLowerCase().trim()]);
+        const lowerEmail = email.toLowerCase().trim();
+
+        // Check pending first: if account not yet verified, tell to verify
+        let pending = null;
+        try { pending = await global.db.get('SELECT * FROM pending_registrations WHERE email=?', [lowerEmail]); } catch {}
+        if (pending) {
+            // Pending exists but not yet verified — check password against pending
+            const isMatchPending = await bcrypt.compare(password, pending.password);
+            if (!isMatchPending) return res.status(401).json({ message: 'Invalid email or password' });
+            // Check expiry — if expired, delete pending and allow re-register
+            if (new Date(pending.expires_at) < new Date()) {
+                try { await global.db.run('DELETE FROM pending_registrations WHERE email=?', [lowerEmail]); } catch {}
+                return res.status(401).json({ message: 'Your OTP has expired. Please create account again to get a new code.', requiresOtp: false });
+            }
+            // Auto-resend fresh OTP if pending is valid
+            try {
+                const newOtp = Math.floor(100000 + Math.random() * 900000).toString();
+                const newExpires = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+                await global.db.run('UPDATE pending_registrations SET otp=?, expires_at=? WHERE email=?', [newOtp, newExpires, lowerEmail]);
+                try { await global.db.run('INSERT INTO email_otps (email, otp, expires_at, used) VALUES (?,?,?,0)', [lowerEmail, newOtp, newExpires]); } catch {}
+                console.log(`[OTP pending login-resend] ${lowerEmail} -> ${newOtp}`);
+                sendOtpEmail(lowerEmail, newOtp, pending.fullName || pending.fullname || 'User').catch(e=> console.error('[OTP pending resend fail]', e.message));
+            } catch (otpErr) { console.error('[OTP pending resend error]', otpErr.message); }
+            return res.status(401).json({
+                message: 'Please verify your email first. A new OTP has been sent to your email. Enter it to complete registration.',
+                requiresOtp: true,
+                email: lowerEmail
+            });
+        }
+
+        const user = await global.db.get('SELECT * FROM users WHERE email=?', [lowerEmail]);
         if (!user) return res.status(401).json({ message: 'Invalid email or password' });
-        const isVerifiedVal = user.isVerified ?? user.isverified ?? user.is_verified ?? user.isVerified;
-        // Postgres lowercases column to isverified, so check all variants — 1/true means verified
-        if (!isVerifiedVal || Number(isVerifiedVal) === 0) return res.status(401).json({
-            message: 'Please verify your institutional email first.',
-            requiresOtp: true,
-            email: user.email
-        });
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(401).json({ message: 'Invalid email or password' });
 
-        // Nexus Team Admin verification on login — include new admins
+        const isVerifiedVal = user.isVerified ?? user.isverified ?? user.is_verified ?? user.isVerified;
+        if (!isVerifiedVal || Number(isVerifiedVal) === 0) {
+            // Legacy ghost: auto-send OTP
+            try {
+                const otp = Math.floor(100000 + Math.random() * 900000).toString();
+                const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+                await global.db.run('INSERT INTO email_otps (email, otp, expires_at, used) VALUES (?,?,?,0)', [user.email.toLowerCase().trim(), otp, expiresAt]);
+                console.log(`[OTP legacy login-resend] ${user.email.toLowerCase().trim()} -> ${otp}`);
+                sendOtpEmail(user.email.toLowerCase().trim(), otp, user.fullName || user.fullname || 'User').catch(e=> console.error('[OTP legacy resend fail]', e.message));
+            } catch (otpErr) { console.error('[OTP legacy resend error]', otpErr.message); }
+            return res.status(401).json({
+                message: 'Please verify your institutional email first. A new OTP has been sent to your email.',
+                requiresOtp: true,
+                email: user.email
+            });
+        }
+
         const NEXUS_ADMINS_LOGIN = ['codingwithsalman11@gmail.com','mehedirohan2002@gmail.com','mehedihasanrohan2002@gmail.com','codingwithsifat@gmail.com','testadmin@diu.edu.bd','jannatulnaima221116@gmail.com','nsumaiya205398@gmail.com','www.rudul@gmail.com'];
         if (user.role === 'Admin' && !NEXUS_ADMINS_LOGIN.includes(user.email.toLowerCase().trim())) {
             try{ await global.db.run(`INSERT INTO audit_logs (user_id, user_email, user_role, action, target_type, details, severity) VALUES (?,?,?,?,?,?,?)`, [user.id, user.email, user.role, 'UNAUTHORIZED_ADMIN_LOGIN', 'auth', `Blocked admin login for non-whitelisted ${user.email}`, 'critical']); }catch{}
@@ -244,7 +321,6 @@ exports.login = async (req, res) => {
         const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
         const { password: _, ...userWithoutPassword } = user;
         userWithoutPassword._id = user.id;
-        // Normalize for Postgres lowercase -> frontend expects camelCase
         userWithoutPassword.fullName = userWithoutPassword.fullName || userWithoutPassword.fullname;
         userWithoutPassword.profilePicture = userWithoutPassword.profilePicture || userWithoutPassword.profilepicture;
         userWithoutPassword.coverPicture = userWithoutPassword.coverPicture || userWithoutPassword.coverpicture;
@@ -263,19 +339,70 @@ exports.verifyOtp = async (req, res) => {
     try {
         const { email, otp } = req.body;
         if (!email || !otp) return res.status(400).json({ message: 'Email and OTP code are required' });
+        const lowerEmail = email.toLowerCase().trim();
+        const otpStr = otp.toString().trim();
 
+        // Try pending flow first
+        let pending = null;
+        try { pending = await global.db.get('SELECT * FROM pending_registrations WHERE email=?', [lowerEmail]); } catch {}
+        if (pending) {
+            if (pending.otp !== otpStr) {
+                // Also check email_otps for resend cases where pending otp was updated but old otp in email_otps
+                const alt = await global.db.get('SELECT * FROM email_otps WHERE email=? AND otp=? AND used=0 ORDER BY created_at DESC LIMIT 1', [lowerEmail, otpStr]);
+                if (!alt) return res.status(400).json({ message: 'Invalid OTP code' });
+                // Use pending's data but accept alt
+            }
+            if (new Date(pending.expires_at) < new Date())
+                return res.status(400).json({ message: 'OTP code has expired. Please request a new code.' });
+
+            // Create verified user from pending
+            const existingCheck = await global.db.get('SELECT id FROM users WHERE email=?', [lowerEmail]);
+            if (existingCheck) {
+                // Should not happen, but clean pending and treat as verified
+                await global.db.run('DELETE FROM pending_registrations WHERE email=?', [lowerEmail]);
+                await global.db.run('UPDATE users SET isVerified=1 WHERE email=?', [lowerEmail]);
+                const user = await global.db.get('SELECT * FROM users WHERE email=?', [lowerEmail]);
+                const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
+                const { password: _, ...uw } = user;
+                uw._id = user.id;
+                uw.fullName = uw.fullName || uw.fullname;
+                uw.profilePicture = uw.profilePicture || uw.profilepicture;
+                uw.coverPicture = uw.coverPicture || uw.coverpicture;
+                return res.json({ message: '✅ Email verified! Welcome to DIU Nexus.', token, user: uw });
+            }
+
+            const result = await global.db.run(
+                'INSERT INTO users (fullName, email, studentId, password, role, department, batch, gender, isVerified) VALUES (?,?,?,?,?,?,?,?,?)',
+                [pending.fullName || pending.fullname, lowerEmail, pending.studentId || pending.studentid || null, pending.password, pending.role, pending.department, pending.batch, pending.gender, 1]
+            );
+            // Mark OTP used and clean pending
+            try { await global.db.run('UPDATE email_otps SET used=1 WHERE email=? AND otp=?', [lowerEmail, otpStr]); } catch {}
+            try { await global.db.run('DELETE FROM pending_registrations WHERE email=?', [lowerEmail]); } catch {}
+
+            const user = await global.db.get('SELECT * FROM users WHERE email=?', [lowerEmail]);
+            const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
+            const { password: _, ...userWithoutPassword } = user;
+            userWithoutPassword._id = user.id;
+            userWithoutPassword.fullName = userWithoutPassword.fullName || userWithoutPassword.fullname;
+            userWithoutPassword.profilePicture = userWithoutPassword.profilePicture || userWithoutPassword.profilepicture;
+            userWithoutPassword.coverPicture = userWithoutPassword.coverPicture || userWithoutPassword.coverpicture;
+            return res.json({ message: '✅ Email verified successfully! Welcome to DIU Nexus.', token, user: userWithoutPassword });
+        }
+
+        // Legacy flow: check email_otps for ghosts
         const record = await global.db.get(
             'SELECT * FROM email_otps WHERE email=? AND otp=? AND used=0 ORDER BY created_at DESC LIMIT 1',
-            [email.toLowerCase().trim(), otp.toString().trim()]
+            [lowerEmail, otpStr]
         );
         if (!record) return res.status(400).json({ message: 'Invalid or expired OTP code' });
         if (new Date(record.expires_at) < new Date())
             return res.status(400).json({ message: 'OTP code has expired. Please request a new code.' });
 
         await global.db.run('UPDATE email_otps SET used=1 WHERE id=?', [record.id]);
-        await global.db.run('UPDATE users SET isVerified=1 WHERE email=?', [email.toLowerCase().trim()]);
+        await global.db.run('UPDATE users SET isVerified=1 WHERE email=?', [lowerEmail]);
 
-        const user = await global.db.get('SELECT * FROM users WHERE email=?', [email.toLowerCase().trim()]);
+        const user = await global.db.get('SELECT * FROM users WHERE email=?', [lowerEmail]);
+        if (!user) return res.status(404).json({ message: 'User not found. Please register again.' });
         const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
         const { password: _, ...userWithoutPassword } = user;
         userWithoutPassword._id = user.id;
@@ -295,22 +422,34 @@ exports.resendOtp = async (req, res) => {
     try {
         const { email } = req.body;
         if (!email) return res.status(400).json({ message: 'Email is required' });
+        const lowerEmail = email.toLowerCase().trim();
 
-        const user = await global.db.get('SELECT * FROM users WHERE email=?', [email.toLowerCase().trim()]);
-        if (!user) return res.status(404).json({ message: 'User not found' });
+        // Pending flow
+        let pending = null;
+        try { pending = await global.db.get('SELECT * FROM pending_registrations WHERE email=?', [lowerEmail]); } catch {}
+        if (pending) {
+            const otp = Math.floor(100000 + Math.random() * 900000).toString();
+            const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+            await global.db.run('UPDATE pending_registrations SET otp=?, expires_at=? WHERE email=?', [otp, expiresAt, lowerEmail]);
+            try { await global.db.run('INSERT INTO email_otps (email, otp, expires_at, used) VALUES (?,?,?,0)', [lowerEmail, otp, expiresAt]); } catch {}
+            console.log(`[OTP pending resend] ${lowerEmail} -> ${otp}`);
+            sendOtpEmail(lowerEmail, otp, pending.fullName || pending.fullname || 'User').catch(e=> console.error('[OTP pending resend fail]', e.message));
+            return res.json({ message: 'A new OTP code has been sent to your email.' });
+        }
+
+        const user = await global.db.get('SELECT * FROM users WHERE email=?', [lowerEmail]);
+        if (!user) return res.status(404).json({ message: 'User not found. Please register again.' });
         const alreadyVerified = user.isVerified ?? user.isverified ?? user.is_verified;
         if (alreadyVerified && Number(alreadyVerified) !== 0) return res.status(400).json({ message: 'Email is already verified' });
 
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
         const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
-        await global.db.run(
-            'INSERT INTO email_otps (email, otp, expires_at, used) VALUES (?,?,?,0)',
-            [email.toLowerCase().trim(), otp, expiresAt]
-        );
-        console.log(`[OTP resend] ${email.toLowerCase().trim()} -> ${otp}`);
-        sendOtpEmail(email.toLowerCase().trim(), otp, user.fullName || user.fullname).catch(e=> console.error('[OTP resend fail]', e.message));
+        await global.db.run('INSERT INTO email_otps (email, otp, expires_at, used) VALUES (?,?,?,0)', [lowerEmail, otp, expiresAt]);
+        console.log(`[OTP resend] ${lowerEmail} -> ${otp}`);
+        sendOtpEmail(lowerEmail, otp, user.fullName || user.fullname).catch(e=> console.error('[OTP resend fail]', e.message));
         res.json({ message: 'A new OTP code has been sent to your email.' });
     } catch (e) {
+        console.error('Resend error', e);
         res.status(500).json({ message: e.message });
     }
 };

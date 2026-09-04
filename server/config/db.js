@@ -1,6 +1,7 @@
 const path = require('path');
-const sqlite3 = require('sqlite3').verbose();
-const { open } = require('sqlite');
+let sqlite3, open;
+try { sqlite3 = require('sqlite3').verbose(); } catch(e) { console.warn('⚠️ sqlite3 binding missing - will use PG/Mongo if configured'); }
+try { ({ open } = require('sqlite')); } catch(e) { console.warn('⚠️ sqlite package missing'); }
 const { MongoCloudAdapter } = require('./mongoAdapter');
 
 let dbInstance = null;
@@ -91,12 +92,16 @@ async function initDatabase() {
  }
  }
 
- // 💾 3. LOCAL FILE DATABASE (SQLite with WAL mode)
- console.log('💾 Initializing SQLite Local Database...');
- const localDb = await open({
- filename: path.join(__dirname, '../../database.sqlite'),
- driver: sqlite3.Database
- });
+  // 💾 3. LOCAL FILE DATABASE (SQLite with WAL mode)
+  if (!sqlite3 || !open) {
+    console.error('❌ No cloud DB configured and sqlite3 binding missing — cannot start. Please run: npm rebuild sqlite3 --build-from-source');
+    throw new Error('No database available: cloud DB not configured and sqlite3 missing');
+  }
+  console.log('💾 Initializing SQLite Local Database...');
+  const localDb = await open({
+  filename: path.join(__dirname, '../../database.sqlite'),
+  driver: sqlite3.Database
+  });
 
  await localDb.exec('PRAGMA journal_mode=WAL;');
  await localDb.exec('PRAGMA foreign_keys=ON;');
@@ -747,6 +752,21 @@ async function createTables(db) {
  otp TEXT NOT NULL,
  expires_at DATETIME NOT NULL,
  used INTEGER DEFAULT 0,
+ created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+ );
+
+ CREATE TABLE IF NOT EXISTS pending_registrations (
+ id INTEGER PRIMARY KEY AUTOINCREMENT,
+ email TEXT UNIQUE NOT NULL,
+ fullName TEXT NOT NULL,
+ studentId TEXT,
+ password TEXT NOT NULL,
+ role TEXT DEFAULT 'Student',
+ department TEXT,
+ batch TEXT,
+ gender TEXT,
+ otp TEXT NOT NULL,
+ expires_at DATETIME NOT NULL,
  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
  );
 
