@@ -735,4 +735,13 @@
  } else {
  buildNavbar();
  }
+ // Load FB Floating Chat on all pages (desktop)
+ try{
+   const base = window.location.pathname.includes('/views/') ? '..' : '.';
+   const isHome = window.location.pathname.includes('home.html');
+   const src = (isHome ? 'js/floatingChat.js' : base + '/js/floatingChat.js') + '?v=1';
+   const s=document.createElement('script');
+   s.src=src; s.async=true;
+   document.head.appendChild(s);
+ }catch{}
 })();
