@@ -1,38 +1,90 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800">
   <rect width="100%" height="100%" fill="#0b141a"/>
-  <g font-family="Inter, sans-serif" fill="#1f2c34" opacity="0.55" text-anchor="middle">
-    <text x="80" y="80" font-size="22" font-weight="800" transform="rotate(-8 80 80)">E=mc²</text>
-    <text x="300" y="60" font-size="18" font-weight="700" transform="rotate(6 300 60)">p = h/λ</text>
-    <text x="520" y="90" font-size="16" font-weight="700" transform="rotate(-4 520 90)">F=ma</text>
-    <text x="680" y="70" font-size="20" font-weight="800" transform="rotate(8 680 70)">Σ</text>
-    <text x="150" y="160" font-size="24" font-weight="800" transform="rotate(-6 150 160)">∫dx</text>
-    <text x="380" y="150" font-size="14" font-weight="700" transform="rotate(5 380 150)">λ = h/p</text>
-    <text x="620" y="160" font-size="18" font-weight="700" transform="rotate(-7 620 160)">a²+b²=c²</text>
-    <text x="90" y="240" font-size="16" font-weight="700" font-family="monospace" transform="rotate(-5 90 240)">{ code }</text>
-    <text x="280" y="220" font-size="14" font-weight="700" font-family="monospace" transform="rotate(7 280 220)">&lt;html&gt;</text>
-    <text x="480" y="240" font-size="13" font-weight="700" font-family="monospace" transform="rotate(-3 480 240)">while(true)</text>
-    <text x="680" y="230" font-size="15" font-weight="700" font-family="monospace" transform="rotate(6 680 230)">if(){}</text>
-    <text x="120" y="320" font-size="12" font-weight="700" font-family="monospace" transform="rotate(-4 120 320)">0xFF</text>
-    <text x="320" y="320" font-size="13" font-weight="700" transform="rotate(4 320 320)">CSE</text>
-    <text x="520" y="310" font-size="12" font-weight="700" font-family="monospace" transform="rotate(-6 520 310)">0101</text>
-    <text x="80" y="400" font-size="22" font-weight="900" transform="rotate(-7 80 400)">BBA</text>
-    <text x="250" y="380" font-size="20" font-weight="900" transform="rotate(5 250 380)">MBA</text>
-    <text x="450" y="400" font-size="16" font-weight="800" transform="rotate(-5 450 400)">BBA</text>
-    <text x="650" y="390" font-size="18" font-weight="900" transform="rotate(7 650 390)">MBA</text>
-    <text x="150" y="480" font-size="14" font-weight="700" transform="rotate(6 150 480)">Marketing</text>
-    <text x="380" y="470" font-size="13" font-weight="700" transform="rotate(-4 380 470)">Finance</text>
-    <text x="620" y="480" font-size="15" font-weight="800" transform="rotate(5 620 480)">HR</text>
-    <text x="90" y="560" font-size="28" opacity="0.5" transform="rotate(-10 90 560)">🎓</text>
-    <text x="280" y="540" font-size="26" opacity="0.5" transform="rotate(8 280 540)">💻</text>
-    <text x="480" y="560" font-size="24" opacity="0.5" transform="rotate(-6 480 560)">📚</text>
-    <text x="680" y="550" font-size="26" opacity="0.5" transform="rotate(5 680 550)">⚛️</text>
-    <text x="120" y="640" font-size="20" opacity="0.45" transform="rotate(7 120 640)">🧪</text>
-    <text x="320" y="640" font-size="22" opacity="0.45" transform="rotate(-5 320 640)">📊</text>
-    <text x="520" y="640" font-size="20" opacity="0.45" transform="rotate(6 520 640)">🧮</text>
-    <text x="680" y="640" font-size="24" opacity="0.45" transform="rotate(-8 680 640)">🔬</text>
-    <text x="80" y="720" font-size="16" font-weight="700" transform="rotate(-6 80 720)">π = 3.14</text>
-    <text x="260" y="720" font-size="14" font-weight="700" transform="rotate(4 260 720)">∑F=0</text>
-    <text x="450" y="720" font-size="15" font-weight="700" font-family="monospace" transform="rotate(-4 450 720)">git push</text>
-    <text x="650" y="720" font-size="13" font-weight="700" transform="rotate(7 650 720)">AI/ML</text>
+  <g font-family="Inter, sans-serif" fill="#1e2e3d" opacity="0.88" text-anchor="middle">
+    <text x="694" y="154" font-size="15" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-4 694 154)">Σ</text>
+    <text x="290" y="268" font-size="15" font-weight="700" font-family="Inter, sans-serif" transform="rotate(-9 290 268)">Finance</text>
+    <text x="732" y="598" font-size="14" font-weight="700" font-family="monospace" transform="rotate(1 732 598)">0xFF</text>
+    <text x="72" y="70" font-size="11" font-weight="700" font-family="monospace" transform="rotate(-5 72 70)">0xFF</text>
+    <text x="557" y="656" font-size="14" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-6 557 656)">Σ</text>
+    <text x="705" y="758" font-size="13" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-5 705 758)">MBA</text>
+    <text x="499" y="643" font-size="16" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-12 499 643)">BBA</text>
+    <text x="203" y="754" font-size="12" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-4 203 754)">📱</text>
+    <text x="199" y="260" font-size="10" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-10 199 260)">🧮</text>
+    <text x="429" y="139" font-size="16" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-1 429 139)">📖</text>
+    <text x="658" y="310" font-size="15" font-weight="700" font-family="Inter, sans-serif" transform="rotate(2 658 310)">λ=h/p</text>
+    <text x="589" y="167" font-size="10" font-weight="800" font-family="Inter, sans-serif" transform="rotate(5 589 167)">🚀</text>
+    <text x="340" y="683" font-size="14" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-6 340 683)">💡</text>
+    <text x="111" y="86" font-size="16" font-weight="700" font-family="monospace" transform="rotate(-3 111 86)">SELECT *</text>
+    <text x="121" y="278" font-size="13" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-4 121 278)">CSE</text>
+    <text x="504" y="690" font-size="11" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-1 504 690)">💡</text>
+    <text x="403" y="254" font-size="15" font-weight="800" font-family="monospace" transform="rotate(9 403 254)">//</text>
+    <text x="703" y="113" font-size="14" font-weight="700" font-family="monospace" transform="rotate(11 703 113)">git push</text>
+    <text x="290" y="207" font-size="13" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-4 290 207)">📐</text>
+    <text x="695" y="744" font-size="15" font-weight="700" font-family="monospace" transform="rotate(-2 695 744)">def()</text>
+    <text x="97" y="274" font-size="16" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-2 97 274)">∫dx</text>
+    <text x="450" y="314" font-size="11" font-weight="700" font-family="monospace" transform="rotate(6 450 314)">&lt;html&gt;</text>
+    <text x="362" y="257" font-size="13" font-weight="800" font-family="Inter, sans-serif" transform="rotate(8 362 257)">📋</text>
+    <text x="509" y="186" font-size="11" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-5 509 186)">&lt;&gt;</text>
+    <text x="614" y="591" font-size="15" font-weight="800" font-family="Inter, sans-serif" transform="rotate(6 614 591)">&lt;&gt;</text>
+    <text x="478" y="637" font-size="12" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-5 478 637)">🖥️</text>
+    <text x="181" y="561" font-size="10" font-weight="800" font-family="Inter, sans-serif" transform="rotate(12 181 561)">📋</text>
+    <text x="88" y="152" font-size="15" font-weight="700" font-family="Inter, sans-serif" transform="rotate(-7 88 152)">π=3.14</text>
+    <text x="736" y="472" font-size="13" font-weight="700" font-family="monospace" transform="rotate(0 736 472)">&lt;html&gt;</text>
+    <text x="650" y="519" font-size="12" font-weight="800" font-family="Inter, sans-serif" transform="rotate(5 650 519)">EEE</text>
+    <text x="51" y="736" font-size="15" font-weight="800" font-family="Inter, sans-serif" transform="rotate(5 51 736)">BBA</text>
+    <text x="313" y="696" font-size="10" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-3 313 696)">🧮</text>
+    <text x="485" y="201" font-size="10" font-weight="800" font-family="Inter, sans-serif" transform="rotate(11 485 201)">🔭</text>
+    <text x="309" y="552" font-size="14" font-weight="700" font-family="Inter, sans-serif" transform="rotate(-9 309 552)">AI/ML</text>
+    <text x="680" y="345" font-size="14" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-6 680 345)">BBA</text>
+    <text x="196" y="422" font-size="14" font-weight="700" font-family="Inter, sans-serif" transform="rotate(12 196 422)">∑F=0</text>
+    <text x="583" y="40" font-size="13" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-12 583 40)">🧪</text>
+    <text x="154" y="411" font-size="11" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-11 154 411)">💻</text>
+    <text x="286" y="620" font-size="10" font-weight="700" font-family="monospace" transform="rotate(11 286 620)">if(){}</text>
+    <text x="537" y="110" font-size="16" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-8 537 110)">BBA</text>
+    <text x="171" y="715" font-size="14" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-7 171 715)">✏️</text>
+    <text x="311" y="580" font-size="11" font-weight="800" font-family="Inter, sans-serif" transform="rotate(5 311 580)">📱</text>
+    <text x="746" y="245" font-size="13" font-weight="800" font-family="Inter, sans-serif" transform="rotate(9 746 245)">💻</text>
+    <text x="705" y="422" font-size="14" font-weight="800" font-family="Inter, sans-serif" transform="rotate(2 705 422)">🧬</text>
+    <text x="163" y="293" font-size="10" font-weight="700" font-family="monospace" transform="rotate(-2 163 293)">def()</text>
+    <text x="61" y="642" font-size="14" font-weight="700" font-family="monospace" transform="rotate(-5 61 642)">SELECT *</text>
+    <text x="47" y="112" font-size="11" font-weight="700" font-family="monospace" transform="rotate(-10 47 112)">{code}</text>
+    <text x="72" y="378" font-size="14" font-weight="700" font-family="monospace" transform="rotate(-5 72 378)">while(true)</text>
+    <text x="325" y="725" font-size="11" font-weight="800" font-family="Inter, sans-serif" transform="rotate(5 325 725)">📎</text>
+    <text x="175" y="624" font-size="11" font-weight="800" font-family="Inter, sans-serif" transform="rotate(3 175 624)">✏️</text>
+    <text x="456" y="234" font-size="10" font-weight="800" font-family="Inter, sans-serif" transform="rotate(9 456 234)">CSE</text>
+    <text x="481" y="402" font-size="13" font-weight="800" font-family="Inter, sans-serif" transform="rotate(2 481 402)">📱</text>
+    <text x="95" y="729" font-size="10" font-weight="800" font-family="Inter, sans-serif" transform="rotate(0 95 729)">CSE</text>
+    <text x="387" y="151" font-size="11" font-weight="800" font-family="monospace" transform="rotate(-6 387 151)">API</text>
+    <text x="589" y="499" font-size="13" font-weight="700" font-family="Inter, sans-serif" transform="rotate(-7 589 499)">Finance</text>
+    <text x="325" y="513" font-size="16" font-weight="800" font-family="monospace" transform="rotate(-10 325 513)">API</text>
+    <text x="493" y="603" font-size="10" font-weight="800" font-family="Inter, sans-serif" transform="rotate(8 493 603)">CSE</text>
+    <text x="593" y="55" font-size="16" font-weight="700" font-family="monospace" transform="rotate(-5 593 55)">0xFF</text>
+    <text x="210" y="456" font-size="13" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-6 210 456)">📎</text>
+    <text x="450" y="100" font-size="13" font-weight="700" font-family="monospace" transform="rotate(-12 450 100)">git push</text>
+    <text x="439" y="311" font-size="12" font-weight="800" font-family="Inter, sans-serif" transform="rotate(1 439 311)">🔭</text>
+    <text x="753" y="609" font-size="11" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-6 753 609)">📎</text>
+    <text x="343" y="262" font-size="14" font-weight="700" font-family="monospace" transform="rotate(11 343 262)">{code}</text>
+    <text x="595" y="102" font-size="10" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-11 595 102)">⚛️</text>
+    <text x="638" y="528" font-size="16" font-weight="800" font-family="Inter, sans-serif" transform="rotate(4 638 528)">BBA</text>
+    <text x="201" y="98" font-size="10" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-7 201 98)">MBA</text>
+    <text x="110" y="649" font-size="15" font-weight="700" font-family="monospace" transform="rotate(-5 110 649)">&lt;html&gt;</text>
+    <text x="453" y="162" font-size="14" font-weight="800" font-family="monospace" transform="rotate(7 453 162)">API</text>
+    <text x="80" y="674" font-size="13" font-weight="700" font-family="monospace" transform="rotate(9 80 674)">if(){}</text>
+    <text x="637" y="618" font-size="12" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-4 637 618)">CSE</text>
+    <text x="249" y="725" font-size="11" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-4 249 725)">⚛️</text>
+    <text x="445" y="174" font-size="13" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-2 445 174)">🎓</text>
+    <text x="114" y="49" font-size="14" font-weight="800" font-family="Inter, sans-serif" transform="rotate(6 114 49)">🔭</text>
+    <text x="142" y="115" font-size="11" font-weight="800" font-family="Inter, sans-serif" transform="rotate(4 142 115)">BBA</text>
+    <text x="311" y="175" font-size="10" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-5 311 175)">🔬</text>
+    <text x="418" y="331" font-size="13" font-weight="700" font-family="Inter, sans-serif" transform="rotate(5 418 331)">∑F=0</text>
+    <text x="760" y="349" font-size="10" font-weight="800" font-family="Inter, sans-serif" transform="rotate(9 760 349)">EEE</text>
+    <text x="607" y="346" font-size="11" font-weight="700" font-family="monospace" transform="rotate(-4 607 346)">0101</text>
+    <text x="158" y="149" font-size="12" font-weight="700" font-family="Inter, sans-serif" transform="rotate(-3 158 149)">π=3.14</text>
+    <text x="659" y="255" font-size="11" font-weight="800" font-family="Inter, sans-serif" transform="rotate(9 659 255)">🧮</text>
+    <text x="689" y="310" font-size="13" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-4 689 310)">BBA</text>
+    <text x="92" y="134" font-size="16" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-4 92 134)">📱</text>
+    <text x="85" y="43" font-size="16" font-weight="800" font-family="Inter, sans-serif" transform="rotate(-8 85 43)">📊</text>
+    <text x="692" y="308" font-size="15" font-weight="700" font-family="Inter, sans-serif" transform="rotate(2 692 308)">∑F=0</text>
+    <text x="604" y="477" font-size="10" font-weight="700" font-family="Inter, sans-serif" transform="rotate(-10 604 477)">p=h/λ</text>
   </g>
 </svg>
