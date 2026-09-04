@@ -1067,8 +1067,8 @@ function openProfileLightbox(type){
     const img = document.getElementById('profileLightboxImg');
     if(!profileData) return;
     let src = '';
-    if(type==='avatar' && profileData.profilePicture) src = (window.mediaUrl ? window.mediaUrl(profileData.profilePicture) : (profileData.profilePicture.startsWith('http') ? profileData.profilePicture : ((window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())) + profileData.profilePicture)));
-    else if(type==='cover' && profileData.coverPicture) src = (window.mediaUrl ? window.mediaUrl(profileData.coverPicture) : (profileData.coverPicture.startsWith('http') ? profileData.coverPicture : ((window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())) + profileData.coverPicture)));
+    if(type==='avatar' && profileData.profilePicture) src = window.mediaUrl ? window.mediaUrl(profileData.profilePicture) : (profileData.profilePicture.startsWith('http') ? profileData.profilePicture : ((window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })()) + profileData.profilePicture));
+    else if(type==='cover' && profileData.coverPicture) src = window.mediaUrl ? window.mediaUrl(profileData.coverPicture) : (profileData.coverPicture.startsWith('http') ? profileData.coverPicture : ((window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })()) + profileData.coverPicture));
     else if(type==='cover' && !profileData.coverPicture) return;
     else if(type==='avatar' && !profileData.profilePicture) {
         // No avatar — show initials placeholder
@@ -1091,15 +1091,17 @@ function closeProfileLightbox(){
     if(img) img.src='';
 }
 
-loadProfile();
-
 let isSubscribed = false;
 async function checkSubscriptionStatus(uid) {
-    if (uid === currentUser.id) return;
+    const myUid = String(myUser?._id || myUser?.id || myId || '');
+    if (!uid || String(uid) === myUid) return;
     try {
         const res = await apiFetch(`/creator/${uid}/status`);
-        isSubscribed = res.isSubscribed;
+        if (!res.ok) throw new Error('status failed');
+        const data = await res.json();
+        isSubscribed = !!data.isSubscribed;
         const btn = document.getElementById('subscribeBtn');
+        if (!btn) return;
         btn.style.display = 'inline-block';
         if (isSubscribed) {
             btn.innerHTML = '<i class="fas fa-check"></i> Subscribed';
@@ -1110,26 +1112,33 @@ async function checkSubscriptionStatus(uid) {
             btn.style.background = 'linear-gradient(45deg, #FFD700, #FFA500)';
             btn.style.color = 'black';
         }
-    } catch(e) { console.error('Subscription error'); }
+    } catch(e) { console.error('Subscription error', e); }
 }
 
 async function toggleSubscription() {
-    const uid = new URLSearchParams(window.location.search).get('id') || currentUser.id;
+    const myUid = String(myUser?._id || myUser?.id || myId || '');
+    const uid = new URLSearchParams(window.location.search).get('id') || myUid;
+    if (!uid || String(uid) === myUid) { showToast('Cannot subscribe to yourself','error'); return; }
     try {
         const res = await apiFetch(`/creator/${uid}/subscribe`, { method: 'POST' });
-        showToast(res.message);
-        checkSubscriptionStatus(uid);
-    } catch(e) { showToast('Failed to subscribe', 'error'); }
+        const data = await res.json().catch(()=>({}));
+        if (!res.ok) throw new Error(data.message || 'Failed');
+        showToast(data.message || (isSubscribed ? 'Unsubscribed' : 'Subscribed'),'success');
+        await checkSubscriptionStatus(uid);
+    } catch(e) { showToast(e.message || 'Failed to subscribe', 'error'); }
 }
 
 const originalLoadProfile = loadProfile;
 loadProfile = async function() {
     await originalLoadProfile();
     const uid = new URLSearchParams(window.location.search).get('id');
-    if (uid && uid != currentUser.id) {
+    const myUid = String(myUser?._id || myUser?.id || myId || '');
+    if (uid && String(uid) !== myUid) {
         checkSubscriptionStatus(uid);
     }
 };
+
+loadProfile();
 
 </script>
 </body>
