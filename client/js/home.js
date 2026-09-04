@@ -1064,10 +1064,51 @@ function renderStoriesRing(users) {
  myAvEl.src = ((window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())) + currentUser.profilePicture;
  }
  
- // Modern FB card style for friend stories — show ALL including own story as separate card (FB original)
- users.forEach((user, uIndex) => {
- // Keep own story visible as card (like FB) — don't skip, but adjust index for viewer
- const isOwn = String(user.user_id) === myId;
+  // FB-like: Don't duplicate own story — show only in Create Story card (fixes double)
+  // Deduplicate users by user_id (backend may send dupes, or placeholder "User")
+  const seenIds = new Set();
+  const uniqueUsers = [];
+  users.forEach(u=>{ const k=String(u.user_id); if(!seenIds.has(k) && u.fullName && u.fullName!=='User'){ seenIds.add(k); uniqueUsers.push(u); } else if(!seenIds.has(k) && (!u.fullName || u.fullName==='User')){ // allow but mark as deduped if real name missing
+    if(!seenIds.has(k)) { seenIds.add(k); uniqueUsers.push(u); }
+  }});
+  // If still dup due to "User" placeholder, filter again strictly
+  const filteredForRender = uniqueUsers.filter(u=> String(u.user_id)!==myId || !myStory); // will handle myStory via Create card below
+  // Enhance Create Story card to FB "Your story" when you have a story
+  if(myStory){
+    const createCard = document.querySelector('#storiesContainer > div[onclick*="openStoryCreator"]');
+    if(createCard){
+      const myIdx = users.findIndex(u=> String(u.user_id)===myId);
+      const hasUnviewed = myStory.stories.some(s=>!s.viewed);
+      createCard.style.border = `1.5px solid ${hasUnviewed?'#0866ff':'#dbdbdb'}`;
+      createCard.style.boxShadow = hasUnviewed ? '0 0 0 2px #0866ff' : '0 1px 3px rgba(0,0,0,0.06)';
+      const label = createCard.querySelector('div:last-child div');
+      if(label) label.innerHTML = `Your story • ${myStory.stories.length}`;
+      createCard.setAttribute('onclick', `openStoryViewer(${myIdx})`);
+      createCard.title = 'View your story — tap + to add';
+      // Keep plus but add ring indicator — add subtle dot
+      let dot = createCard.querySelector('.own-story-dot');
+      if(!dot){ dot=document.createElement('div'); dot.className='own-story-dot'; dot.style.cssText='position:absolute;top:8px;right:8px;background:#0866ff;color:white;font-size:0.55rem;font-weight:800;padding:2px 6px;border-radius:10px;z-index:3;'; createCard.querySelector('div[style*="flex:1"]')?.appendChild(dot); }
+      dot.textContent = hasUnviewed ? 'New' : 'Seen';
+      dot.style.background = hasUnviewed ? '#0866ff' : '#65676b';
+    }
+  } else {
+    const createCard = document.querySelector('#storiesContainer > div[onclick*="openStoryCreator"]');
+    if(createCard){
+      createCard.setAttribute('onclick','openStoryCreator()');
+      const label = createCard.querySelector('div:last-child div');
+      if(label) label.textContent = 'Create story';
+      createCard.style.border = '1px solid var(--border)';
+      const dot = createCard.querySelector('.own-story-dot'); if(dot) dot.remove();
+    }
+  }
+  // Render friends only (exclude own to prevent double) — FB original
+  const renderList = users.filter(u=> String(u.user_id)!==myId);
+  // Also deduplicate renderList
+  const seenRender = new Set();
+  const dedupedRender = renderList.filter(u=>{ const k=String(u.user_id); if(seenRender.has(k)) return false; seenRender.add(k); return true; });
+  dedupedRender.forEach((user) => {
+  const uIndex = users.findIndex(u=> String(u.user_id)===String(user.user_id));
+  const isOwn = false; // own already handled
  const latest = user.stories[user.stories.length-1];
  const mediaPath = latest ? (latest.media_url || latest.content || '') : '';
  const isMedia = typeof mediaPath==='string' && (mediaPath.startsWith('/uploads') || mediaPath.startsWith('http') || mediaPath.startsWith('blob:') || mediaPath.startsWith('data:'));
