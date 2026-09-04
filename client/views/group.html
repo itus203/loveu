@@ -255,7 +255,7 @@ body{font-family:Inter,sans-serif;background:var(--bg);color:var(--text);margin:
 <script src="../js/config.js"></script>
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script>
-const API = (typeof window.API !== 'undefined' ? window.API : (function(){ var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000/api'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin+'/api'; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin+'/api':'http://localhost:5000/api'; return 'http://localhost:5000/api'; } return window.location.origin+'/api'; })());, token=localStorage.getItem('token');
+const API = (typeof window.API !== 'undefined' ? window.API : (function(){ var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000/api'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin+'/api'; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin+'/api':'http://localhost:5000/api'; return 'http://localhost:5000/api'; } return window.location.origin+'/api'; })()), token=localStorage.getItem('token');
 if(!token) location.href='../index.html';
 if(localStorage.getItem('darkMode')==='1') document.body.setAttribute('data-theme','dark');
 const groupId=new URLSearchParams(location.search).get('id');
@@ -487,7 +487,6 @@ async function loadChat(){
   // Socket join
   if(!socket){ initChatSocket(); }
 }
-let socket=null;
 function initChatSocket(){
   socket=io(((window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())));
   const me=JSON.parse(localStorage.getItem('user')).id||JSON.parse(localStorage.getItem('user'))._id;

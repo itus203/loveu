@@ -212,7 +212,7 @@ function handleBack(){ try{ if(history.length>1 && document.referrer) history.ba
 
 <div id="toast-container" style="position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;"></div>
 <script>
-const API = (typeof window.API !== 'undefined' ? window.API : (function(){ var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000/api'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin+'/api'; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin+'/api':'http://localhost:5000/api'; return 'http://localhost:5000/api'; } return window.location.origin+'/api'; })());, token=localStorage.getItem('token');
+const API = (typeof window.API !== 'undefined' ? window.API : (function(){ var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000/api'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin+'/api'; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin+'/api':'http://localhost:5000/api'; return 'http://localhost:5000/api'; } return window.location.origin+'/api'; })()), token=localStorage.getItem('token');
 if(!token) location.href='../index.html';
 if(localStorage.getItem('darkMode')==='1') document.body.setAttribute('data-theme','dark');
 async function apiFetch(p,o={}){
