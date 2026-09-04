@@ -1682,19 +1682,40 @@ async function performSearch(query) {
  const res = await apiFetch(`/search?q=${encodeURIComponent(query)}`);
  const data = await res.json();
  const drop = document.getElementById('searchDropdown');
- const all = [...(data.users || []).map(u => ({ ...u, type: 'user' })), ...(data.posts || []).map(p => ({ ...p, type: 'post' }))];
- if (all.length === 0) { drop.innerHTML = '<div style="padding:12px 16px;color:var(--text-secondary);font-size:0.85rem">No results found</div>'; drop.classList.add('show'); return; }
- drop.innerHTML = all.slice(0, 8).map(item => {
+ const all = [
+   ...(data.users || []).map(u => ({ ...u, type: 'user' })),
+   ...(data.posts || []).map(p => ({ ...p, type: 'post' })),
+   ...(data.resources || []).map(r => ({ ...r, type: 'resource' })),
+   ...(data.blood || []).map(b => ({ ...b, type: 'blood' })),
+   ...(data.housing || []).map(h => ({ ...h, type: 'housing' })),
+   ...(data.marketplace || []).map(m => ({ ...m, type: 'marketplace' })),
+   ...(data.events || []).map(e => ({ ...e, type: 'event' })),
+   ...(data.lostfound || []).map(l => ({ ...l, type: 'lostfound' }))
+ ];
+ if (all.length === 0) { drop.innerHTML = '<div style="padding:12px 16px;color:var(--text-secondary);font-size:0.85rem">No results found — try name, resource, blood group, housing, product, event</div>'; drop.classList.add('show'); return; }
+ drop.innerHTML = all.slice(0, 10).map(item => {
  if (item.type === 'user') {
  const initials = getInitials(item.fullName);
  const avatarHtml = item.profilePicture
  ? `<img class="avatar" src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${item.profilePicture}" style="width:36px;height:36px;">`
  : `<div class="avatar-placeholder" style="width:36px;height:36px;font-size:0.85rem;">${initials}</div>`;
- return `<div class="search-result-item" onmousedown="event.preventDefault(); window.location.href='views/profile.html?id=${item._id}'" style="cursor:pointer;">${avatarHtml}<div class="info"><div class="name">${escapeHtml(item.fullName)}</div><div class="meta">${item.department || ''} ${item.role || ''}</div></div></div>`;
- } else {
- return `<div class="search-result-item" onmousedown="event.preventDefault(); goToPost('${item._id}')" style="cursor:pointer;"><i class="fas fa-file-alt" style="font-size:1.5rem;color:var(--text-secondary)"></i><div class="info"><div class="name">${escapeHtml((item.content || '').slice(0, 60))}...</div><div class="meta">Post • ${item.fullName || ''}</div></div></div>`;
- }
- }).join('');
+ return `<div class="search-result-item" onmousedown="event.preventDefault(); window.location.href='views/profile.html?id=${item._id}'" style="cursor:pointer;">${avatarHtml}<div class="info"><div class="name">${escapeHtml(item.fullName)}</div><div class="meta">${item.department || ''} ${item.role || ''} • User</div></div><i class="fas fa-user" style="color:#0866ff"></i></div>`;
+ } else if (item.type === 'post') {
+ return `<div class="search-result-item" onmousedown="event.preventDefault(); goToPost('${item._id}')" style="cursor:pointer;"><i class="fas fa-file-alt" style="font-size:1.5rem;color:var(--text-secondary)"></i><div class="info"><div class="name">${escapeHtml((item.content || '').slice(0, 60))}...</div><div class="meta">Post • ${item.fullName || ''}</div></div><i class="fas fa-chevron-right" style="color:#b0b3b8"></i></div>`;
+ } else if (item.type === 'resource') {
+ return `<div class="search-result-item" onmousedown="event.preventDefault(); window.location.href='views/resources.html?search=${encodeURIComponent(item.title)}'" style="cursor:pointer;"><i class="fas fa-book-open" style="font-size:1.5rem;color:#0ea5e9"></i><div class="info"><div class="name">${escapeHtml(item.title)}</div><div class="meta">Resource • ${esc(item.department||'')}</div></div><i class="fas fa-chevron-right" style="color:#b0b3b8"></i></div>`;
+ } else if (item.type === 'blood') {
+ return `<div class="search-result-item" onmousedown="event.preventDefault(); window.location.href='views/blood-donation.html'" style="cursor:pointer;"><i class="fas fa-heartbeat" style="font-size:1.5rem;color:#e41e3f"></i><div class="info"><div class="name">${esc(item.bloodGroup)} • ${esc(item.patientName)}</div><div class="meta">Blood • ${esc(item.hospital||'')} • ${esc(item.urgency||'')}</div></div><i class="fas fa-chevron-right" style="color:#b0b3b8"></i></div>`;
+ } else if (item.type === 'housing') {
+ return `<div class="search-result-item" onmousedown="event.preventDefault(); window.location.href='views/home-portal.html'" style="cursor:pointer;"><i class="fas fa-home" style="font-size:1.5rem;color:#10b981"></i><div class="info"><div class="name">${escapeHtml(item.title)}</div><div class="meta">Housing • ${esc(item.location)} • ${esc(item.price)}</div></div><i class="fas fa-chevron-right" style="color:#b0b3b8"></i></div>`;
+ } else if (item.type === 'marketplace') {
+ return `<div class="search-result-item" onmousedown="event.preventDefault(); window.location.href='views/marketplace.html'" style="cursor:pointer;"><i class="fas fa-store" style="font-size:1.5rem;color:#ec4899"></i><div class="info"><div class="name">${escapeHtml(item.title)}</div><div class="meta">Marketplace • ${esc(item.category||'')} • ৳${esc(item.price||'')}</div></div><i class="fas fa-chevron-right" style="color:#b0b3b8"></i></div>`;
+ } else if (item.type === 'event') {
+ return `<div class="search-result-item" onmousedown="event.preventDefault(); window.location.href='views/events.html'" style="cursor:pointer;"><i class="fas fa-calendar-alt" style="font-size:1.5rem;color:#f59e0b"></i><div class="info"><div class="name">${escapeHtml(item.title)}</div><div class="meta">Event • ${esc(item.venue||'')} • ${esc(item.department||'')}</div></div><i class="fas fa-chevron-right" style="color:#b0b3b8"></i></div>`;
+ } else if (item.type === 'lostfound') {
+ return `<div class="search-result-item" onmousedown="event.preventDefault(); window.location.href='views/lostfound.html'" style="cursor:pointer;"><i class="fas fa-search-location" style="font-size:1.5rem;color:#f97316"></i><div class="info"><div class="name">${escapeHtml(item.title)}</div><div class="meta">${esc(item.type)} • ${esc(item.location)}</div></div><i class="fas fa-chevron-right" style="color:#b0b3b8"></i></div>`;
+ } else { return ''; }
+ }).join('') + `<div style="padding:8px 12px;text-align:center;border-top:1px solid var(--border);margin-top:6px;"><a href="views/search.html?q=${encodeURIComponent(query)}" style="font-size:0.82rem;color:#0866ff;font-weight:700;text-decoration:none;">See all results for "${escapeHtml(query)}" →</a></div>`;
  drop.classList.add('show');
  } catch { hideSearchDrop(); }
 }

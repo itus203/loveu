@@ -47,29 +47,53 @@ async function doSearch(){
  if(!q || q.length<2) return;
  const el=document.getElementById('results');
  el.innerHTML='<div style="text-align:center;padding:30px;color:#65676b;"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
- try{
-  const res=await apiFetch(`/search?q=${encodeURIComponent(q)}`);
-  const data=await res.json();
-  let html='';
-  if(data.users && data.users.length){
-    html+=`<div class="result-section"><h3><i class="fas fa-users" style="color:#0866ff"></i> People (${data.users.length})</h3>`+
-          data.users.map(u=>{
-            const avatar = u.profilePicture ? `<img src="${((window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })()))+u.profilePicture}">` : `<div class="ph">${getInit(u.fullName)}</div>`;
-            return `<div class="result-item" onclick="location.href='profile.html?id=${u._id}'">${avatar}<div class="info"><div class="name">${esc(u.fullName)}</div><div class="meta">${esc(u.department||'') } ${esc(u.role||'')} ${esc(u.batch||'')}</div></div><i class="fas fa-chevron-right" style="color:#b0b3b8"></i></div>`;
-          }).join('')+`</div>`;
-  }
-  if(data.posts && data.posts.length){
-    html+=`<div class="result-section"><h3><i class="fas fa-file-alt" style="color:#7c3aed"></i> Posts (${data.posts.length})</h3>`+
-          data.posts.map(p=>`
-            <div class="result-item" onclick="location.href='../home.html#post-${p._id}'">
-              <div style="width:44px;height:44px;border-radius:10px;background:#f0f2f5;display:flex;align-items:center;justify-content:center;color:#65676b;"><i class="fas fa-file-alt"></i></div>
-              <div class="info"><div class="name">${esc((p.content||'').slice(0,70))}...</div><div class="meta">by ${esc(p.fullName||'')} • ${new Date(p.created_at).toLocaleDateString()}</div></div>
-              <i class="fas fa-chevron-right" style="color:#b0b3b8"></i>
-            </div>`).join('')+`</div>`;
-  }
-  if(!html) html='<div class="result-section" style="text-align:center;padding:40px;color:#65676b;">No results found for "'+esc(q)+'"</div>';
-  el.innerHTML=html;
- }catch(e){ el.innerHTML='<div style="color:#e41e3f;padding:20px;text-align:center;">Failed to search</div>'; }
+  try{
+   const res=await apiFetch(`/search?q=${encodeURIComponent(q)}`);
+   const data=await res.json();
+   let html='';
+   if(data.users && data.users.length){
+     html+=`<div class="result-section"><h3><i class="fas fa-users" style="color:#0866ff"></i> People (${data.users.length})</h3>`+
+           data.users.map(u=>{
+             const avatar = u.profilePicture ? `<img src="${((window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })()))+u.profilePicture}">` : `<div class="ph">${getInit(u.fullName)}</div>`;
+             return `<div class="result-item" onclick="location.href='profile.html?id=${u._id}'">${avatar}<div class="info"><div class="name">${esc(u.fullName)}</div><div class="meta">${esc(u.department||'') } ${esc(u.role||'')} ${esc(u.batch||'')}</div></div><i class="fas fa-chevron-right" style="color:#b0b3b8"></i></div>`;
+           }).join('')+`</div>`;
+   }
+   if(data.posts && data.posts.length){
+     html+=`<div class="result-section"><h3><i class="fas fa-file-alt" style="color:#7c3aed"></i> Posts (${data.posts.length})</h3>`+
+           data.posts.map(p=>`
+             <div class="result-item" onclick="location.href='../home.html#post-${p._id}'">
+               <div style="width:44px;height:44px;border-radius:10px;background:#f0f2f5;display:flex;align-items:center;justify-content:center;color:#65676b;"><i class="fas fa-file-alt"></i></div>
+               <div class="info"><div class="name">${esc((p.content||'').slice(0,70))}...</div><div class="meta">by ${esc(p.fullName||'')} • ${new Date(p.created_at).toLocaleDateString()}</div></div>
+               <i class="fas fa-chevron-right" style="color:#b0b3b8"></i>
+             </div>`).join('')+`</div>`;
+   }
+   if(data.resources && data.resources.length){
+     html+=`<div class="result-section"><h3><i class="fas fa-book-open" style="color:#0ea5e9"></i> Resources (${data.resources.length})</h3>`+
+           data.resources.map(r=>`<div class="result-item" onclick="location.href='resources.html'"><div style="width:44px;height:44px;border-radius:10px;background:#e0f2fe;display:flex;align-items:center;justify-content:center;color:#0284c7;"><i class="fas fa-book-open"></i></div><div class="info"><div class="name">${esc(r.title)}</div><div class="meta">${esc(r.department||r.subject||'')} • Resource</div></div><i class="fas fa-chevron-right" style="color:#b0b3b8"></i></div>`).join('')+`</div>`;
+   }
+   if(data.blood && data.blood.length){
+     html+=`<div class="result-section"><h3><i class="fas fa-heartbeat" style="color:#e41e3f"></i> Blood Requests (${data.blood.length})</h3>`+
+           data.blood.map(b=>`<div class="result-item" onclick="location.href='blood-donation.html'"><div style="width:44px;height:44px;border-radius:10px;background:#fee2e2;display:flex;align-items:center;justify-content:center;color:#e41e3f;"><i class="fas fa-tint"></i></div><div class="info"><div class="name">${esc(b.bloodGroup)} • ${esc(b.patientName)}</div><div class="meta">${esc(b.hospital)} • ${esc(b.urgency||'')}</div></div><i class="fas fa-chevron-right" style="color:#b0b3b8"></i></div>`).join('')+`</div>`;
+   }
+   if(data.housing && data.housing.length){
+     html+=`<div class="result-section"><h3><i class="fas fa-home" style="color:#10b981"></i> Housing (${data.housing.length})</h3>`+
+           data.housing.map(h=>`<div class="result-item" onclick="location.href='home-portal.html'"><div style="width:44px;height:44px;border-radius:10px;background:#ecfdf5;display:flex;align-items:center;justify-content:center;color:#059669;"><i class="fas fa-home"></i></div><div class="info"><div class="name">${esc(h.title)}</div><div class="meta">${esc(h.location)} • ${esc(h.price)} • ${esc(h.category||'')}</div></div><i class="fas fa-chevron-right" style="color:#b0b3b8"></i></div>`).join('')+`</div>`;
+   }
+   if(data.marketplace && data.marketplace.length){
+     html+=`<div class="result-section"><h3><i class="fas fa-store" style="color:#ec4899"></i> Marketplace (${data.marketplace.length})</h3>`+
+           data.marketplace.map(m=>`<div class="result-item" onclick="location.href='marketplace.html'"><div style="width:44px;height:44px;border-radius:10px;background:#fdf2f8;display:flex;align-items:center;justify-content:center;color:#ec4899;"><i class="fas fa-store"></i></div><div class="info"><div class="name">${esc(m.title)}</div><div class="meta">${esc(m.category||'')} • ৳${esc(m.price||'')}</div></div><i class="fas fa-chevron-right" style="color:#b0b3b8"></i></div>`).join('')+`</div>`;
+   }
+   if(data.events && data.events.length){
+     html+=`<div class="result-section"><h3><i class="fas fa-calendar-alt" style="color:#f59e0b"></i> Events (${data.events.length})</h3>`+
+           data.events.map(e=>`<div class="result-item" onclick="location.href='events.html'"><div style="width:44px;height:44px;border-radius:10px;background:#fef3c7;display:flex;align-items:center;justify-content:center;color:#d97706;"><i class="fas fa-calendar-alt"></i></div><div class="info"><div class="name">${esc(e.title)}</div><div class="meta">${esc(e.venue||'')} • ${esc(e.department||'')}</div></div><i class="fas fa-chevron-right" style="color:#b0b3b8"></i></div>`).join('')+`</div>`;
+   }
+   if(data.lostfound && data.lostfound.length){
+     html+=`<div class="result-section"><h3><i class="fas fa-search-location" style="color:#f97316"></i> Lost & Found (${data.lostfound.length})</h3>`+
+           data.lostfound.map(l=>`<div class="result-item" onclick="location.href='lostfound.html'"><div style="width:44px;height:44px;border-radius:10px;background:#fff7ed;display:flex;align-items:center;justify-content:center;color:#ea580c;"><i class="fas fa-search-location"></i></div><div class="info"><div class="name">${esc(l.title)}</div><div class="meta">${esc(l.type)} • ${esc(l.location)}</div></div><i class="fas fa-chevron-right" style="color:#b0b3b8"></i></div>`).join('')+`</div>`;
+   }
+   if(!html) html='<div class="result-section" style="text-align:center;padding:40px;color:#65676b;">No results found for "'+esc(q)+'" — try name, resource, blood group, housing, product, event</div>';
+   el.innerHTML=html;
+  }catch(e){ el.innerHTML='<div style="color:#e41e3f;padding:20px;text-align:center;">Failed to search</div>'; }
 }
 (function(){
  const params=new URLSearchParams(location.search);
