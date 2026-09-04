@@ -212,7 +212,7 @@
  </a>
  <div class="nav-search" style="position:relative;">
  <i class="fas fa-search"></i>
- <input type="text" id="navSearch" placeholder="Search DIU Nexus" oninput="debounceSearch(this.value)" onfocus="showSearchDrop()" onblur="setTimeout(hideSearchDrop, 300)">
+  <input type="text" id="navSearch" placeholder="Search DIU Nexus" oninput="debounceSearch(this.value)" onfocus="showSearchDrop()" onblur="setTimeout(hideSearchDrop, 300)" onkeydown="if(event.key==='Enter'){event.preventDefault();window.location.href='views/search.html?q='+encodeURIComponent(this.value)}">
  <div class="search-dropdown" id="searchDropdown" onmousedown="event.preventDefault()"></div>
  </div>
  </div>

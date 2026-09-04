@@ -24,6 +24,15 @@ document.addEventListener('DOMContentLoaded', async () => {
  loadNotificationCount();
  applyDarkMode();
  document.addEventListener('click', handleOutsideClick);
+ // Ensure nav search works even if inline oninput fails (cache/CSP)
+ try{
+   const navInp=document.getElementById('navSearch');
+   if(navInp && !navInp.dataset.bound){
+     navInp.dataset.bound='1';
+     navInp.addEventListener('input', e=> debounceSearch(e.target.value));
+     navInp.addEventListener('focus', ()=> { if(navInp.value) showSearchDrop(); });
+   }
+ }catch{}
 });
 
 async function initUser() {
@@ -1677,11 +1686,15 @@ function debounceSearch(query) {
 }
 
 async function performSearch(query) {
+ console.log('[Search] query', query);
  if (!query || query.trim().length < 2) { hideSearchDrop(); return; }
  try {
  const res = await apiFetch(`/search?q=${encodeURIComponent(query)}`);
+ console.log('[Search] status', res.status);
  const data = await res.json();
+ console.log('[Search] data', data);
  const drop = document.getElementById('searchDropdown');
+ if(!drop){ console.warn('[Search] dropdown not found'); return; }
  const all = [
    ...(data.users || []).map(u => ({ ...u, type: 'user' })),
    ...(data.posts || []).map(p => ({ ...p, type: 'post' })),
