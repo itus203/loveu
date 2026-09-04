@@ -1074,38 +1074,67 @@ function renderStoriesRing(users) {
   // If still dup due to "User" placeholder, filter again strictly
   const filteredForRender = uniqueUsers.filter(u=> String(u.user_id)!==myId || !myStory); // will handle myStory via Create card below
   // Enhance Create Story card to FB "Your story" when you have a story
+  const getCreateCard = ()=> document.querySelector('#storiesContainer > div:first-child');
   if(myStory){
-    const createCard = document.querySelector('#storiesContainer > div[onclick*="openStoryCreator"]');
+    const createCard = getCreateCard();
     if(createCard){
       const myIdx = users.findIndex(u=> String(u.user_id)===myId);
       const hasUnviewed = myStory.stories.some(s=>!s.viewed);
       createCard.style.border = `1.5px solid ${hasUnviewed?'#0866ff':'#dbdbdb'}`;
       createCard.style.boxShadow = hasUnviewed ? '0 0 0 2px #0866ff' : '0 1px 3px rgba(0,0,0,0.06)';
-      const label = createCard.querySelector('div:last-child div');
-      if(label) label.innerHTML = `Your story • ${myStory.stories.length}`;
+      const label = createCard.lastElementChild ? createCard.lastElementChild.querySelector('div') || createCard.lastElementChild : null;
+      if(label) label.textContent = `Your story`;
+      // Also show count as small badge below? keep single line
+      const subLabel = createCard.querySelector('.create-sub');
+      if(subLabel) subLabel.textContent = `${myStory.stories.length} story${myStory.stories.length>1?'s':''} • ${hasUnviewed?'New':'Seen'}`;
+      else {
+        const last = createCard.lastElementChild;
+        if(last && !last.querySelector('.create-sub')){
+          const s=document.createElement('div'); s.className='create-sub'; s.style.cssText='font-size:0.70rem;opacity:0.7;margin-top:2px;'; s.textContent=`${myStory.stories.length} story${myStory.stories.length>1?'s':''} • ${hasUnviewed?'New':'Seen'}`; last.appendChild(s);
+        }
+      }
       createCard.setAttribute('onclick', `openStoryViewer(${myIdx})`);
       createCard.title = 'View your story — tap + to add';
-      // Keep plus but add ring indicator — add subtle dot
       let dot = createCard.querySelector('.own-story-dot');
       if(!dot){ dot=document.createElement('div'); dot.className='own-story-dot'; dot.style.cssText='position:absolute;top:8px;right:8px;background:#0866ff;color:white;font-size:0.55rem;font-weight:800;padding:2px 6px;border-radius:10px;z-index:3;'; createCard.querySelector('div[style*="flex:1"]')?.appendChild(dot); }
       dot.textContent = hasUnviewed ? 'New' : 'Seen';
       dot.style.background = hasUnviewed ? '#0866ff' : '#65676b';
+      // Hide plus when has story? keep plus small
+      const plus = createCard.querySelector('div[style*="flex:1"] div[style*="background:#0095f6"]');
+      if(plus) plus.style.display='flex';
     }
   } else {
-    const createCard = document.querySelector('#storiesContainer > div[onclick*="openStoryCreator"]');
+    const createCard = getCreateCard();
     if(createCard){
       createCard.setAttribute('onclick','openStoryCreator()');
-      const label = createCard.querySelector('div:last-child div');
+      const label = createCard.lastElementChild ? createCard.lastElementChild.querySelector('div') : null;
       if(label) label.textContent = 'Create story';
+      const sub = createCard.querySelector('.create-sub'); if(sub) sub.remove();
       createCard.style.border = '1px solid var(--border)';
+      createCard.style.boxShadow = '0 1px 3px rgba(0,0,0,0.06)';
       const dot = createCard.querySelector('.own-story-dot'); if(dot) dot.remove();
     }
   }
   // Render friends only (exclude own to prevent double) — FB original
   const renderList = users.filter(u=> String(u.user_id)!==myId);
-  // Also deduplicate renderList
+  // Also deduplicate renderList by user_id and by generic name "User"
   const seenRender = new Set();
-  const dedupedRender = renderList.filter(u=>{ const k=String(u.user_id); if(seenRender.has(k)) return false; seenRender.add(k); return true; });
+  const seenNames = new Set();
+  const dedupedRender = renderList.filter(u=>{ 
+    const k=String(u.user_id); 
+    if(seenRender.has(k)) return false; 
+    seenRender.add(k); 
+    // collapse multiple "User" placeholders into one card (FB-like)
+    const name=(u.fullName||'').trim();
+    if(name==='User' || name==='Unknown' || !name){
+      if(seenNames.has('__placeholder_User')) return false;
+      seenNames.add('__placeholder_User');
+    } else {
+      if(seenNames.has(name)) return false; // also dedup exact same display name from different ids (rare)
+      // don't block legit same names, only placeholder
+    }
+    return true; 
+  });
   dedupedRender.forEach((user) => {
   const uIndex = users.findIndex(u=> String(u.user_id)===String(user.user_id));
   const isOwn = false; // own already handled
@@ -2598,9 +2627,30 @@ async function loadExplore(filter, btn){
  grid.style.gridTemplateColumns='repeat(auto-fill,minmax(110px,1fr))';
  try{
  const res=await apiFetch(`/stories/explore?filter=${filter}`);
- const data=await res.json();
- const arr=Array.isArray(data)?data:[];
- if(!arr.length){
+  const data=await res.json();
+  let arr=Array.isArray(data)?data:[];
+  // FB-like: deduplicate explore by user_id and collapse generic "User" placeholders (fixes double User cards)
+  // Also filter out own stories already shown in friends tray (prevent same story in both rows)
+  try{
+    const myIdStr = String(currentUser?._id || currentUser?.id || '');
+    const friendIds = new Set((window.currentStoriesData||[]).map(g=>String(g.user_id)));
+    const seenExp = new Set();
+    const seenPlaceholder = new Set();
+    arr = arr.filter(s=>{
+      const uid = String(s.user_id || s.userId || s.user_id);
+      if(myIdStr && uid===myIdStr) return false; // own already in Create card
+      if(friendIds.has(uid)) return false; // already in friends tray
+      if(seenExp.has(uid)) return false;
+      const name=(s.fullName||s.fullname||'').trim();
+      if(name==='User' || !name){
+        if(seenPlaceholder.has('__User')) return false;
+        seenPlaceholder.add('__User');
+      }
+      seenExp.add(uid);
+      return true;
+    });
+  }catch{}
+  if(!arr.length){
  grid.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:28px;color:var(--text-secondary);">
  <div style="font-size:2rem;margin-bottom:8px;opacity:0.5;"><i class="fas fa-images"></i></div>
  <div style="font-weight:700;">No stories in ${filter}</div>
