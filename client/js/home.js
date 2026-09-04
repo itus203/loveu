@@ -767,8 +767,13 @@ async function editPost(postId, oldContent){
  const el = document.getElementById(`post-${postId}`);
  if(el){
  const cEl = el.querySelector('.post-content');
- if(cEl) cEl.textContent = newContent;
- else location.reload();
+ if(cEl) { cEl.textContent = newContent; cEl.style.background='#e7f0ff'; setTimeout(()=>cEl.style.background='',800); }
+ else {
+   // Super fast fallback: try updating any text container without reload
+   const anyText=el.querySelector('div');
+   if(anyText) { anyText.textContent=newContent; }
+   el.style.outline='2px solid #0866ff'; setTimeout(()=>el.style.outline='',1000);
+ }
  }
  showToast('Post updated ✓','success');
  }catch(e){ showToast(e.message||'Failed to edit','error'); }
@@ -2296,9 +2301,10 @@ submitStory = async function(){
  if(!res.ok) throw new Error(data.message||`Server error ${res.status}`);
  if(isExcl) showToast(' Exclusive story saved! Check My Highlights', 'success');
  else showToast('Story published! ', 'success');
- closeStoryCreator();
- // Force reload with small delay to ensure DB commit
- setTimeout(()=>{ loadStories(); loadExplore('trending'); loadNexusNow(); }, 300);
+  closeStoryCreator();
+  // Super fast: instant reload (no 300ms wait) + optimistic
+  loadStories(); loadExplore('trending'); loadNexusNow();
+  setTimeout(()=>{ loadStories(); }, 400); // second refresh to ensure DB commit
  }catch(e){
  console.error('Story publish failed', e);
  const msg = e.message && e.message.includes('Failed to fetch') ? 'Server not reachable. Is server running? (npm run server)' : e.message;

@@ -71,9 +71,17 @@ if (!process.env.JWT_SECRET || process.env.JWT_SECRET.includes('super_secret')) 
 // ─── General API Rate Limiter ────────────────────────────────────────────────
 app.use('/api', rateLimiter);
 
-// Static files - super fast with caching
+// Static files - super fast instant updates (no 1d cache so post/story appears without refresh)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'), { maxAge: '7d', etag: true }));
-app.use(express.static(path.join(__dirname, '../client'), { maxAge: '1d', etag: true, index: 'index.html' }));
+app.use(express.static(path.join(__dirname, '../client'), { 
+  maxAge: 0, 
+  etag: true, 
+  index: 'index.html',
+  setHeaders: (res, path) => {
+    if(path.endsWith('.html') || path.endsWith('.js')) res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    else res.setHeader('Cache-Control', 'public, max-age=300');
+  }
+}));
 // Instant API cache headers for super fast repeat loads
 app.use('/api', (req, res, next) => {
  if (req.method === 'GET') res.set('Cache-Control', 'public, max-age=5, stale-while-revalidate=30');

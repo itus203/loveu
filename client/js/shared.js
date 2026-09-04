@@ -710,8 +710,23 @@
  }
  const data=await res.json().catch(()=>({}));
  if(!res.ok) throw new Error(data.message||'Failed to edit');
- alert(' Updated — refresh to see changes');
- location.reload();
+ // Super fast: instant DOM update without reload (FB-like)
+ try{
+   // Try to find and update the text in place
+   const sel=`[data-id="${id}"], #post-${id}, [data-postid="${id}"]`;
+   const el=document.querySelector(sel);
+   if(el){
+     const txtEl=el.querySelector('.post-content, .item-title, .house-title, .market-title, h3, .content');
+     if(txtEl) txtEl.textContent=newContent;
+     else {
+       // fallback: update first text node
+       const firstText=el.querySelector('div, p');
+       if(firstText && firstText.textContent.length<500) firstText.textContent=newContent;
+     }
+     el.style.outline='2px solid #0866ff'; setTimeout(()=>el.style.outline='',1200);
+   }
+ }catch{}
+ const t=document.createElement('div'); t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111827;color:white;padding:10px 16px;border-radius:8px;z-index:9999;'; t.textContent=' Updated ✓'; document.body.appendChild(t); setTimeout(()=>t.remove(),2000);
  }catch(e){ alert(e.message||'Edit failed — backend edit endpoint may not exist for this type yet'); }
  };
 
