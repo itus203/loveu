@@ -250,13 +250,19 @@ exports.updateComment = async (req, res) => {
 exports.getUserPosts = async (req, res) => {
     try {
         const targetUserId = req.params.userId || req.user.id;
+        const myId = req.user.id;
         const posts = await global.db.all(
-            'SELECT p.*, u.fullName, u.profilePicture, p.is_exclusive FROM posts p JOIN users u ON p.user_id=u.id WHERE p.user_id=? ORDER BY p.created_at DESC',
-            [targetUserId]
+            `SELECT p.*, u.fullName, u.profilePicture, u.department, u.batch, p.is_exclusive,
+                (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id) as reactionCount,
+                (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) as commentCount,
+                (SELECT type FROM reactions r WHERE r.post_id=p.id AND r.user_id=?) as myReaction,
+                (SELECT COUNT(*) FROM saved_posts sp WHERE sp.post_id=p.id AND sp.user_id=?) as isSaved
+             FROM posts p JOIN users u ON p.user_id=u.id WHERE p.user_id=? ORDER BY p.created_at DESC`,
+            [myId, myId, targetUserId]
         );
         for (let p of posts) {
             normPost(p);
-            p.user = { fullName: p.fullName, profilePicture: p.profilePicture, _id: p.user_id };
+            p.user = { fullName: p.fullName, profilePicture: p.profilePicture, department: p.department, batch: p.batch, _id: p.user_id };
             try { p.mentions = p.mentions ? JSON.parse(p.mentions) : []; if(!Array.isArray(p.mentions)) p.mentions=[]; } catch { p.mentions=[]; }
         }
         res.status(200).json(posts);

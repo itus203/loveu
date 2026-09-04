@@ -688,6 +688,10 @@ function renderReels() {
 
 function buildReelItem(r, idx) {
     const initials = getInitials(r.fullName);
+    const uid = String(currentUser?._id || currentUser?.id || '');
+    const isOwner = String(r.user_id) === uid;
+    const isAdmin = currentUser && currentUser.role==='Admin';
+    const canDelete = isOwner || isAdmin;
     const avatarHtml = r.profilePicture
         ? `<img class="reel-avatar" src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${r.profilePicture}" alt="" onerror="this.outerHTML='<div class=reel-avatar>${initials}</div>'">`
         : `<div class="reel-avatar">${initials}</div>`;
@@ -742,6 +746,10 @@ function buildReelItem(r, idx) {
                 <button onclick="saveReel('${r.id}', this)" title="Save"><i class="fas fa-bookmark"></i></button>
                 <span>Save</span>
             </div>
+            ${canDelete ? `<div class="reel-action-btn">
+                <button onclick="deleteReel('${r.id}')" title="${isAdmin && !isOwner ? 'Admin Delete' : 'Delete'}" style="background:${isAdmin && !isOwner ? '#dc2626' : 'rgba(255,255,255,0.15)'};${isAdmin && !isOwner ? 'color:white;' : ''}"><i class="fas ${isAdmin && !isOwner ? 'fa-shield-alt' : 'fa-trash'}" style="font-size:0.85rem;"></i></button>
+                <span>${isAdmin && !isOwner ? 'Admin Delete' : 'Delete'}</span>
+            </div>` : ''}
             <div class="reel-action-btn">
                 <button onclick="reportContent('reels', '${r.id}')" title="Report" style="background:rgba(228,30,63,0.2);"><i class="fas fa-flag" style="font-size:0.85rem;"></i></button>
                 <span>Report</span>
@@ -934,6 +942,38 @@ function shareToMessenger() {
 async function saveReel(reelId, btn) {
     btn.style.color = btn.style.color === 'var(--blue)' ? '' : 'var(--blue)';
     showToast(btn.style.color ? '🔖 Reel saved!' : 'Reel unsaved');
+}
+async function deleteReel(reelId){
+    const r = reels.find(x=> String(x.id)===String(reelId));
+    const isAdmin = currentUser && currentUser.role==='Admin';
+    const isOwner = r && String(r.user_id)===String(currentUser?._id||currentUser?.id);
+    const confirmMsg = isAdmin && !isOwner ? 'Admin delete this reel? This will permanently remove it and notify the owner.' : 'Delete this reel?';
+    if(!confirm(confirmMsg)) return;
+    try{
+        const res = await apiFetch(`/reels/${reelId}`, {method:'DELETE'});
+        const data = await res.json().catch(()=>({}));
+        if(!res.ok) throw new Error(data.message||'Failed');
+        document.getElementById('reel-item-'+reelId)?.remove();
+        reels = reels.filter(x=> String(x.id)!==String(reelId));
+        showToast(isAdmin && !isOwner ? '✅ Reel deleted by Admin' : '✅ Reel deleted');
+        if(!reels.length) renderReels();
+    }catch(e){ showToast(e.message||'Failed to delete reel','error'); }
+}
+async function reportContent(type, id){
+    const reason = prompt('Report reason (spam, harassment, hate, false, violence, nudity, other):') || 'other';
+    if(reason===null) return;
+    try{
+        const res = await apiFetch(`/reports`, {method:'POST', body: JSON.stringify({target_type:type, target_id:id, reason, details:''})});
+        // fallback to post report endpoint if generic fails
+        if(!res.ok) throw new Error();
+        showToast('✅ Reported to Admin','success');
+    }catch{
+        try{
+            const res2 = await apiFetch(`/posts/${id}/report`, {method:'POST', body: JSON.stringify({reason, details:''})});
+            if(res2.ok) showToast('✅ Reported to Admin');
+            else showToast('Failed to report');
+        }catch{ showToast('Failed to report'); }
+    }
 }
 
 function closePanels() {

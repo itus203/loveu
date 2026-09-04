@@ -12,6 +12,8 @@
   "build": {
     "appId": "com.diunexus.app",
     "productName": "DIU Nexus",
+    "npmRebuild": false,
+    "buildDependenciesFromSource": false,
     "directories": {
       "output": "dist"
     },
