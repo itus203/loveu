@@ -73,9 +73,14 @@
         <button class="btn" onclick="event.stopPropagation(); window.__fbCloseWin('${uid}')"><i class="fas fa-times"></i></button>
       </div>
       <div class="fbChatBody" id="fbBody-${uid}"><div style="text-align:center;color:#65676b;font-size:0.82rem;padding:20px;"><i class="fas fa-spinner fa-spin"></i> Loading...</div></div>
-      <div class="fbInputBar">
-        <input type="text" placeholder="Aa" id="fbInput-${uid}" onkeydown="if(event.key==='Enter') window.__fbSend('${uid}')">
+      <div class="fbInputBar" style="position:relative;">
+        <button onclick="window.__fbPickFile('${uid}')" title="Attach file" style="background:var(--bg,#f0f2f5);border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;color:#65676b;"><i class="fas fa-paperclip"></i></button>
+        <button onclick="document.getElementById('fbImg-${uid}').click()" title="Photo" style="background:var(--bg,#f0f2f5);border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;color:#65676b;"><i class="fas fa-image" style="color:#45bd62"></i></button>
+        <input type="file" id="fbImg-${uid}" accept="image/*,video/*,application/*" style="display:none" onchange="window.__fbSendFile('${uid}', this)">
+        <input type="text" placeholder="Aa" id="fbInput-${uid}" onkeydown="if(event.key==='Enter') window.__fbSend('${uid}')" style="flex:1;">
+        <button onclick="window.__fbToggleEmoji('${uid}')" title="Emoji" style="background:var(--bg,#f0f2f5);border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;color:#65676b;"><i class="far fa-smile"></i></button>
         <button onclick="window.__fbSend('${uid}')" style="background:#0866ff;color:white;border:none;width:36px;height:36px;border-radius:50%;cursor:pointer;"><i class="fas fa-paper-plane" style="font-size:0.85rem;"></i></button>
+        <div id="fbEmoji-${uid}" style="display:none;position:absolute;bottom:44px;right:6px;background:var(--surface,#fff);border:1px solid var(--border,#e4e6eb);border-radius:12px;padding:8px;box-shadow:0 8px 24px rgba(0,0,0,0.15);width:220px;max-height:160px;overflow-y:auto;flex-wrap:wrap;gap:4px;z-index:10;"></div>
       </div>
     `;
     dock.appendChild(win);
@@ -102,8 +107,48 @@
     inp.value='';
     try{
       await apiFetch('/messages',{method:'POST', body:JSON.stringify({receiverId:uid, content:txt, isGroup:false})});
-      // will come via socket too, but we already showed
     }catch{ showToast('Failed','error'); }
+  };
+  window.__fbToggleEmoji=(uid)=>{
+    const box=document.getElementById('fbEmoji-'+uid);
+    if(!box) return;
+    if(box.style.display!=='none' && box.style.display!==''){ box.style.display='none'; return; }
+    if(!box.dataset.loaded){
+      const emojis=['😀','😂','😍','🥰','😎','😭','😅','🤣','😊','🥺','😢','😡','🤔','😴','🤗','👍','❤️','🔥','💯','✅','🙏','👏','💪','🎉','😇','🥳','😱','🤩','💀','👻','💬','📱','⚽','🍕','☕','🌹','❤️','😮','😢','😡','👍','🔥','🎉','😀','😂','🥰','😎'];
+      box.innerHTML=emojis.map(e=>`<span onclick="window.__fbPickEmoji('${uid}','${e}')" style="font-size:1.4rem;cursor:pointer;padding:4px;display:inline-block;">${e}</span>`).join('');
+      box.dataset.loaded='1';
+      box.style.display='flex'; box.style.flexWrap='wrap';
+    } else {
+      box.style.display= box.style.display==='none' ? 'flex' : 'none';
+      box.style.flexWrap='wrap';
+    }
+  };
+  window.__fbPickEmoji=(uid, emoji)=>{
+    const inp=document.getElementById('fbInput-'+uid);
+    if(inp){ inp.value+=emoji; inp.focus(); }
+  };
+  window.__fbPickFile=(uid)=>{
+    const inp=document.getElementById('fbImg-'+uid);
+    if(inp) inp.click();
+  };
+  window.__fbSendFile=async(uid, input)=>{
+    const file=input.files[0]; if(!file) return;
+    const body=document.getElementById('fbBody-'+uid);
+    // optimistic image preview
+    if(file.type.startsWith('image/')){
+      const url=URL.createObjectURL(file);
+      const div=document.createElement('div'); div.innerHTML=`<div class="fbBubble mine"><img src="${url}" style="max-width:160px;border-radius:8px;"></div>`; body.appendChild(div); body.scrollTop=body.scrollHeight;
+    } else {
+      const div=document.createElement('div'); div.innerHTML=`<div class="fbBubble mine">📎 ${esc(file.name)}</div>`; body.appendChild(div); body.scrollTop=body.scrollHeight;
+    }
+    try{
+      const fd=new FormData();
+      fd.append('file', file);
+      fd.append('receiverId', uid);
+      fd.append('isGroup','false');
+      await apiFetch('/messages/file', {method:'POST', body: fd});
+      input.value='';
+    }catch{ showToast('File failed','error'); }
   };
   async function loadMessages(uid){
     const body=document.getElementById('fbBody-'+uid);
