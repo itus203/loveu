@@ -51,8 +51,11 @@
 
         .email-lock-badge { background: #f0fdf4; border: 1.5px solid #86efac; color: #166534; padding: 12px; border-radius: 10px; font-size: 0.82rem; line-height: 1.5; margin-top: 12px; }
         [data-theme="dark"] .email-lock-badge { background: rgba(22, 101, 52, 0.2); border-color: #166534; color: #86efac; }
-        .diu-verified { background:#e7f0ff; color:#0866ff; font-size:0.62rem; padding:2px 6px; border-radius:10px; border:1px solid #bfdbfe; display:inline-flex; align-items:center; gap:3px; flex-shrink:0; white-space:nowrap; line-height:1; }
-        [data-theme="dark"] .diu-verified { background: rgba(8,102,255,0.18); border-color: rgba(96,165,250,0.35); color:#93c5fd; }
+        /* Verified badge — circular blue check identical to home (fixes overlap) */
+        .diu-verified { display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px; background:#0866ff; color:white; border-radius:50%; font-size:9px; margin-left:4px; vertical-align:middle; flex-shrink:0; }
+        [data-theme="dark"] .diu-verified { background:#0866ff; color:white; border:none; }
+        /* Ensure post card Verified does NOT use pill style */
+        .post-card .diu-verified { width:16px; height:16px; padding:0; border:none; background:#0866ff; color:white; border-radius:50%; font-size:9px; }
         
         /* Friends Grid */
         .friends-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
@@ -370,16 +373,20 @@ function renderProfile(u) {
     
     const avatarEl = document.getElementById('profileAvatarEl');
     if (u.profilePicture) {
-        avatarEl.outerHTML = `<img id="profileAvatarEl" class="profile-avatar" src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${u.profilePicture}" alt="${esc(u.fullName)}" onerror="this.outerHTML='<div id=\\'profileAvatarEl\\' class=\\'profile-avatar-placeholder\\'>${getInitials(u.fullName)}</div>'">`;
+        const avUrl = window.mediaUrl ? window.mediaUrl(u.profilePicture) : (u.profilePicture.startsWith('http') ? u.profilePicture : ((window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())+u.profilePicture));
+        avatarEl.outerHTML = `<img id="profileAvatarEl" class="profile-avatar" src="${avUrl}" alt="${esc(u.fullName)}" onerror="this.outerHTML='<div id=\\'profileAvatarEl\\' class=\\'profile-avatar-placeholder\\'>${getInitials(u.fullName)}</div>'">`;
     } else {
         avatarEl.className = 'profile-avatar-placeholder';
         avatarEl.textContent = getInitials(u.fullName);
     }
     
     if (u.coverPicture) {
-        document.getElementById('coverSection').style.backgroundImage = `url(${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${u.coverPicture})`;
+        const cvUrl = window.mediaUrl ? window.mediaUrl(u.coverPicture) : (u.coverPicture.startsWith('http') ? u.coverPicture : ((window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())+u.coverPicture));
+        document.getElementById('coverSection').style.backgroundImage = `url(${cvUrl})`;
         document.getElementById('coverSection').style.backgroundSize = 'cover';
         document.getElementById('coverSection').style.backgroundPosition = 'center';
+    } else {
+        document.getElementById('coverSection').style.backgroundImage = '';
     }
 
     // Show/hide cover and avatar camera upload buttons
@@ -692,17 +699,17 @@ async function loadUserPosts(userId) {
                 _id: p.id || p._id,
                 id: p.id || p._id,
                 content: p.content,
-                mediaUrl: p.mediaUrl,
-                mediaType: p.mediaType,
+                mediaUrl: p.mediaUrl || p.mediaurl,
+                mediaType: p.mediaType || p.mediatype,
                 visibility: p.visibility || 'Public',
-                created_at: p.created_at,
-                user: { fullName: p.fullName, profilePicture: p.profilePicture, _id: p.user_id || userId },
+                created_at: p.created_at || p.createdAt || p.createdat,
+                user: { fullName: p.fullName || p.fullname, profilePicture: p.profilePicture || p.profilepicture, department: p.department, batch: p.batch, _id: p.user_id || userId },
                 user_id: p.user_id || userId,
-                fullName: p.fullName,
-                reactionCount: p.reactionCount || 0,
-                commentCount: p.commentCount || 0,
-                myReaction: p.myReaction || null,
-                isSaved: p.isSaved || 0
+                fullName: p.fullName || p.fullname,
+                reactionCount: p.reactionCount ?? p.reactioncount ?? 0,
+                commentCount: p.commentCount ?? p.commentcount ?? 0,
+                myReaction: p.myReaction ?? p.myreaction ?? null,
+                isSaved: p.isSaved ?? p.issaved ?? 0
             };
             return buildProfilePostCard(mapped);
         }).join('');
@@ -723,69 +730,92 @@ function buildProfilePostCard(post){
     const isAdmin = myUser?.role === 'Admin';
     const initials = getInitials(post.user?.fullName || post.fullName);
     const avatarHtml = post.user?.profilePicture
-        ? `<img class="avatar" src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${post.user.profilePicture}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;cursor:pointer;" onclick="window.location.href='profile.html?id=${post.user?._id || post.user_id}'">`
-        : `<div class="avatar-placeholder" style="width:40px;height:40px;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0a66ff,#0540a0);color:white;border-radius:50%;" onclick="window.location.href='profile.html?id=${post.user?._id || post.user_id}'">${initials}</div>`;
+        ? `<img class="avatar" src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${post.user.profilePicture}" style="width:40px;height:40px;" onclick="window.location.href='profile.html?id=${post.user?._id || post.user_id}'">`
+        : `<div class="avatar-placeholder" style="width:40px;height:40px;font-size:1rem;cursor:pointer;" onclick="window.location.href='profile.html?id=${post.user?._id || post.user_id}'">${initials}</div>`;
     const mediaHtml = post.mediaUrl ? (post.mediaType === 'video'
-        ? `<div class="post-media"><video src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${post.mediaUrl}" controls style="width:100%;max-height:420px;border-radius:12px;margin-top:10px;"></video></div>`
-        : `<div class="post-media"><img src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${post.mediaUrl}" alt="Post media" loading="lazy" style="width:100%;max-height:420px;object-fit:cover;border-radius:12px;margin-top:10px;cursor:pointer;" onclick="window.open(this.src,'_blank')"></div>`
+        ? `<div class="post-media"><video src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${post.mediaUrl}" controls style="width:100%;max-height:400px;"></video></div>`
+        : `<div class="post-media"><img src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${post.mediaUrl}" alt="Post media" loading="lazy" onclick="window.open(this.src,'_blank')"></div>`
     ) : '';
     const reactedClass = post.myReaction ? `reacted ${post.myReaction}` : '';
     const reactedIcon = post.myReaction ? getReactionIcon(post.myReaction) : '👍';
     const savedIcon = post.isSaved ? 'fas fa-bookmark text-blue' : 'far fa-bookmark';
     const reactionCount = (post.reactionCount || 0);
     const commentCount = (post.commentCount || 0);
-    const taggedHtml = post.mentions && post.mentions.length ? `<div style="font-size:0.82rem;color:#0866ff;margin:6px 0;">with ${post.mentions.map(m=>`<a href="profile.html?id=${m.id}" style="color:#0866ff;font-weight:700;text-decoration:none;">${esc(m.name)}</a>`).join(', ')}</div>` : '';
-    // Respect content with mentions highlight
-    let contentHtml = '';
-    if(post.content){
-        let c = esc(post.content);
-        // highlight @mentions
-        c = c.replace(/@([A-Za-z ]+?)(?=\s|$)/g, '<span style="color:#0866ff;font-weight:700;">@$1</span>');
-        contentHtml = `<div class="post-content" style="font-size:0.95rem;line-height:1.6;white-space:pre-wrap;word-break:break-word;margin-top:6px;">${c}</div>`;
-    }
     return `
-    <div class="post-card" id="post-${post._id || post.id}" style="background:var(--surface);border-radius:14px;padding:16px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,0.07);border:1px solid var(--border);">
-        <div class="post-header" style="display:flex;align-items:center;justify-content:space-between;">
-            <div class="post-author" style="display:flex;align-items:center;gap:10px;">
+    <div class="post-card" id="post-${post._id || post.id}">
+        <div class="post-header">
+            <div class="post-author">
                 ${avatarHtml}
                 <div>
-                    <div class="post-author-name" onclick="window.location.href='profile.html?id=${post.user?._id || post.user_id}'" style="cursor:pointer; font-weight:800; font-size:0.95rem; display:flex; align-items:center; gap:6px; flex-wrap:wrap; min-width:0;"><span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:165px; display:inline-block; vertical-align:middle;">${esc(post.user?.fullName || post.fullName || 'Unknown')}</span><span class="diu-verified"><i class="fas fa-check" style="font-size:0.6rem;"></i> Verified</span></div>
-                    <div class="post-author-meta" style="font-size:0.78rem;color:var(--text-secondary);display:flex;gap:6px;align-items:center;"><span>${timeAgo(post.created_at)}</span><span>·</span><i class="fas ${post.visibility === 'Public' ? 'fa-globe-americas' : 'fa-user-friends'}" title="${post.visibility}"></i></div>
+                    <div class="post-author-name" onclick="window.location.href='profile.html?id=${post.user?._id || post.user_id}'" style="cursor:pointer; display:flex; align-items:center;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
+                        ${esc(post.user?.fullName || post.fullName || 'Unknown')}
+                        <span class="diu-verified" title="Verified DIU Member"><i class="fas fa-check"></i></span>
+                    </div>
+                    <div class="post-author-meta">
+                        <span>${esc(post.user?.department || 'DIU')}</span>
+                        <span>·</span>
+                        <span>${timeAgo(post.created_at)}</span>
+                        <span>·</span>
+                        <i class="fas ${post.visibility === 'Public' ? 'fa-globe-americas' : post.visibility === 'Friends' ? 'fa-user-friends' : 'fa-lock'}" title="${post.visibility || 'Public'}"></i>
+                    </div>
                 </div>
             </div>
             <div style="position:relative;">
-                <button class="post-menu-btn" onclick="togglePostMenu('${post._id || post.id}')" style="background:var(--bg);border:none;width:34px;height:34px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);"><i class="fas fa-ellipsis-h"></i></button>
-                <div class="dropdown-menu" id="post-menu-${post._id || post.id}" style="right:0;top:40px;min-width:200px;position:absolute;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.12);padding:6px;display:none;z-index:20;">
-                    ${isOwner ? `<button class="dropdown-item" onclick="editPost('${post._id || post.id}', \`${(post.content||'').replace(/`/g,'\\`').replace(/\$/g,'\\$')}\`)" style="display:flex;gap:8px;align-items:center;width:100%;padding:10px 12px;background:none;border:none;border-radius:8px;font-size:0.88rem;cursor:pointer;text-align:left;"><i class="fas fa-pen"></i> Edit post</button><button class="dropdown-item danger" onclick="deletePost('${post._id || post.id}')" style="display:flex;gap:8px;align-items:center;width:100%;padding:10px 12px;background:none;border:none;border-radius:8px;font-size:0.88rem;cursor:pointer;color:#e41e3f;text-align:left;"><i class="fas fa-trash"></i> Delete post</button>` : ''}
-                    ${isAdmin ? `<button class="dropdown-item danger" onclick="adminDeletePost('${post._id || post.id}')" style="display:flex;gap:8px;align-items:center;width:100%;padding:10px 12px;background:none;border:none;border-radius:8px;font-size:0.88rem;cursor:pointer;color:#e41e3f;text-align:left;"><i class="fas fa-shield-alt"></i> Admin Delete</button>` : ''}
-                    ${!isOwner && !isAdmin ? `<button class="dropdown-item" onclick="reportPost('${post._id || post.id}', event)" style="display:flex;gap:8px;align-items:center;width:100%;padding:10px 12px;background:none;border:none;border-radius:8px;font-size:0.88rem;cursor:pointer;text-align:left;"><i class="fas fa-flag"></i> Report post</button>` : ''}
-                    <button class="dropdown-item" onclick="toggleSavePost('${post._id || post.id}', this)" style="display:flex;gap:8px;align-items:center;width:100%;padding:10px 12px;background:none;border:none;border-radius:8px;font-size:0.88rem;cursor:pointer;text-align:left;"><i class="${savedIcon}"></i> ${post.isSaved ? 'Unsave' : 'Save'} post</button>
+                <button class="post-menu-btn" onclick="togglePostMenu('${post._id || post.id}')"><i class="fas fa-ellipsis-h"></i></button>
+                <div class="dropdown-menu" id="post-menu-${post._id || post.id}" style="right:0;top:40px;min-width:200px;">
+                    <button class="dropdown-item" onclick="toggleSavePost('${post._id || post.id}', this)"><i class="${savedIcon}"></i> ${post.isSaved ? 'Unsave post' : 'Save post'}</button>
+                    ${isOwner ? `<button class="dropdown-item" onclick="editPost('${post._id || post.id}', \`${(post.content||'').replace(/`/g,'\\`').replace(/\$/g,'\\$')}\`)"><i class="fas fa-pen"></i> Edit post</button><button class="dropdown-item danger" onclick="deletePost('${post._id || post.id}')"><i class="fas fa-trash"></i> Delete post</button>` : ''}
+                    ${isAdmin ? `<button class="dropdown-item danger" onclick="adminDeletePost('${post._id || post.id}')"><i class="fas fa-shield-alt"></i> Admin Delete</button>` : ''}
+                    ${!isOwner && !isAdmin ? `<button class="dropdown-item" onclick="reportPost('${post._id || post.id}', event)"><i class="fas fa-flag"></i> Report post</button>` : ''}
                 </div>
             </div>
         </div>
-        ${contentHtml}
-        ${taggedHtml}
+        ${post.content ? `<div class="post-content ${!post.mediaUrl && post.content.length < 80 ? 'large' : ''}">${(() => { let c=esc(post.content); if(post.mentions && post.mentions.length){ post.mentions.forEach(m=>{ const escName=esc(m.name); c=c.replace(new RegExp('@'+escName.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'g'), `<a href="profile.html?id=${m.id}" style="color:#0866ff;font-weight:700;text-decoration:none;background:#e7f0ff;padding:1px 6px;border-radius:8px;">@${escName}</a>`); c=c.replace(new RegExp('@'+m.name.split(' ')[0], 'g'), `<a href="profile.html?id=${m.id}" style="color:#0866ff;font-weight:700;">@${esc(m.name.split(' ')[0])}</a>`); }); } else { c=c.replace(/@([A-Za-z\u0980-\u09FF]+(?: [A-Za-z\u0980-\u09FF]+)?)/g, '<span style="color:#0866ff;font-weight:700;">@$1</span>'); } return c; })()}</div>` : ''}
+        ${post.mentions && post.mentions.length ? `<div style="margin:8px 0 2px; display:flex; flex-wrap:wrap; gap:6px; align-items:center; font-size:0.82rem; color:var(--text-secondary);"><i class="fas fa-user-tag" style="color:#0866ff;"></i> with ${post.mentions.map(m=>`<a href="profile.html?id=${m.id}" style="color:#0866ff; font-weight:700; text-decoration:none; background:#e7f0ff; padding:3px 8px; border-radius:12px; border:1px solid #bfdbfe; display:inline-flex; align-items:center; gap:5px;" onclick="event.stopPropagation()">${m.profilePicture?`<img src="${window.location.origin}${m.profilePicture}" style="width:16px;height:16px;border-radius:50%;object-fit:cover;">`:''}${esc(m.name)}</a>`).join('')}</div>` : ''}
         ${mediaHtml}
-        <div class="post-stats" style="display:flex;justify-content:space-between;align-items:center;padding:10px 0 8px;border-bottom:1px solid var(--border);font-size:0.82rem;color:var(--text-secondary);margin-top:10px;">
-            <div class="post-reaction-count" onclick="openReactionsModal && openReactionsModal('${post._id || post.id}')" style="cursor:pointer;display:flex;align-items:center;gap:6px;">${reactionCount > 0 ? `<span style="background:#e7f0ff;padding:2px 6px;border-radius:10px;font-size:0.75rem;">👍❤️😂</span><span id="reaction-count-${post._id || post.id}" style="font-weight:700;color:var(--text-secondary);">${reactionCount}</span>` : `<span id="reaction-count-${post._id || post.id}"></span>`}</div>
-            <div style="cursor:pointer;font-weight:600;" onclick="toggleProfileComments('${post._id || post.id}')">${commentCount > 0 ? `${commentCount} comment${commentCount>1?'s':''}` : 'Comment'}</div>
-        </div>
-        <div class="post-actions" style="display:flex;justify-content:space-around;padding:6px 0 2px;">
-            <div class="post-action-wrap" style="position:relative;">
-                <button class="post-action ${reactedClass}" id="react-btn-${post._id || post.id}" onclick="doProfileReact(event,'${post._id || post.id}','${post.myReaction||'like'}')" style="background:none;border:none;padding:8px 14px;border-radius:8px;font-weight:700;font-size:0.88rem;cursor:pointer;display:flex;align-items:center;gap:6px;color:${post.myReaction?'#0866ff':'var(--text-secondary)'};"><span>${reactedIcon}</span> <span>${post.myReaction ? post.myReaction.charAt(0).toUpperCase()+post.myReaction.slice(1) : 'Like'}</span></button>
+        <div class="post-stats">
+            <div class="post-reaction-count" onclick="openReactionsModal('${post._id || post.id}')" title="See who reacted">
+                ${reactionCount > 0 ? `<span class="reaction-emojis"><span>👍</span><span>❤️</span><span>😂</span></span>&nbsp;<span id="reaction-count-${post._id || post.id}">${reactionCount}</span>` : `<span id="reaction-count-${post._id || post.id}"></span>`}
             </div>
-            <button class="post-action" onclick="toggleProfileComments('${post._id || post.id}')" style="background:none;border:none;padding:8px 14px;border-radius:8px;font-weight:700;font-size:0.88rem;cursor:pointer;display:flex;align-items:center;gap:6px;color:var(--text-secondary);"><i class="far fa-comment-alt"></i> Comment</button>
-            <button class="post-action" onclick="sharePost && sharePost('${post._id || post.id}')" style="background:none;border:none;padding:8px 14px;border-radius:8px;font-weight:700;font-size:0.88rem;cursor:pointer;display:flex;align-items:center;gap:6px;color:var(--text-secondary);"><i class="fas fa-share"></i> Share</button>
+            <div style="cursor:pointer" onclick="toggleProfileComments('${post._id || post.id}')">${commentCount > 0 ? `${commentCount} comment${commentCount > 1 ? 's' : ''}` : ''}</div>
         </div>
-        <div class="post-comments" id="comments-${post._id || post.id}" style="display:none;border-top:1px solid var(--border);padding-top:12px;margin-top:8px;">
-            <div class="comments-list" id="comments-list-${post._id || post.id}" style="display:flex;flex-direction:column;gap:10px;"></div>
-            <div class="comment-input-row" style="display:flex;gap:8px;align-items:center;margin-top:12px;">
-                <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#0a66ff,#0540a0);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.75rem;flex-shrink:0;">${getInitials(myUser?.fullName)}</div>
-                <div style="flex:1;position:relative;background:var(--bg);border-radius:20px;padding:6px 12px;display:flex;align-items:center;border:1px solid var(--border);">
-                    <input class="comment-input" id="cinput-${post._id || post.id}" placeholder="Write a comment... use @ to mention" style="flex:1;background:none;border:none;outline:none;font-size:0.88rem;font-family:inherit;" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();submitProfileComment('${post._id || post.id}',this);}" oninput="handleMentionInput(this, '${post._id || post.id}')">
+        <div class="post-actions">
+            <div class="post-action-wrap">
+                <div class="reaction-picker">
+                    <span class="reaction-btn" onclick="doProfileReact(event,'${post._id || post.id}','like')">👍</span>
+                    <span class="reaction-btn" onclick="doProfileReact(event,'${post._id || post.id}','love')">❤️</span>
+                    <span class="reaction-btn" onclick="doProfileReact(event,'${post._id || post.id}','haha')">😂</span>
+                    <span class="reaction-btn" onclick="doProfileReact(event,'${post._id || post.id}','wow')">😮</span>
+                    <span class="reaction-btn" onclick="doProfileReact(event,'${post._id || post.id}','sad')">😢</span>
+                    <span class="reaction-btn" onclick="doProfileReact(event,'${post._id || post.id}','angry')">😡</span>
                 </div>
-                <button class="comment-send" onclick="submitProfileComment('${post._id || post.id}',document.getElementById('cinput-${post._id || post.id}'))" style="background:#0866ff;color:white;border:none;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;"><i class="fas fa-paper-plane" style="font-size:0.85rem;"></i></button>
+                <button class="post-action ${reactedClass}" id="react-btn-${post._id || post.id}" data-postid="${post._id || post.id}" data-reaction="${post.myReaction || ''}" onclick="doProfileReact(event,'${post._id || post.id}','${post.myReaction || 'like'}')">
+                    <span>${reactedIcon}</span> <span>${post.myReaction ? post.myReaction.charAt(0).toUpperCase()+post.myReaction.slice(1) : 'Like'}</span>
+                </button>
             </div>
+            <button class="post-action" onclick="toggleProfileComments('${post._id || post.id}')">
+                <i class="far fa-comment-alt"></i> <span>Comment</span>
+            </button>
+            <button class="post-action" onclick="sharePost && sharePost('${post._id || post.id}')">
+                <i class="fas fa-share"></i> <span>Share</span>
+            </button>
+        </div>
+        <div class="post-comments" id="comments-${post._id || post.id}">
+            <div class="comments-list" id="comments-list-${post._id || post.id}"></div>
+            <div class="comment-input-row">
+                ${myUser?.profilePicture
+                ? `<img src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${myUser.profilePicture}" class="avatar" style="width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0;">`
+                : `<div class="avatar-placeholder" style="width:34px;height:34px;font-size:0.8rem;flex-shrink:0;">${getInitials(myUser?.fullName)}</div>`
+                }
+                <div class="comment-input-wrap" style="position:relative; flex:1;">
+                    <input class="comment-input" id="cinput-${post._id || post.id}" placeholder="Write a comment... use @ to mention"
+                        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();submitProfileComment('${post._id || post.id}',this);}"
+                        oninput="handleMentionInput(this, '${post._id || post.id}')" autocomplete="off">
+                    <div id="cmention-${post._id || post.id}" style="display:none; position:absolute; bottom:44px; left:0; right:0; background:var(--surface); border:1px solid var(--border); border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.12); max-height:150px; overflow-y:auto; z-index:10;"></div>
+                </div>
+                <button class="comment-send" onclick="submitProfileComment('${post._id || post.id}',document.getElementById('cinput-${post._id || post.id}'))"><i class="fas fa-paper-plane"></i></button>
+            </div>
+            <div class="comment-emoji-box" id="cemoji-${post._id || post.id}" style="display:none;"></div>
         </div>
     </div>`;
 }
@@ -797,12 +827,16 @@ function getReactionIcon(type){
 async function toggleProfileComments(postId){
     const el=document.getElementById('comments-'+postId);
     if(!el) return;
-    el.style.display = el.style.display==='none' || !el.style.display ? 'block' : 'none';
-    if(el.style.display==='block'){
+    el.classList.toggle('show');
+    // ensure display sync for browsers without CSS
+    if(el.classList.contains('show')) el.style.display='block';
+    else el.style.display='none';
+    if(el.classList.contains('show') || el.style.display==='block'){
         const list=document.getElementById('comments-list-'+postId);
         if(list && list.children.length===0) await loadProfileComments(postId);
     }
 }
+async function toggleComments(postId){ return toggleProfileComments(postId); }
 async function loadProfileComments(postId){
     const list=document.getElementById('comments-list-'+postId);
     try{
@@ -813,23 +847,45 @@ async function loadProfileComments(postId){
     }catch{ list.innerHTML='<div style="padding:8px;color:var(--text-secondary);font-size:0.82rem">Failed to load comments</div>'; }
 }
 function buildProfileComment(c){
-    const initials=getInitials(c.fullName||'?');
+    const initials=getInitials(c.fullName||c.user?.fullName||'?');
     const pic=c.profilePicture||c.user?.profilePicture;
     const name=c.fullName||c.user?.fullName||'DIU Member';
-    const avatarHtml=pic?`<img src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${pic}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">`:`<div style="width:32px;height:32px;border-radius:50%;background:#0866ff;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.75rem;">${initials}</div>`;
+    const avatarHtml=pic?`<img class="avatar" src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${pic}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;cursor:pointer;" onclick="window.location.href='profile.html?id=${c.user_id||c.userId||''}'">`:`<div class="avatar-placeholder" style="width:32px;height:32px;font-size:0.75rem;cursor:pointer;flex-shrink:0;" onclick="window.location.href='profile.html?id=${c.user_id||c.userId||''}'">${initials}</div>`;
+    const ago = c.created_at ? timeAgo(c.created_at) : 'Just now';
+    const myId = String(myUser?._id || myUser?.id || '');
+    const isOwner = String(c.user_id || c.userId) === myId;
+    const isAdmin = myUser?.role === 'Admin';
+    const postId = c.post_id || c.postId || '';
     let content=esc(c.content||'');
-    content=content.replace(/@([A-Za-z0-9_ ]+)/g,'<span style="color:#0866ff;font-weight:700;">@$1</span>');
-    const isOwner=String(c.user_id)===String(myUser?._id||myUser?.id);
-    return `<div style="display:flex;gap:8px;align-items:flex-start;">
+    // Highlight mentions identical to home
+    if(c.mentions && Array.isArray(c.mentions) && c.mentions.length){
+        c.mentions.forEach(m=>{
+            const escName=esc(m.name);
+            const re=new RegExp('@'+escName.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'g');
+            content=content.replace(re, `<a href="profile.html?id=${m.id}" style="color:#0866ff;font-weight:700;text-decoration:none;">@${escName}</a>`);
+        });
+    } else {
+        content=content.replace(/@([A-Za-z\u0980-\u09FF]+(?: [A-Za-z\u0980-\u09FF]+)?)/g, '<span style="color:#0866ff;font-weight:700;">@$1</span>');
+        if(typeof tagFriendsCache !== 'undefined' && tagFriendsCache && tagFriendsCache.length){
+            tagFriendsCache.forEach(f=>{
+                const re=new RegExp('@'+f.name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'g');
+                if(content.includes('@'+f.name)) content=content.replace(re, `<a href="profile.html?id=${f.id}" style="color:#0866ff;font-weight:700;text-decoration:none;">@${esc(f.name)}</a>`);
+            });
+        }
+    }
+    return `<div class="comment-item" style="margin-bottom:10px;display:flex;gap:8px;align-items:flex-start;">
         ${avatarHtml}
-        <div style="flex:1;">
-            <div style="background:var(--bg);border-radius:16px;padding:8px 12px;display:inline-block;max-width:100%;">
-                <div style="font-weight:700;font-size:0.82rem;">${esc(name)}</div>
-                <div style="font-size:0.88rem;line-height:1.4;word-break:break-word;">${content}</div>
+        <div style="flex:1;min-width:0;">
+            <div class="comment-bubble" style="background:var(--surface-alt,#f0f2f5);border-radius:18px;padding:8px 14px;display:inline-block;max-width:100%;">
+                <div class="name" style="cursor:pointer;font-weight:700;font-size:0.82rem;color:var(--text);margin-bottom:2px;" onclick="window.location.href='profile.html?id=${c.user_id||c.userId||''}'">${esc(name)}</div>
+                <div class="text" style="font-size:0.88rem;line-height:1.4;word-break:break-word;">${content}</div>
             </div>
-            <div style="display:flex;gap:10px;padding:4px 6px;font-size:0.72rem;color:var(--text-secondary);">
-                <span>${timeAgo(c.created_at)}</span>
-                ${isOwner?`<button onclick="editProfileComment('${c.id}','${(c.content||'').replace(/'/g,'&#39;')}','${c.post_id}')" style="background:none;border:none;font-weight:700;color:#0866ff;cursor:pointer;font-size:0.72rem;">Edit</button><button onclick="deleteProfileComment('${c.id}','${c.post_id}',this)" style="background:none;border:none;font-weight:700;color:#e41e3f;cursor:pointer;font-size:0.72rem;">Delete</button>`:''}
+            <div style="display:flex;gap:12px;padding:2px 6px;font-size:0.75rem;color:var(--text-secondary);align-items:center;flex-wrap:wrap;">
+                <span>${ago}</span>
+                <button style="background:none;border:none;font-size:0.75rem;font-weight:700;color:var(--text-secondary);cursor:pointer;padding:0;" onmouseover="this.style.color='#0866ff'" onmouseout="this.style.color='var(--text-secondary)'" onclick="this.style.color='#0866ff';this.textContent=this.textContent==='Like'?'Liked':'Like';">Like</button>
+                <button style="background:none;border:none;font-size:0.75rem;font-weight:700;color:var(--text-secondary);cursor:pointer;padding:0;" onmouseover="this.style.color='#0866ff'" onmouseout="this.style.color='var(--text-secondary)'">Reply</button>
+                ${isOwner ? `<button onclick="editProfileComment('${c.id}', \`${(c.content||'').replace(/`/g,'\`')}\`, '${postId}')" style="background:none;border:none;font-size:0.75rem;font-weight:700;color:#0A6CFF;cursor:pointer;padding:0;">Edit</button>` : ''}
+                ${isOwner || isAdmin ? `<button onclick="deleteProfileComment('${c.id}', '${postId}', this)" style="background:none;border:none;font-size:0.75rem;font-weight:700;color:#e41e3f;cursor:pointer;padding:0;">${isAdmin && !isOwner ? 'Admin Delete' : 'Delete'}</button>` : ''}
             </div>
         </div>
     </div>`;
@@ -855,27 +911,31 @@ async function doProfileReact(e, postId, type){
         const data=await res.json();
         const btn=document.getElementById('react-btn-'+postId);
         const countEl=document.getElementById('reaction-count-'+postId);
-        const wrap=countEl ? countEl.parentElement : null;
+        const countWrap = countEl ? countEl.parentElement : null;
         const total = data.total !== undefined ? data.total : 0;
         if(data.action==='removed'){
-            btn.style.color='var(--text-secondary)';
-            btn.innerHTML='<span>👍</span> <span>Like</span>';
-            btn.classList.remove('reacted');
-            if(wrap){
-                if(total>0) wrap.innerHTML=`<span style="background:#e7f0ff;padding:2px 6px;border-radius:10px;font-size:0.75rem;">👍❤️😂</span><span id="reaction-count-${postId}" style="font-weight:700;color:var(--text-secondary);">${total}</span>`;
-                else wrap.innerHTML=`<span id="reaction-count-${postId}"></span>`;
+            btn.className='post-action';
+            btn.dataset.reaction='';
+            btn.querySelector('span:last-child').textContent='Like';
+            btn.querySelectorAll('span')[0].textContent='👍';
+            btn.style.color='';
+            if(countWrap){
+                if(total>0) countWrap.innerHTML=`<span class="reaction-emojis"><span>👍</span><span>❤️</span><span>😂</span></span>&nbsp;<span id="reaction-count-${postId}">${total}</span>`;
+                else countWrap.innerHTML=`<span id="reaction-count-${postId}"></span>`;
             }
         } else {
-            btn.style.color='#0866ff';
-            btn.classList.add('reacted');
-            btn.innerHTML=`<span>${getReactionIcon(type)}</span> <span>${type.charAt(0).toUpperCase()+type.slice(1)}</span>`;
-            if(wrap){
-                wrap.innerHTML=`<span style="background:#e7f0ff;padding:2px 6px;border-radius:10px;font-size:0.75rem;">👍❤️😂</span><span id="reaction-count-${postId}" style="font-weight:700;color:var(--text-secondary);">${total}</span>`;
+            btn.className=`post-action reacted ${type}`;
+            btn.dataset.reaction=type;
+            btn.querySelectorAll('span')[0].textContent=getReactionIcon(type);
+            btn.querySelector('span:last-child').textContent=type.charAt(0).toUpperCase()+type.slice(1);
+            btn.style.color='';
+            if(countWrap){
+                countWrap.innerHTML=`<span class="reaction-emojis"><span>👍</span><span>❤️</span><span>😂</span></span>&nbsp;<span id="reaction-count-${postId}">${total}</span>`;
             }
         }
-        // also update global if home's socket listening
-    }catch{ showToast('Failed to react','error'); }
+    }catch(err){ console.error('doProfileReact error', err); showToast('Failed to react','error'); }
 }
+async function doReact(e, postId, type){ return doProfileReact(e, postId, type); }
 async function openReactionsModal(postId){
     let modal=document.getElementById('reactionsModal');
     if(!modal){
@@ -914,10 +974,18 @@ function closeReactionsModal(){ const m=document.getElementById('reactionsModal'
 function togglePostMenu(postId){
     const menu=document.getElementById('post-menu-'+postId);
     if(!menu) return;
-    const isShow=menu.style.display==='block';
-    document.querySelectorAll('.dropdown-menu').forEach(m=>m.style.display='none');
-    menu.style.display=isShow?'none':'block';
+    const isShow=menu.classList.contains('show');
+    document.querySelectorAll('.dropdown-menu').forEach(m=>m.classList.remove('show'));
+    if(!isShow) menu.classList.add('show');
+    // fallback for inline style if CSS not loaded
+    document.querySelectorAll('.dropdown-menu').forEach(m=>{ if(!m.classList.contains('show')) m.style.display='none'; });
+    if(menu.classList.contains('show')) menu.style.display='block';
 }
+document.addEventListener('click', (e)=>{
+    if(!e.target.closest('.post-menu-btn') && !e.target.closest('.dropdown-menu')) {
+        document.querySelectorAll('.dropdown-menu').forEach(m=>{ m.classList.remove('show'); m.style.display='none'; });
+    }
+});
 async function deletePost(postId){
     if(!confirm('Delete this post?')) return;
     try{ await apiFetch('/posts/'+postId,{method:'DELETE'}); document.getElementById('post-'+postId)?.remove(); showToast('Post deleted','success'); }catch{ showToast('Failed','error'); }
@@ -1194,3 +1262,23 @@ loadProfile();
 </body>
 </html>
 
+
+function sharePost(postId){
+    if(navigator.share){
+        navigator.share({title:'DIU Nexus Post', url: window.location.href.split('?')[0] + '?post=' + postId}).catch(()=>{});
+    } else {
+        const url = window.location.origin + '/client/views/profile.html?post=' + postId;
+        if(navigator.clipboard) navigator.clipboard.writeText(url).then(()=>showToast('🔗 Link copied!'));
+        else prompt('Copy link:', url);
+    }
+}
+function reportPost(postId, e){
+    if(e){ e.preventDefault(); e.stopPropagation(); }
+    const reason = prompt('Report reason (Spam, Harassment, Hate, False, Violence, Nudity, Other):');
+    if(!reason) return;
+    apiFetch('/posts/'+postId+'/report',{method:'POST',body:JSON.stringify({reason, details:''})}).then(r=>r.json()).then(d=>{
+        if(d && d.message) showToast(d.message);
+        else showToast('Reported to Admin');
+    }).catch(()=>showToast('Failed to report','error'));
+    document.querySelectorAll('.dropdown-menu').forEach(m=>{ m.classList.remove('show'); m.style.display='none'; });
+}
