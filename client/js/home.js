@@ -93,8 +93,10 @@ function renderUserUI() {
  });
  }
  if (currentUser.coverPicture) {
- document.getElementById('sidebarCover').style.backgroundImage = `url(${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${currentUser.coverPicture})`;
+ const cv = window.mediaUrl ? window.mediaUrl(currentUser.coverPicture) : (currentUser.coverPicture.startsWith('http') ? currentUser.coverPicture : ((window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())+currentUser.coverPicture));
+ document.getElementById('sidebarCover').style.backgroundImage = `url(${cv})`;
  document.getElementById('sidebarCover').style.backgroundSize = 'cover';
+ document.getElementById('sidebarCover').style.backgroundPosition = 'center';
  }
  // Navbar
  setAvatarEl('navAvatar', currentUser.profilePicture, initials);
@@ -1064,18 +1066,33 @@ function renderStoriesRing(users) {
  const myCardImg = document.getElementById('myStoryAvCard');
  const myAvEl = document.getElementById('myStoryAv');
  // Update new FB card image and old hidden circle for compat
+ // Fix: use mediaUrl for cloudinary double prefix + show story media as cover for Your story (like FB)
+ const getMedia = (p)=> window.mediaUrl ? window.mediaUrl(p) : (p && p.startsWith('http') ? p : ((window.API_BASE || (function(){var pp=window.location.protocol,hh=window.location.hostname,po=window.location.port; if(pp==='file:') return 'http://localhost:5000'; if(hh==='localhost'||hh==='127.0.0.1'||hh===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())+p));
  if(myCardImg){
- if(currentUser.profilePicture){
- myCardImg.src = ((window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())) + currentUser.profilePicture;
- myCardImg.style.display='block';
- if(myCardImg.nextElementSibling) myCardImg.nextElementSibling.style.display='none';
- } else {
- myCardImg.style.display='none';
- if(myCardImg.nextElementSibling) myCardImg.nextElementSibling.style.display='flex';
+   // If has own story, show latest story media as cover (FB-like), else profile pic
+   let coverSrc = null;
+   if(myStory){
+     const lst = myStory.stories[myStory.stories.length-1];
+     const mp = lst ? (lst.media_url || lst.content || '') : '';
+     if(mp && (mp.startsWith('/uploads') || mp.startsWith('http') || mp.startsWith('blob:') || mp.startsWith('data:'))) coverSrc = getMedia(mp);
+   }
+   if(coverSrc){
+     myCardImg.src = coverSrc;
+     myCardImg.style.display='block';
+     myCardImg.style.objectFit='cover';
+     if(myCardImg.nextElementSibling) myCardImg.nextElementSibling.style.display='none';
+   } else if(currentUser.profilePicture){
+     myCardImg.src = getMedia(currentUser.profilePicture);
+     myCardImg.style.display='block';
+     myCardImg.style.objectFit='cover';
+     if(myCardImg.nextElementSibling) myCardImg.nextElementSibling.style.display='none';
+   } else {
+     myCardImg.style.display='none';
+     if(myCardImg.nextElementSibling) myCardImg.nextElementSibling.style.display='flex';
+   }
  }
- }
- if(myAvEl && currentUser.profilePicture){
- myAvEl.src = ((window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())) + currentUser.profilePicture;
+ if(myAvEl){
+   if(currentUser.profilePicture) myAvEl.src = getMedia(currentUser.profilePicture);
  }
  
   // FB-like: Don't duplicate own story — show only in Create Story card (fixes double)
