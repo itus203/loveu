@@ -117,10 +117,19 @@
         }
         .hdr-btn:hover { background: var(--border); }
 
-        /* Messages */
+        /* Messages - WhatsApp-like doodle wallpaper with academic vibe (proportion balanced) */
         .messages-area {
             flex: 1; overflow-y: auto; padding: 16px 12px;
             display: flex; flex-direction: column; gap: 2px;
+            background-color: #efeae2;
+            background-image: url('/assets/nexus-wallpaper.svg');
+            background-repeat: repeat;
+            background-size: 400px 400px;
+            background-attachment: local;
+        }
+        [data-theme="dark"] .messages-area {
+            background-color: #0b141a;
+            background-image: url('/assets/nexus-wallpaper-dark.svg');
         }
         .messages-area::-webkit-scrollbar { width: 4px; }
         .messages-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }

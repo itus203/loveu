@@ -18,7 +18,8 @@
   .fbChatHead img{width:32px;height:32px;border-radius:50%;object-fit:cover;}
   .fbChatHead .name{flex:1;font-weight:700;font-size:0.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .fbChatHead .btn{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.15);border:none;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;}
-  .fbChatBody{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px;background:var(--bg,#f0f2f5);}
+  .fbChatBody{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px;background-color:#efeae2;background-image:url('/assets/nexus-wallpaper.svg');background-repeat:repeat;background-size:360px 360px;}
+  [data-theme="dark"] .fbChatBody{background-color:#0b141a;background-image:url('/assets/nexus-wallpaper-dark.svg');}
   .fbBubble{max-width:72%;padding:8px 10px;border-radius:16px;font-size:0.85rem;line-height:1.4;word-break:break-word;}
   .fbBubble.mine{background:#0866ff;color:white;align-self:flex-end;border-bottom-right-radius:4px;}
   .fbBubble.theirs{background:var(--surface,#fff);border:1px solid var(--border,#e4e6eb);align-self:flex-start;border-bottom-left-radius:4px;}

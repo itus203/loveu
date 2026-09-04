@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800">
+  <rect width="100%" height="100%" fill="#0b141a"/>
+  <g font-family="Inter, sans-serif" fill="#1f2c34" opacity="0.55" text-anchor="middle">
+    <text x="80" y="80" font-size="22" font-weight="800" transform="rotate(-8 80 80)">E=mc²</text>
+    <text x="300" y="60" font-size="18" font-weight="700" transform="rotate(6 300 60)">p = h/λ</text>
+    <text x="520" y="90" font-size="16" font-weight="700" transform="rotate(-4 520 90)">F=ma</text>
+    <text x="680" y="70" font-size="20" font-weight="800" transform="rotate(8 680 70)">Σ</text>
+    <text x="150" y="160" font-size="24" font-weight="800" transform="rotate(-6 150 160)">∫dx</text>
+    <text x="380" y="150" font-size="14" font-weight="700" transform="rotate(5 380 150)">λ = h/p</text>
+    <text x="620" y="160" font-size="18" font-weight="700" transform="rotate(-7 620 160)">a²+b²=c²</text>
+    <text x="90" y="240" font-size="16" font-weight="700" font-family="monospace" transform="rotate(-5 90 240)">{ code }</text>
+    <text x="280" y="220" font-size="14" font-weight="700" font-family="monospace" transform="rotate(7 280 220)">&lt;html&gt;</text>
+    <text x="480" y="240" font-size="13" font-weight="700" font-family="monospace" transform="rotate(-3 480 240)">while(true)</text>
+    <text x="680" y="230" font-size="15" font-weight="700" font-family="monospace" transform="rotate(6 680 230)">if(){}</text>
+    <text x="120" y="320" font-size="12" font-weight="700" font-family="monospace" transform="rotate(-4 120 320)">0xFF</text>
+    <text x="320" y="320" font-size="13" font-weight="700" transform="rotate(4 320 320)">CSE</text>
+    <text x="520" y="310" font-size="12" font-weight="700" font-family="monospace" transform="rotate(-6 520 310)">0101</text>
+    <text x="80" y="400" font-size="22" font-weight="900" transform="rotate(-7 80 400)">BBA</text>
+    <text x="250" y="380" font-size="20" font-weight="900" transform="rotate(5 250 380)">MBA</text>
+    <text x="450" y="400" font-size="16" font-weight="800" transform="rotate(-5 450 400)">BBA</text>
+    <text x="650" y="390" font-size="18" font-weight="900" transform="rotate(7 650 390)">MBA</text>
+    <text x="150" y="480" font-size="14" font-weight="700" transform="rotate(6 150 480)">Marketing</text>
+    <text x="380" y="470" font-size="13" font-weight="700" transform="rotate(-4 380 470)">Finance</text>
+    <text x="620" y="480" font-size="15" font-weight="800" transform="rotate(5 620 480)">HR</text>
+    <text x="90" y="560" font-size="28" opacity="0.5" transform="rotate(-10 90 560)">🎓</text>
+    <text x="280" y="540" font-size="26" opacity="0.5" transform="rotate(8 280 540)">💻</text>
+    <text x="480" y="560" font-size="24" opacity="0.5" transform="rotate(-6 480 560)">📚</text>
+    <text x="680" y="550" font-size="26" opacity="0.5" transform="rotate(5 680 550)">⚛️</text>
+    <text x="120" y="640" font-size="20" opacity="0.45" transform="rotate(7 120 640)">🧪</text>
+    <text x="320" y="640" font-size="22" opacity="0.45" transform="rotate(-5 320 640)">📊</text>
+    <text x="520" y="640" font-size="20" opacity="0.45" transform="rotate(6 520 640)">🧮</text>
+    <text x="680" y="640" font-size="24" opacity="0.45" transform="rotate(-8 680 640)">🔬</text>
+    <text x="80" y="720" font-size="16" font-weight="700" transform="rotate(-6 80 720)">π = 3.14</text>
+    <text x="260" y="720" font-size="14" font-weight="700" transform="rotate(4 260 720)">∑F=0</text>
+    <text x="450" y="720" font-size="15" font-weight="700" font-family="monospace" transform="rotate(-4 450 720)">git push</text>
+    <text x="650" y="720" font-size="13" font-weight="700" transform="rotate(7 650 720)">AI/ML</text>
+  </g>
+</svg>
