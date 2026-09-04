@@ -190,7 +190,9 @@ exports.register = async (req, res) => {
                 'INSERT INTO email_otps (email, otp, expires_at, used) VALUES (?,?,?,0)',
                 [email.toLowerCase().trim(), otp, expiresAt]
             );
-            await sendOtpEmail(email.toLowerCase().trim(), otp, fullName.trim());
+            // Super fast: don't await email (was 2min), send in background + log OTP for dev (if mail fails)
+            console.log(`[OTP] ${email.toLowerCase().trim()} -> ${otp} (expires ${expiresAt})`);
+            sendOtpEmail(email.toLowerCase().trim(), otp, fullName.trim()).catch(e=> console.error('[OTP email background fail]', e.message));
             return res.status(201).json({
                 message: 'Registration successful! An OTP has been sent to your institutional email. Please verify to login.',
                 requiresOtp: true,
@@ -303,7 +305,8 @@ exports.resendOtp = async (req, res) => {
             'INSERT INTO email_otps (email, otp, expires_at, used) VALUES (?,?,?,0)',
             [email.toLowerCase().trim(), otp, expiresAt]
         );
-        await sendOtpEmail(email.toLowerCase().trim(), otp, user.fullName || user.fullname);
+        console.log(`[OTP resend] ${email.toLowerCase().trim()} -> ${otp}`);
+        sendOtpEmail(email.toLowerCase().trim(), otp, user.fullName || user.fullname).catch(e=> console.error('[OTP resend fail]', e.message));
         res.json({ message: 'A new OTP code has been sent to your email.' });
     } catch (e) {
         res.status(500).json({ message: e.message });
