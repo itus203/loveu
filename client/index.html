@@ -794,7 +794,23 @@ async function handleRegister() {
  setTimeout(() => window.location.href = 'home.html', 800);
  }
  } catch (err) {
- showAlert('registerAlert', err.message || 'Registration failed');
+ const msg = err.message || 'Registration failed';
+ // If already registered, auto-switch to Sign In with email prefilled (FB-like)
+ if(msg.toLowerCase().includes('already registered')){
+   showAlert('registerAlert', msg + ' — switching to Sign In...', 'error');
+   setTimeout(()=>{
+     switchTab('login');
+     document.getElementById('loginEmail').value = email;
+     document.getElementById('loginPassword').focus();
+     showAlert('loginAlert', 'This account already exists. Please sign in with your password.', 'error');
+     // clear the duplicate ID/email confusion
+     const otpBox=document.getElementById('otpBox');
+     if(otpBox) otpBox.remove();
+     document.getElementById('registerPanel').style.display='';
+   }, 600);
+ } else {
+   showAlert('registerAlert', msg);
+ }
  } finally {
  setLoading('registerBtn', false);
  }
