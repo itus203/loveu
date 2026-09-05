@@ -120,7 +120,7 @@ function handleBack(){ try{ if(history.length>1 && document.referrer) history.ba
 
 <div class="groups-hero">
 <h1><i class="fas fa-users"></i> University Groups</h1>
-<p>Department • Batch • Course • Club — Facebook Group + Classroom + Messenger, DIU জন্য</p>
+<p>Department • Batch • Course • Club — Facebook Group + Classroom + Messenger</p>
 <div style="max-width:560px;margin:14px auto 0;position:relative;z-index:1;display:flex;gap:8px;">
 <input id="heroSearch" type="text" placeholder="Search groups, e.g. SWE 43, CSE, Photography Club..." style="flex:1;padding:12px 16px;border-radius:12px;border:none;outline:none;font-family:inherit;box-shadow:0 4px 16px rgba(0,0,0,0.15);" oninput="debounceSearch(this.value)" onkeydown="if(event.key==='Enter') doSearch()">
 <button onclick="doSearch()" style="background:#111827;color:white;border:none;border-radius:12px;padding:0 18px;font-weight:700;cursor:pointer;"><i class="fas fa-search"></i></button>
@@ -194,7 +194,7 @@ function handleBack(){ try{ if(history.length>1 && document.referrer) history.ba
 <select id="grpType" style="padding:10px;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;"><option value="general">Type</option><option value="department">Department</option><option value="course">Course</option><option value="batch">Batch</option><option value="club">Club</option><option value="campus">Campus</option></select>
 </div>
 <div class="form-grid">
-<select id="grpDept" style="padding:10px;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;"><option value="">Department</option><option>CSE</option><option>SWE</option><option>ITM</option><option>CIS</option><option>EEE</option><option>ETE</option><option>Civil Engineering</option><option>Textile Engineering</option><option>Architecture</option><option>BBA</option><option>Innovation & Entrepreneurship</option><option>Real Estate</option><option>Tourism & Hospitality</option><option>Pharmacy</option><option>Public Health</option><option>Nutrition & Food Engineering</option><option>Genetic Engineering & Biotech</option><option>English</option><option>Law</option><option>Journalism & Media</option><option>Development Studies</option></select>
+<select id="grpDept" style="padding:10px;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;"><option value="">Department</option><option>CSE</option><option>SWE</option><option>CIS</option><option>CS</option><option>ITM</option><option>MCT</option><option>EEE</option><option>ETE</option><option>Civil Engineering</option><option>Architecture</option><option>Textile Engineering</option><option>Real Estate</option><option>BBA</option><option>Accounting</option><option>Finance</option><option>Marketing</option><option>Management</option><option>Tourism & Hospitality</option><option>Innovation & Entrepreneurship</option><option>Pharmacy</option><option>Public Health</option><option>Nutrition & Food Engineering</option><option>Genetic Engineering & Biotech</option><option>Environmental Science & Disaster Management</option><option>English</option><option>Law</option><option>Journalism & Media</option><option>Development Studies</option></select>
 <input id="grpBatch" type="text" placeholder="Batch e.g. 43" style="padding:10px;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;">
 </div>
 <div class="form-grid">

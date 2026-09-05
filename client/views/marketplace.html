@@ -104,11 +104,16 @@ function setCategory(cat,btn){currentCat=cat;document.querySelectorAll('.cat').f
 async function load(){
     try{
         const url='/marketplace'+(currentCat?`?category=${currentCat}`:'');
-        const res=await apiFetch(url); const items=await res.json();
+        const res=await apiFetch(url); 
+        if(!res.ok) throw new Error('Failed '+res.status);
+        let items=await res.json();
+        if(!Array.isArray(items)) items=[];
+        // Normalize PG lower-case
+        items.forEach(it=>{ it.fullName=it.fullName||it.fullname||'DIU Student'; it.imageUrl=it.imageUrl||it.imageurl||it.image_url; it.created_at=it.created_at||it.createdat; });
         const el=document.getElementById('itemGrid');
         if(!items.length){el.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:60px;color:#65676b;"><i class="fas fa-store" style="font-size:3rem;opacity:0.3;display:block;margin-bottom:12px;"></i>No items listed yet — Be the first to post!</div>';return;}
         el.innerHTML=items.map(i=>`<div class="item-card" style="position:relative;">
-            <div class="item-img">${i.imageUrl?`<img src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${i.imageUrl}">`:(EMOJIS[i.category]||'📦')}</div>
+            <div class="item-img">${i.imageUrl?`<img src="${window.mediaUrl ? window.mediaUrl(i.imageUrl) : (i.imageUrl.startsWith('http')?i.imageUrl:`${(window.API_BASE||window.getBaseUrl())}${i.imageUrl}`)}" onerror="this.onerror=null;this.parentElement.innerHTML=(EMOJIS[i.category]||'📦')">`:(EMOJIS[i.category]||'📦')}</div>
             <div class="item-info">
                 <div class="item-price">${i.price===0?'Free':'BDT '+i.price}</div>
                 <div class="item-title">${esc(i.title)}</div>

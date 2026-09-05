@@ -89,7 +89,7 @@
     <div class="page-hero">
         <i class="fas fa-university"></i>
         <div>
-            <h1>🏛️ Official DIU Academic Departments</h1>
+            <h1>Official DIU Academic Departments</h1>
             <p>Daffodil International University — Connect with faculty and students across official academic departments</p>
         </div>
     </div>
@@ -121,23 +121,31 @@ if (localStorage.getItem('darkMode') === '1') document.body.setAttribute('data-t
 const ICONS = {
     'CSE': 'fa-laptop-code',
     'SWE': 'fa-code',
-    'ITM': 'fa-network-wired',
     'CIS': 'fa-server',
+    'CS': 'fa-desktop',
+    'ITM': 'fa-network-wired',
+    'MCT': 'fa-photo-film',
     'EEE': 'fa-bolt',
     'ETE': 'fa-satellite-dish',
     'Civil Engineering': 'fa-hard-hat',
     'Textile Engineering': 'fa-tshirt',
     'Architecture': 'fa-building',
     'BBA': 'fa-chart-line',
+    'Accounting': 'fa-calculator',
+    'Finance': 'fa-coins',
+    'Marketing': 'fa-bullhorn',
+    'Management': 'fa-users-gear',
+    'Tourism & Hospitality': 'fa-plane-departure',
     'Innovation & Entrepreneurship': 'fa-lightbulb',
     'Real Estate': 'fa-home',
-    'Tourism & Hospitality': 'fa-plane-departure',
     'Pharmacy': 'fa-pills',
     'Public Health': 'fa-heartbeat',
     'Nutrition & Food Engineering': 'fa-apple-alt',
     'Genetic Engineering & Biotech': 'fa-dna',
+    'Environmental Science & Disaster Management': 'fa-leaf',
     'English': 'fa-book',
     'Law (LLB)': 'fa-gavel',
+    'Law': 'fa-gavel',
     'Journalism & Media': 'fa-newspaper',
     'Development Studies': 'fa-globe-asia'
 };
@@ -162,7 +170,7 @@ async function loadDepartments() {
 
 async function openDeptMembers(deptEnc){
     const dept = decodeURIComponent(deptEnc);
-    document.getElementById('deptModalTitle').textContent = dept + ' — Members (' + dept + ')';
+    document.getElementById('deptModalTitle').textContent = dept + ' — Members';
     document.getElementById('deptMembersList').innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-secondary);"><i class="fas fa-spinner fa-spin"></i> Loading members...</div>';
     document.getElementById('deptMembersModal').style.display='flex';
     try{
@@ -170,16 +178,22 @@ async function openDeptMembers(deptEnc){
         const members = await res.json();
         if(!res.ok) throw new Error(members.message||'Failed');
         if(!members.length){ document.getElementById('deptMembersList').innerHTML='<div style="text-align:center;padding:20px;color:var(--text-secondary);"><i class="fas fa-users" style="font-size:2rem;opacity:0.3;display:block;margin-bottom:8px;"></i>No members in '+dept+' yet</div>'; return; }
-        document.getElementById('deptMembersList').innerHTML = members.map(m=>`
-            <div onclick="window.location.href='profile.html?id=${m._id}'" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;cursor:pointer;transition:background 0.15s;border:1px solid transparent;" onmouseover="this.style.background='var(--bg)'; this.style.borderColor='var(--border)'" onmouseout="this.style.background='none'; this.style.borderColor='transparent'">
-                <div style="width:44px;height:44px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,#0a66ff,#0540a0);color:white;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;font-size:1.1rem;">${m.profilePicture?`<img src="${(window.API_BASE||window.location.origin)+m.profilePicture}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.textContent='${(m.fullName||'?')[0].toUpperCase()}'">`:`${(m.fullName||'?')[0].toUpperCase()}`}</div>
+        document.getElementById('deptMembersList').innerHTML = members.map(m=>{
+            const _name = m.fullName || m.fullname || 'DIU Member';
+            const _pic = m.profilePicture || m.profilepicture;
+            const _picUrl = _pic ? (window.mediaUrl ? window.mediaUrl(_pic) : (_pic.startsWith('http') ? _pic : (window.API_BASE||window.location.origin)+_pic)) : '';
+            const _id = m._id || m.id || m.userId || m.user_id;
+            const _initial = (_name||'?')[0].toUpperCase();
+            return `
+            <div onclick="window.location.href='profile.html?id=${_id}'" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;cursor:pointer;transition:background 0.15s;border:1px solid transparent;" onmouseover="this.style.background='var(--bg)'; this.style.borderColor='var(--border)'" onmouseout="this.style.background='none'; this.style.borderColor='transparent'">
+                <div style="width:44px;height:44px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,#0a66ff,#0540a0);color:white;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;font-size:1.1rem;">${_pic?`<img src="${_picUrl}" style="width:100%;height:100%;object-fit:cover;" onerror="this.onerror=null;this.parentElement.textContent='${_initial}'">`:`${_initial}`}</div>
                 <div style="flex:1;min-width:0;">
-                    <div style="font-weight:700;font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${m.fullName}</div>
-                    <div style="font-size:0.75rem;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${m.role||'Student'} ${m.batch?'· '+m.batch:''} · ${m.email||''}</div>
+                    <div style="font-weight:700;font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${_name}</div>
+                    <div style="font-size:0.75rem;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${m.role||m.Role||'Student'} ${m.batch?'· '+m.batch:''} · ${m.email||''}</div>
                 </div>
                 <i class="fas fa-chevron-right" style="color:var(--text-secondary);font-size:0.8rem;"></i>
             </div>
-        `).join('');
+        `}).join('');
     }catch(e){
         document.getElementById('deptMembersList').innerHTML=`<div style="text-align:center;padding:20px;color:#e41e3f;"><i class="fas fa-exclamation-triangle"></i> Failed: ${e.message}<br><button onclick="openDeptMembers('${deptEnc}')" style="margin-top:8px;background:#0866ff;color:white;border:none;padding:6px 12px;border-radius:6px;font-weight:700;cursor:pointer;">Retry</button></div>`;
     }

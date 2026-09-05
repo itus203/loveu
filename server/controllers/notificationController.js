@@ -8,6 +8,12 @@ exports.getNotifications = async (req, res) => {
             ORDER BY n.created_at DESC
             LIMIT 50
         `, [req.user.id]);
+        // Normalize PG lower-case aliases
+        notifications.forEach(n=>{
+            n.senderName = n.senderName || n.sendername || n.fullname || n.fullName || null;
+            n.senderPic = n.senderPic || n.senderpic || n.profilepicture || n.profilePicture || null;
+            n.sender_id = n.sender_id || n.senderid || n.senderId;
+        });
         res.json(notifications);
     } catch (e) { res.status(500).json({ message: e.message }); }
 };

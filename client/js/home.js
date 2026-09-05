@@ -1586,13 +1586,16 @@ async function loadNotifications() {
  const el = document.getElementById('notifList');
  if (notifs.length === 0) { el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-secondary);font-size:0.88rem">No notifications yet</div>'; return; }
  el.innerHTML = notifs.map(n => {
- const initials = getInitials(n.senderName || 'N');
- const avatarHtml = n.senderPic
- ? `<img class="avatar" src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${n.senderPic}" style="width:44px;height:44px;">`
- : `<div class="avatar-placeholder" style="width:44px;height:44px;font-size:1rem;">${initials}</div>`;
+ const _sName = n.senderName || n.sendername || 'DIU Member';
+ const initials = getInitials(_sName);
+ const _sPic = n.senderPic || n.senderpic;
+ const _sPicUrl = _sPic ? (window.mediaUrl ? window.mediaUrl(_sPic) : (_sPic.startsWith('http') ? _sPic : `${(window.API_BASE||window.getBaseUrl())}${_sPic}`)) : '';
+ const avatarHtml = _sPic
+ ? `<img class="avatar" src="${_sPicUrl}" style="width:44px;height:44px;cursor:pointer;" onclick="event.stopPropagation(); window.location.href='views/profile.html?id=${n.sender_id||n.senderId||''}'" onerror="this.onerror=null;this.outerHTML='<div class=\\'avatar-placeholder\\' style=\\'width:44px;height:44px;font-size:1rem;cursor:pointer;\\' onclick=\\'event.stopPropagation(); window.location.href=\\'views/profile.html?id=${n.sender_id||n.senderId||''}\\'\\'>${initials}</div>'">`
+ : `<div class="avatar-placeholder" style="width:44px;height:44px;font-size:1rem;cursor:pointer;" onclick="event.stopPropagation(); window.location.href='views/profile.html?id=${n.sender_id||n.senderId||''}'">${initials}</div>`;
  const safeLink = (n.link||'').replace(/'/g,"\\'");
  const safeType = (n.type||'').replace(/'/g,"\\'");
- return `<div class="notif-item ${n.isRead ? '' : 'unread'}" onclick="handleNotifClick('${n.id}', '${safeLink}', '${safeType}', '${n.sender_id||''}', this)" style="cursor:pointer;">
+ return `<div class="notif-item ${n.isRead ? '' : 'unread'}" onclick="handleNotifClick('${n.id}', '${safeLink}', '${safeType}', '${n.sender_id||n.senderId||''}', this)" style="cursor:pointer;">
  ${avatarHtml}
  <div style="flex:1;min-width:0;">
  <div class="notif-text">${escapeHtml(n.message)}</div>
