@@ -151,9 +151,9 @@ exports.register = async (req, res) => {
                 return res.status(400).json({ message: 'Invalid DIU ID format. Correct: XXX-XX-XXX or XXX-XX-XXXX e.g. 242-35-203 or 221-35-1001' });
             }
             const [batchPart, deptPart, serialPart] = idToValidate.split('-');
-            const validDepts = ['15','16','17','18','22','35','36','38','41','42','43','51'];
-            if (!validDepts.includes(deptPart)) {
-                return res.status(400).json({ message: `Invalid department code ${deptPart}. Valid: ${validDepts.join(', ')}` });
+            // Dept code allow all (01-99) as requested — no strict whitelist
+            if (!/^\d{2}$/.test(deptPart)) {
+                return res.status(400).json({ message: `Invalid department code ${deptPart}` });
             }
             const batchNum = parseInt(batchPart, 10);
             if (batchNum < 200 || batchNum > 265) {
