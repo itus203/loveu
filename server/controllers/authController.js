@@ -2,25 +2,17 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 
-// Gmail SMTP helper
+// Gmail SMTP helper - robust with fallback port
 async function sendOtpEmail(toEmail, otp, fullName) {
-    try {
-        const gmailUser = process.env.GMAIL_USER;
-        let gmailPass = process.env.GMAIL_APP_PASSWORD;
-        if (gmailPass) gmailPass = gmailPass.replace(/\s+/g, '');
-        if (!gmailUser || !gmailPass) {
-            console.warn('⚠️  GMAIL_USER or GMAIL_APP_PASSWORD missing in .env — email skipped');
-            return false;
-        }
-        const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: { user: gmailUser, pass: gmailPass }
-        });
-        await transporter.sendMail({
-            from: `"DIU Nexus" <${gmailUser}>`,
-            to: toEmail,
-            subject: '🎓 DIU Nexus — Official Email Verification Code',
-            html: `
+    const gmailUser = process.env.GMAIL_USER;
+    let gmailPass = process.env.GMAIL_APP_PASSWORD;
+    if (gmailPass) gmailPass = gmailPass.replace(/\s+/g, '');
+    if (!gmailUser || !gmailPass) {
+        console.warn('⚠️  GMAIL_USER or GMAIL_APP_PASSWORD missing in .env — email skipped (to:'+toEmail+' otp:'+otp+')');
+        console.log(`[OTP FALLBACK] ${toEmail} -> ${otp} (no SMTP config)`);
+        return false;
+    }
+    const html = `
             <div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);">
                 <div style="background:linear-gradient(135deg,#0866ff,#0550c1);padding:32px 28px;text-align:center;">
                     <h1 style="color:white;font-size:1.6rem;margin:0;">DIU Nexus</h1>
@@ -42,13 +34,34 @@ async function sendOtpEmail(toEmail, otp, fullName) {
                 <div style="background:#f0f2f5;padding:16px 28px;text-align:center;">
                     <p style="color:#65676b;font-size:0.78rem;margin:0;">© 2025 DIU Nexus · Daffodil International University</p>
                 </div>
-            </div>`
+            </div>`;
+    // Try Gmail service first
+    try {
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: { user: gmailUser, pass: gmailPass },
+            connectionTimeout: 8000, greetingTimeout: 8000, socketTimeout: 10000
         });
-        console.log(`✅ OTP email sent to ${toEmail}`);
+        await transporter.sendMail({ from: `"DIU Nexus" <${gmailUser}>`, to: toEmail, subject: '🎓 DIU Nexus — Official Email Verification Code', html });
+        console.log(`✅ OTP email sent to ${toEmail} via gmail service`);
         return true;
-    } catch(e) {
-        console.error('❌ Email send error:', e.message);
-        return false;
+    } catch(e1) {
+        console.error('❌ Email gmail service fail:', e1.message, e1.code || '');
+        // Fallback: direct SMTP host
+        try {
+            const transporter2 = nodemailer.createTransport({
+                host: 'smtp.gmail.com', port: 587, secure: false, requireTLS: true,
+                auth: { user: gmailUser, pass: gmailPass },
+                connectionTimeout: 8000, greetingTimeout: 8000, socketTimeout: 10000
+            });
+            await transporter2.sendMail({ from: `"DIU Nexus" <${gmailUser}>`, to: toEmail, subject: '🎓 DIU Nexus — Official Email Verification Code', html });
+            console.log(`✅ OTP email sent to ${toEmail} via smtp.gmail.com:587`);
+            return true;
+        } catch(e2) {
+            console.error('❌ Email smtp fallback fail:', e2.message, e2.code || '');
+            console.log(`[OTP FALLBACK] ${toEmail} -> ${otp} (email failed, use DB manual verify)`);
+            return false;
+        }
     }
 }
 
