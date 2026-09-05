@@ -133,8 +133,9 @@ exports.register = async (req, res) => {
                 }
                 extractedId = emailIdMatch[1];
                 const namePart = local.slice(0, -extractedId.length);
-                if (!/^[a-z]{2,}$/.test(namePart)) {
-                    return res.status(400).json({ message: 'Email must start with your name (at least 2 letters) followed by ID, e.g. niloy242-35-203@diu.edu.bd' });
+                // Allow both name+ID (niloy242-35-203) and ID-only (242-35-888) for flexibility
+                if (namePart.length > 0 && !/^[a-z]{2,}$/.test(namePart)) {
+                    return res.status(400).json({ message: 'Email must start with your name (at least 2 letters) followed by ID, e.g. niloy242-35-203@diu.edu.bd or 242-35-888@diu.edu.bd' });
                 }
                 if (studentId && studentId.trim() !== extractedId) {
                     return res.status(400).json({ message: `Email ID (${extractedId}) and studentId (${studentId.trim()}) must match. Use name***-**-***@diu.edu.bd pattern.` });
