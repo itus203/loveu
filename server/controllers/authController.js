@@ -160,8 +160,8 @@ exports.register = async (req, res) => {
                 return res.status(400).json({ message: 'Invalid batch. Must be 200-265' });
             }
             const serialNum = parseInt(serialPart, 10);
-            if (serialNum < 100 || serialNum > 9999) {
-                return res.status(400).json({ message: 'Invalid serial. Must be 100-9999' });
+            if (serialNum < 1 || serialNum > 9999) {
+                return res.status(400).json({ message: 'Invalid serial. Must be 1-9999' });
             }
             const blockedFake = ['232-15-125'];
             if (blockedFake.includes(idToValidate)) {
