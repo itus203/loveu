@@ -563,12 +563,15 @@ function renderReactionsList() {
  }
 
  listEl.innerHTML = filtered.map(r => {
+ const _name = r.fullName || r.fullname || 'DIU Student';
  const icon = getReactionIcon(r.type);
- const name = escapeHtml(r.fullName || 'DIU Student');
- const dept = r.department ? `${escapeHtml(r.department)} · ${escapeHtml(r.batch || '')}` : 'DIU Member';
- const initials = getInitials(r.fullName);
- const avatarHtml = r.profilePicture
- ? `<img src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${r.profilePicture}" class="reactor-av" alt="${name}">`
+ const name = escapeHtml(_name);
+ const dept = (r.department||r.Department) ? `${escapeHtml(r.department||r.Department)} · ${escapeHtml(r.batch||r.Batch || '')}` : 'DIU Member';
+ const initials = getInitials(_name);
+ const _pp = r.profilePicture || r.profilepicture;
+ const _ppUrl = _pp ? (window.mediaUrl ? window.mediaUrl(_pp) : (_pp.startsWith('http') ? _pp : `${(window.API_BASE||window.getBaseUrl())}${_pp}`)) : '';
+ const avatarHtml = _pp
+ ? `<img src="${_ppUrl}" class="reactor-av" alt="${name}" onerror="this.onerror=null;this.outerHTML='<div class=\\'avatar-placeholder reactor-av\\' style=\\'font-size:1rem;\\'>${initials}</div>'">`
  : `<div class="avatar-placeholder reactor-av" style="font-size:1rem;">${initials}</div>`;
 
  return `

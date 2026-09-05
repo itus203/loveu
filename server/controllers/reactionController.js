@@ -29,18 +29,19 @@ exports.toggleReaction = async (req, res) => {
         // Notify post owner if someone else reacted — with link to post
         const post = await global.db.get('SELECT user_id FROM posts WHERE id=?', [postId]);
         if (post && post.user_id !== userId) {
-            const reactor = await global.db.get('SELECT fullName FROM users WHERE id=?', [userId]);
+            const reactor = await global.db.get('SELECT * FROM users WHERE id=?', [userId]);
+            const reactorName = reactor?.fullName || reactor?.fullname || 'Someone';
             const emojiMap = { like: '👍', love: '❤️', haha: '😂', wow: '😮', sad: '😢', angry: '😡' };
             const emoji = emojiMap[validReaction] || '👍';
             await global.db.run(
                 'INSERT INTO notifications (recipient_id, sender_id, type, message, link) VALUES (?,?,?,?,?)',
-                [post.user_id, userId, 'reaction', `${reactor?.fullName || 'Someone'} reacted ${emoji} to your post`, `home.html#post-${postId}`]
+                [post.user_id, userId, 'reaction', `${reactorName} reacted ${emoji} to your post`, `home.html#post-${postId}`]
             );
             const io = req.app.get('io');
             const onlineUsers = req.app.get('onlineUsers');
             if (io && onlineUsers) {
                 const recipientSocket = onlineUsers.get(String(post.user_id));
-                if (recipientSocket) io.to(recipientSocket).emit('new_notification', { message: `${reactor?.fullName || 'Someone'} reacted ${emoji} to your post`, type: 'reaction', link: `home.html#post-${postId}`, postId });
+                if (recipientSocket) io.to(recipientSocket).emit('new_notification', { message: `${reactorName} reacted ${emoji} to your post`, type: 'reaction', link: `home.html#post-${postId}`, postId });
             }
         }
 
@@ -68,6 +69,13 @@ exports.getReactions = async (req, res) => {
             ORDER BY r.created_at DESC
         `, [req.params.postId]);
         
+        // Normalize PG lower-case columns for frontend
+        reactions.forEach(r => {
+            r.fullName = r.fullName || r.fullname || r.FullName || 'DIU Student';
+            r.profilePicture = r.profilePicture || r.profilepicture;
+            r.department = r.department || r.Department;
+            r.batch = r.batch || r.Batch;
+        });
         // Also compute summary counts
         const summary = {};
         reactions.forEach(r => {
