@@ -28,7 +28,25 @@ async function sendOtpEmail(toEmail, otp, fullName) {
                 </div>
             </div>`;
 
-    // 1) Try SendGrid HTTP API first (works on Render - no SMTP block)
+    // 1) Try Brevo HTTP API (300/day permanent free - best for DIU)
+    if (process.env.BREVO_API_KEY) {
+        try {
+            const brevoKey = process.env.BREVO_API_KEY;
+            const fromEmail = process.env.BREVO_FROM || process.env.SENDGRID_FROM || process.env.GMAIL_USER || 'noreply@diu-nexus.com';
+            const fromName = 'DIU Nexus';
+            const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+                method: 'POST',
+                headers: { 'accept': 'application/json', 'content-type': 'application/json', 'api-key': brevoKey },
+                body: JSON.stringify({ sender: { email: fromEmail, name: fromName }, to: [{ email: toEmail, name: fullName }], subject: '🎓 DIU Nexus — Official Email Verification Code', htmlContent: html, textContent: `Your DIU Nexus OTP is ${otp} (10 min)` })
+            });
+            if (!res.ok) { const t = await res.text(); throw new Error(`Brevo ${res.status}: ${t}`); }
+            console.log(`✅ OTP email sent to ${toEmail} via Brevo`);
+            return true;
+        } catch(e) {
+            console.error('❌ Brevo fail:', e.message);
+        }
+    }
+    // 2) Try SendGrid HTTP API (100/day 60days - works on Render)
     if (process.env.SENDGRID_API_KEY) {
         try {
             const sgMail = require('@sendgrid/mail');
