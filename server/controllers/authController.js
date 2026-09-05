@@ -2,16 +2,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 
-// Gmail SMTP helper - robust with fallback port
+// Gmail SMTP helper - robust with SendGrid HTTP fallback (Render free blocks SMTP)
 async function sendOtpEmail(toEmail, otp, fullName) {
-    const gmailUser = process.env.GMAIL_USER;
-    let gmailPass = process.env.GMAIL_APP_PASSWORD;
-    if (gmailPass) gmailPass = gmailPass.replace(/\s+/g, '');
-    if (!gmailUser || !gmailPass) {
-        console.warn('⚠️  GMAIL_USER or GMAIL_APP_PASSWORD missing in .env — email skipped (to:'+toEmail+' otp:'+otp+')');
-        console.log(`[OTP FALLBACK] ${toEmail} -> ${otp} (no SMTP config)`);
-        return false;
-    }
     const html = `
             <div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);">
                 <div style="background:linear-gradient(135deg,#0866ff,#0550c1);padding:32px 28px;text-align:center;">
@@ -35,31 +27,46 @@ async function sendOtpEmail(toEmail, otp, fullName) {
                     <p style="color:#65676b;font-size:0.78rem;margin:0;">© 2025 DIU Nexus · Daffodil International University</p>
                 </div>
             </div>`;
-    // Try Gmail service first
+
+    // 1) Try SendGrid HTTP API first (works on Render - no SMTP block)
+    if (process.env.SENDGRID_API_KEY) {
+        try {
+            const sgMail = require('@sendgrid/mail');
+            sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+            const fromEmail = process.env.SENDGRID_FROM || process.env.GMAIL_USER || 'noreply@diu-nexus.com';
+            await sgMail.send({ to: toEmail, from: { email: fromEmail, name: 'DIU Nexus' }, subject: '🎓 DIU Nexus — Official Email Verification Code', html, text: `Your DIU Nexus OTP is ${otp} (10 min)` });
+            console.log(`✅ OTP email sent to ${toEmail} via SendGrid`);
+            return true;
+        } catch(e) {
+            console.error('❌ SendGrid fail:', e.message, e.code || '');
+            if (e.response) console.error(e.response.body);
+        }
+    }
+
+    // 2) Gmail SMTP - may timeout on Render free (as seen: Connection timeout)
+    const gmailUser = process.env.GMAIL_USER;
+    let gmailPass = process.env.GMAIL_APP_PASSWORD;
+    if (gmailPass) gmailPass = gmailPass.replace(/\s+/g, '');
+    if (!gmailUser || !gmailPass) {
+        console.warn('⚠️  GMAIL_USER or GMAIL_APP_PASSWORD missing — email skipped (to:'+toEmail+' otp:'+otp+')');
+        console.log(`[OTP FALLBACK] ${toEmail} -> ${otp} (no SMTP config)`);
+        return false;
+    }
     try {
-        const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: { user: gmailUser, pass: gmailPass },
-            connectionTimeout: 8000, greetingTimeout: 8000, socketTimeout: 10000
-        });
+        const transporter = nodemailer.createTransport({ service: 'gmail', auth: { user: gmailUser, pass: gmailPass }, connectionTimeout: 8000, greetingTimeout: 8000, socketTimeout: 10000 });
         await transporter.sendMail({ from: `"DIU Nexus" <${gmailUser}>`, to: toEmail, subject: '🎓 DIU Nexus — Official Email Verification Code', html });
         console.log(`✅ OTP email sent to ${toEmail} via gmail service`);
         return true;
     } catch(e1) {
         console.error('❌ Email gmail service fail:', e1.message, e1.code || '');
-        // Fallback: direct SMTP host
         try {
-            const transporter2 = nodemailer.createTransport({
-                host: 'smtp.gmail.com', port: 587, secure: false, requireTLS: true,
-                auth: { user: gmailUser, pass: gmailPass },
-                connectionTimeout: 8000, greetingTimeout: 8000, socketTimeout: 10000
-            });
+            const transporter2 = nodemailer.createTransport({ host: 'smtp.gmail.com', port: 587, secure: false, requireTLS: true, auth: { user: gmailUser, pass: gmailPass }, connectionTimeout: 8000, greetingTimeout: 8000, socketTimeout: 10000 });
             await transporter2.sendMail({ from: `"DIU Nexus" <${gmailUser}>`, to: toEmail, subject: '🎓 DIU Nexus — Official Email Verification Code', html });
             console.log(`✅ OTP email sent to ${toEmail} via smtp.gmail.com:587`);
             return true;
         } catch(e2) {
             console.error('❌ Email smtp fallback fail:', e2.message, e2.code || '');
-            console.log(`[OTP FALLBACK] ${toEmail} -> ${otp} (email failed, use DB manual verify)`);
+            console.log(`[OTP FALLBACK] ${toEmail} -> ${otp} (email failed, use Render log manual OTP)`);
             return false;
         }
     }
