@@ -361,13 +361,16 @@ function buildPostCard(post) {
  const isOwner = String(post.user?._id || post.user_id) === String(myId);
  const isAdmin = currentUser?.role === 'Admin';
  const initials = getInitials(post.user?.fullName || post.fullName);
- const avatarHtml = post.user?.profilePicture
- ? `<img class="avatar" src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${post.user.profilePicture}" style="width:40px;height:40px;" onclick="window.location.href='views/profile.html?id=${post.user?._id || post.user_id}'">`
+ const _pp = post.user?.profilePicture;
+ const _avatarUrl = _pp ? (window.mediaUrl ? window.mediaUrl(_pp) : (_pp.startsWith('http') ? _pp : `${(window.API_BASE || window.getBaseUrl())}${_pp}`)) : '';
+ const avatarHtml = _pp
+ ? `<img class="avatar" src="${_avatarUrl}" style="width:40px;height:40px;" onclick="window.location.href='views/profile.html?id=${post.user?._id || post.user_id}'" onerror="this.onerror=null;this.outerHTML='<div class=\\'avatar-placeholder\\' style=\\'width:40px;height:40px;font-size:1rem;cursor:pointer;\\'>${initials}</div>'">`
  : `<div class="avatar-placeholder" style="width:40px;height:40px;font-size:1rem;cursor:pointer;" onclick="window.location.href='views/profile.html?id=${post.user?._id || post.user_id}'">${initials}</div>`;
 
+ const _mediaUrl = post.mediaUrl ? (window.mediaUrl ? window.mediaUrl(post.mediaUrl) : (post.mediaUrl.startsWith('http') ? post.mediaUrl : `${(window.API_BASE||window.getBaseUrl())}${post.mediaUrl}`)) : '';
  const mediaHtml = post.mediaUrl ? (post.mediaType === 'video'
- ? `<div class="post-media"><video src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${post.mediaUrl}" controls style="width:100%;max-height:400px;"></video></div>`
- : `<div class="post-media"><img src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${post.mediaUrl}" alt="Post media" loading="lazy" onclick="openLightbox(this.src)"></div>`
+ ? `<div class="post-media"><video src="${_mediaUrl}" controls style="width:100%;max-height:400px;"></video></div>`
+ : `<div class="post-media"><img src="${_mediaUrl}" alt="Post media" loading="lazy" onclick="openLightbox(this.src)"></div>`
  ) : '';
 
  const reactedClass = post.myReaction ? `reacted ${post.myReaction}` : '';
@@ -438,10 +441,7 @@ function buildPostCard(post) {
  <div class="post-comments" id="comments-${post._id || post.id}">
  <div class="comments-list" id="comments-list-${post._id || post.id}"></div>
  <div class="comment-input-row">
- ${currentUser?.profilePicture
- ? `<img src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${currentUser.profilePicture}" class="avatar" style="width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0;">`
- : `<div class="avatar-placeholder" style="width:34px;height:34px;font-size:0.8rem;flex-shrink:0;">${getInitials(currentUser?.fullName)}</div>`
- }
+ ${(() => { const _cp = currentUser?.profilePicture; const _curl = _cp ? (window.mediaUrl ? window.mediaUrl(_cp) : (_cp.startsWith('http') ? _cp : `${(window.API_BASE||window.getBaseUrl())}${_cp}`)) : ''; return _cp ? `<img src="${_curl}" class="avatar" style="width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0;" onerror="this.onerror=null;this.outerHTML='<div class=\\'avatar-placeholder\\' style=\\'width:34px;height:34px;font-size:0.8rem;flex-shrink:0;\\'>${getInitials(currentUser?.fullName)}</div>'">` : `<div class="avatar-placeholder" style="width:34px;height:34px;font-size:0.8rem;flex-shrink:0;">${getInitials(currentUser?.fullName)}</div>`; })()}
  <div class="comment-input-wrap" style="position:relative; flex:1;">
  <input class="comment-input" id="cinput-${post._id || post.id}" placeholder="Write a comment... use @ to mention"
  onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();submitComment('${post._id || post.id}',this);}"
@@ -615,11 +615,12 @@ async function loadComments(postId) {
 }
 
 function buildComment(c) {
- const initials = getInitials(c.fullName || c.user?.fullName);
- const pic = c.profilePicture || c.user?.profilePicture;
- const name = c.fullName || c.user?.fullName || 'DIU Member';
+ const initials = getInitials(c.fullName || c.fullname || c.user?.fullName || c.user?.fullname);
+ const pic = c.profilePicture || c.profilepicture || c.user?.profilePicture || c.user?.profilepicture;
+ const name = c.fullName || c.fullname || c.user?.fullName || c.user?.fullname || 'DIU Member';
+ const picUrl = pic ? (window.mediaUrl ? window.mediaUrl(pic) : (pic.startsWith('http') ? pic : `${(window.API_BASE||window.getBaseUrl())}${pic}`)) : '';
  const avatarHtml = pic
- ? `<img class="avatar" src="${(window.API_BASE || (function(){var p=window.location.protocol,h=window.location.hostname,po=window.location.port; if(p==='file:') return 'http://localhost:5000'; if(h==='localhost'||h==='127.0.0.1'||h===''){ if(po==='5000') return window.location.origin; if(!po) return window.location.origin.indexOf('5000')!==-1?window.location.origin:'http://localhost:5000'; return 'http://localhost:5000'; } return window.location.origin; })())}${pic}" style="width:34px;height:34px;border-radius:50%;object-fit:cover;cursor:pointer;" onclick="window.location.href='views/profile.html?id=${c.user_id||c.userId||''}'">`
+ ? `<img class="avatar" src="${picUrl}" style="width:34px;height:34px;border-radius:50%;object-fit:cover;cursor:pointer;" onclick="window.location.href='views/profile.html?id=${c.user_id||c.userId||''}'" onerror="this.onerror=null;this.outerHTML='<div class=\\'avatar-placeholder\\' style=\\'width:34px;height:34px;font-size:0.8rem;cursor:pointer;flex-shrink:0;\\'>${initials}</div>'">`
  : `<div class="avatar-placeholder" style="width:34px;height:34px;font-size:0.8rem;cursor:pointer;flex-shrink:0;" onclick="window.location.href='views/profile.html?id=${c.user_id||c.userId||''}'">${initials}</div>`;
  const ago = c.created_at ? timeAgo(c.created_at) : 'Just now';
  const myId = String(currentUser?._id || currentUser?.id || '');
